@@ -132,22 +132,22 @@ YAML single source of truth.
 
 이 프로젝트는 가능한 많은 공통 정보를 YAML config로 관리한다.
 
-### 핵심 원칙
+핵심 원칙
 - stage 정의는 코드에 하드코딩하지 않는다.
 - 시나리오 메타데이터는 config에서 읽는다.
 - source category와 citation schema는 config에서 읽는다.
 - prompt 경로는 config에서 읽는다.
 - MCP source mapping은 config에서 읽는다.
+- prompt는 inline 문자열이 아니라 파일로 관리한다.
+- prompt는 agent별 × stage별 텍스트 파일 구조를 사용한다.
 
-### 특히 중요한 파일
-- `config/stages.yaml`
-  - stage 정의, outputs, rollback target
-- `config/scenarios.yaml`
-  - dispatch / eta / failed-delivery 시나리오 메타데이터
-- `config/prompts.yaml`
-  - agent별 prompt 파일 경로
-- `config/app.yaml`
-  - app/model/serving/huggingface/storage/features 설정
+중요 파일
+- `config/app.yaml`: app/model/serving/huggingface/storage/features 설정
+- `config/stages.yaml`: stage 정의, outputs, rollback target
+- `config/scenarios.yaml`: dispatch / eta / failed-delivery 시나리오 메타데이터
+- `config/sources.yaml`: retrieval/citation/source category
+- `config/prompts.yaml`: agent별 prompt 파일 경로
+- `config/mcp-hub.yaml`: MCP server와 source mapping
 
 ## 5. 모델 및 서빙 설정
 
@@ -206,8 +206,6 @@ YAML single source of truth.
 4. `docs/implementation-plan.md`
 - 4인 팀 기준 모듈 분리와 구현 계획
 
-5. `docs/configuration-notes.md`
-- YAML/config/prompt 관리 원칙
 
 ## 8. 현재 상태 요약
 

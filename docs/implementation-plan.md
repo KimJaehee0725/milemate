@@ -413,15 +413,11 @@ Files:
 ### Work Package C1: Source inventory and folder structure
 Deliverables:
 - categorize sources by papers/docs/cases/laws/datasets/patents
-- seed the knowledge folder with initial files and README notes
+- seed the knowledge folder with initial notes and collected source files
 
 Files:
-- Create: `knowledge/papers/README.md`
-- Create: `knowledge/docs/README.md`
-- Create: `knowledge/cases/README.md`
-- Create: `knowledge/laws/README.md`
-- Create: `knowledge/datasets/README.md`
-- Create: `knowledge/patents/README.md`
+- Use directories: `knowledge/papers/`, `knowledge/docs/`, `knowledge/cases/`, `knowledge/laws/`, `knowledge/datasets/`, `knowledge/patents/`
+- Create focused note files as needed, instead of placeholder README files in every folder
 
 ### Work Package C2: Retrieval adapter contracts
 Deliverables:
@@ -526,7 +522,7 @@ Files:
 - Create: `data/demo_inputs/dispatch.json`
 - Create: `data/demo_inputs/eta.json`
 - Create: `data/demo_inputs/failed_delivery.json`
-- Create: `data/demo_outputs/README.md`
+- Use directory: `data/demo_outputs/`
 - Create: `docs/demo-rubric.md`
 
 ## 5. Integration points the team must agree on early
