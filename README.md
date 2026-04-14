@@ -1,6 +1,8 @@
-# 라스트마일 서비스 기획 에이전트
+# milemate
 
 서울대학교 산업공학과 대학원 기술혁이론 수업 팀 프로젝트 저장소.
+
+milemate는 라스트마일 서비스 기획의 동반자라는 의미를 담은 프로젝트 이름이다.
 
 이 프로젝트는 라스트마일 관련 서비스 아이디어를 구현 관점으로 번역하여,
 - 필요한 기반 기술과 기술 의존성을 구조화하고
@@ -252,9 +254,33 @@
 ## 10. 개발 환경 메모
 - 의존성/버전 관리는 `uv` 기준으로 진행한다.
 - 기본 Python 버전은 `.python-version`에 맞춰 3.11을 사용한다.
-- 초기 설정 예시
-  - `uv venv`
-  - `uv sync --extra dev --extra ui --extra llm`
+
+### uv 설치
+macOS / Linux 예시
+- `curl -LsSf https://astral.sh/uv/install.sh | sh`
+
+설치 확인
+- `uv --version`
+
+### 프로젝트 환경 생성 및 동기화
+1. 가상환경 생성
+- `uv venv`
+
+2. 기본 의존성 + 개발 도구 + UI + LLM 의존성 설치
+- `uv sync --extra dev --extra ui --extra llm`
+
+3. 가상환경 활성화
+- macOS / Linux: `source .venv/bin/activate`
+
+### 자주 쓰는 명령
+- 테스트 실행: `uv run pytest`
+- 특정 테스트 실행: `uv run pytest tests/test_config_loader.py`
+- 린트 실행: `uv run ruff check .`
+- FastAPI 실행 예시: `uv run uvicorn app.backend.main:app --reload`
+
+### 참고
+- 새 의존성을 추가할 때는 `pyproject.toml` 기준으로 관리한다.
+- 팀원 간 Python 버전 차이를 줄이기 위해 `.python-version`을 유지한다.
 
 ## 9. 구현 시작 전 합의 권장 순서
 1. `stages.yaml` / `scenarios.yaml` 검토
