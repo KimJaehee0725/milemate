@@ -28,17 +28,16 @@ prompts:
         stage_2: prompts/agents/report_agent/report_agent_stage2.txt
         stage_3: prompts/agents/report_agent/report_agent_stage3.txt
         stage_4: prompts/agents/report_agent/report_agent_stage4.txt
-
-rendering:
-  planner_sections:
-    - problem_redefinition
-    - target_users
-    - prioritized_kpis
-    - mvp_scope
-    - expected_value
-  engineer_sections:
-    - required_data
-    - required_tech_blocks
-    - constraints
-    - implementation_order
-    - verification_plan
+  rendering:
+    planner_sections:
+      - problem_redefinition
+      - target_users
+      - prioritized_kpis
+      - mvp_scope
+      - expected_value
+    engineer_sections:
+      - required_data
+      - required_tech_blocks
+      - constraints
+      - implementation_order
+      - verification_plan
