@@ -31,18 +31,33 @@ Among the frameworks we checked, LangGraph fits this best because it is explicit
 ## Framework research snapshot
 We checked the following candidates using package metadata and repository information.
 
-| Framework | PyPI version checked | GitHub stars checked | Strength | Main weakness for our use case |
+| Framework | Version/metadata checked | GitHub stars checked | Strength | Main weakness for our use case |
 |---|---:|---:|---|---|
-| LangGraph | 1.1.6 | 29k+ | Strong state graph, checkpoints, workflow control, HITL-friendly | Slightly lower-level than chat-first frameworks |
-| PydanticAI | 1.81.0 | 16k+ | Excellent typed outputs, Pythonic ergonomics | Not as naturally centered on rollbackable stage graphs |
-| Haystack | 2.27.0 | 24k+ | Strong retrieval pipelines and RAG | More retrieval-centric than workflow-centric |
-| AutoGen | 0.7.5 | 57k+ | Strong multi-agent orchestration | Heavier than needed for stage-gated planning MVP |
-| CrewAI | 1.14.1 | 48k+ | Easy role-based agent composition | Better for agent-team demos than explicit stage state machines |
-| smolagents | 1.24.0 | 26k+ | Lightweight and flexible | Better for tool/code agents than structured stage workflow |
+| LangGraph | PyPI 1.1.6 | 29k+ | Strong state graph, checkpoints, workflow control, HITL-friendly | Slightly lower-level than chat-first frameworks |
+| Microsoft Agent Framework | GitHub repo metadata checked | 9k+ | Graph-based workflows, checkpointing, HITL, time-travel, Python/.NET, DevUI | Younger ecosystem, less battle-tested community footprint than LangGraph |
+| PydanticAI | PyPI 1.81.0 | 16k+ | Excellent typed outputs, Pythonic ergonomics | Not as naturally centered on rollbackable stage graphs |
+| Haystack | PyPI 2.27.0 | 24k+ | Strong retrieval pipelines and RAG | More retrieval-centric than workflow-centric |
+| AutoGen | PyPI 0.7.5 | 57k+ | Strong multi-agent orchestration | Heavier than needed for stage-gated planning MVP |
+| CrewAI | PyPI 1.14.1 | 48k+ | Easy role-based agent composition | Better for agent-team demos than explicit stage state machines |
+| smolagents | PyPI 1.24.0 | 26k+ | Lightweight and flexible | Better for tool/code agents than structured stage workflow |
+
+## Updated assessment after checking Microsoft Agent Framework
+Microsoft Agent Framework is a serious candidate, not just an enterprise-branded wrapper.
+From the repository README and metadata, the most relevant points for our project are:
+- graph-based workflows
+- checkpointing
+- human-in-the-loop
+- time-travel
+- multi-agent workflows
+- Python support
+- DevUI for workflow testing/debugging
+
+This means it is much closer to our needs than AutoGen alone.
+If the question is "is this framework compatible with our long-term direction?", the answer is yes.
 
 ## Final recommendation
-### 1. Core workflow framework: LangGraph
-Use LangGraph as the main orchestration layer.
+### 1. Core workflow framework: LangGraph for MVP, Microsoft Agent Framework as the strongest alternative
+Use LangGraph as the main orchestration layer for the first implementation unless the team explicitly wants to optimize for Microsoft ecosystem alignment from the start.
 
 Why:
 - Our project is naturally a graph/state problem, not just a prompt chaining problem.
@@ -50,6 +65,12 @@ Why:
 - Human approval and rollback are first-class architectural concerns for us.
 - We need stage state, not just conversation history.
 - We may later add branching logic by scenario type.
+
+LangGraph is still the best fit for the MVP because:
+- the Python ecosystem fit is simple and direct
+- examples and community usage for graph-style agent workflows are already mature
+- it introduces less framework surface area than Microsoft Agent Framework
+- it will likely be faster for a 4-person student team to stand up quickly
 
 LangGraph is the best fit for:
 - stage nodes
@@ -72,8 +93,26 @@ How to use it in our architecture:
   - unresolved questions
   - citations
 
+### 1A. When Microsoft Agent Framework would be the better choice
+Choose Microsoft Agent Framework instead of LangGraph if the team strongly values one or more of the following:
+- long-term multi-agent expansion is a central requirement, not just a future possibility
+- built-in workflow debugging/DevUI would materially speed up development
+- a unified Python/.NET story is strategically valuable
+- the team wants to stay close to Microsoft's evolving agent ecosystem rather than LangChain's ecosystem
+
+Why it is attractive:
+- it explicitly advertises graph-based workflows
+- it explicitly advertises checkpointing and human-in-the-loop
+- it already frames workflows and agents inside one product family
+- it may reduce future migration cost if the project grows into a larger multi-agent system
+
+Why I still would not switch immediately:
+- it is newer and less field-proven for this exact kind of student MVP
+- examples, community recipes, and troubleshooting density are still weaker than LangGraph's ecosystem
+- framework complexity may be slightly higher than what we need for the first prototype
+
 ### 2. Backend framework: FastAPI
-Use FastAPI as the API layer around the graph.
+Use FastAPI as the API layer around the graph or workflow runtime.
 
 Why:
 - easy Python integration
@@ -148,6 +187,13 @@ AutoGen is powerful, but our MVP is not fundamentally a multi-agent conversation
 Our main need is a controlled stage machine with explicit approval and rollback.
 AutoGen is stronger when the main story is autonomous agent-team interaction.
 That is not the core of this project.
+
+### Why not Microsoft Agent Framework as the immediate default?
+This is not because it is weak. In fact, it is probably the strongest non-LangGraph alternative for us.
+The reason is prioritization:
+- MVP speed matters more than long-term platform elegance right now
+- LangGraph is simpler to justify and likely faster to wire into our current Python-first scaffold
+- Microsoft Agent Framework becomes more compelling as soon as multi-agent orchestration becomes an actual implementation milestone instead of a future possibility
 
 ### Why not CrewAI?
 CrewAI is good for role-based task orchestration, but our architecture is better expressed as a state graph than as a crew of roles.
