@@ -13,12 +13,12 @@ mcp_servers:
     enabled: true
     transport: stdio
     command: npx
-    args: [-y, @modelcontextprotocol/server-filesystem, ${workspaceFolder}]
+    args: ["-y", "@modelcontextprotocol/server-filesystem", "${workspaceFolder}"]
   brave_search:
     enabled: false
     transport: stdio
     command: npx
-    args: [-y, @modelcontextprotocol/server-brave-search]
+    args: ["-y", "@modelcontextprotocol/server-brave-search"]
     auth_env: BRAVE_API_KEY
   tavily:
     enabled: false
@@ -30,7 +30,7 @@ mcp_servers:
     enabled: true
     transport: stdio
     command: npx
-    args: [-y, @modelcontextprotocol/server-memory]
+    args: ["-y", "@modelcontextprotocol/server-memory"]
 
 source_mapping:
   papers: [brave_search, tavily, fetch]

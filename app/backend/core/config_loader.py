@@ -62,6 +62,8 @@ class AppSection(BaseModel):
 
 
 class ModelSettings(BaseModel):
+    model_config = {"protected_namespaces": ()}
+
     provider: str = "huggingface"
     model_id: str
     dtype: str = "auto"
