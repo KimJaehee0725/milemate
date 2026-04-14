@@ -256,9 +256,36 @@ Do not begin with:
 - multiple retrieval frameworks at once
 - a heavy JS frontend
 
+## Microsoft Agent Framework vs Semantic Kernel
+If we compare only these two Microsoft options, the choice depends on whether we prioritize stage workflow control or broader app/platform integration.
+
+### Microsoft Agent Framework strengths
+- explicit graph-based workflows
+- explicit checkpointing
+- explicit human-in-the-loop support
+- explicit time-travel support
+- multi-agent workflows as a first-class story
+- DevUI and workflow debugging appeal
+
+### Semantic Kernel strengths
+- larger and more mature GitHub footprint
+- broad model/provider support
+- plugin and memory story is clearer
+- process framework language is strong
+- local model wording includes Ollama in the README
+- strong general AI application SDK positioning
+
+### Recommendation between the two
+For our project specifically:
+- choose Microsoft Agent Framework if the priority is stage-gated workflow, rollback, checkpoints, and future multi-agent orchestration
+- choose Semantic Kernel if the priority is broader app integration, plugins, and a more general-purpose AI SDK feel
+
+Because our project is centered on explicit stage progression, approvals, and rollback, Microsoft Agent Framework is the better fit between the two.
+
 ## Decision
 Primary framework decision:
-- Choose LangGraph as the core framework.
+- Choose LangGraph as the core framework for MVP.
+- If we switch to a Microsoft-native option, choose Microsoft Agent Framework over Semantic Kernel.
 
 Supporting framework decisions:
 - Choose FastAPI for the backend API.
