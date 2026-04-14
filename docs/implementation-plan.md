@@ -5,9 +5,11 @@
 기본 기술 스택
 - 에이전트 / 워크플로우: Microsoft Agent Framework
 - backend: FastAPI
+- 데이터 스키마: Pydantic 기반 모듈
 - 모델 서빙: vLLM
 - 모델: google/gemma-4-26B-A4B-it
 - 설정 관리: YAML
+- Python / 의존성 관리: uv
 - 상태 저장: SQLite 우선
 - retrieval: MCP Hub + custom adapter
 - 프론트엔드: Streamlit 우선
@@ -42,6 +44,7 @@
 - stage manager
 - orchestrator
 - response schema
+- Pydantic schema contract 적용
 
 ### 모듈 C. 지식 / retrieval / MCP 연동
 담당: 팀원 3
@@ -92,6 +95,7 @@ project-root/
       main.py
       api/
       core/
+      schemas/
       services/
       integrations/
   knowledge/
@@ -206,6 +210,10 @@ project-root/
 - demo input / expected output / rubric 정리
 
 ## 5. 통합 전에 반드시 맞춰야 하는 것
+
+추가 원칙
+- 모든 공용 입출력 구조는 `app/backend/schemas/` 아래 Pydantic 모델로 먼저 정의한다.
+- 팀원별 구현 완료 기준은 기능 구현 + 관련 테스트 통과 + schema contract 만족으로 본다.
 
 ### stage response schema
 최소 필드

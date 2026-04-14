@@ -126,6 +126,7 @@
 - 모델 서빙: vLLM
 - 모델 메타데이터: Hugging Face 기준 관리
 - retrieval: MCP Hub + custom adapter
+- Python/버전 관리: uv 기반
 
 ## 3. 레포 구조
 
@@ -149,6 +150,7 @@
 
 ### 폴더 설명
 - `app/backend/`: 워크플로우, stage 상태, API, verifier, retrieval adapter 관련 코드
+- `app/backend/schemas/`: Pydantic 기반 data schema 모듈
 - `app/frontend/`: 데모 UI 위치
 - `config/`: YAML 단일 설정 소스
 - `knowledge/`: 논문/기술문서/사례/법령/데이터셋/특허 메모
@@ -176,6 +178,8 @@
 - `config/sources.yaml`: retrieval/citation/source category
 - `config/prompts.yaml`: agent별 prompt 파일 경로
 - `config/mcp-hub.yaml`: MCP server와 source mapping
+- `pyproject.toml`: uv 기반 프로젝트/의존성 정의
+- `.python-version`: Python 버전 고정
 
 ## 5. 모델 및 서빙 설정
 
@@ -244,6 +248,13 @@
 - Microsoft Agent Framework 실제 연결 코드
 
 즉, 현재는 구조와 설계는 정리되었고 구현은 팀원들과 함께 시작할 단계다.
+
+## 10. 개발 환경 메모
+- 의존성/버전 관리는 `uv` 기준으로 진행한다.
+- 기본 Python 버전은 `.python-version`에 맞춰 3.11을 사용한다.
+- 초기 설정 예시
+  - `uv venv`
+  - `uv sync --extra dev --extra ui --extra llm`
 
 ## 9. 구현 시작 전 합의 권장 순서
 1. `stages.yaml` / `scenarios.yaml` 검토
