@@ -1,3 +1,32 @@
-# legalize-kr notes
+# legalize-kr 메모
 
-Use this folder to map Korean logistics/privacy/notification laws to scenario constraints.
+## 목적
+한국 법령 자료를 프로젝트의 규제 / 제약 검토에 연결하기 위한 메모.
+
+## 활용 대상
+라스트마일 서비스 기획에서 다음과 같은 항목을 검토할 때 활용한다.
+- 개인정보 처리 관련 제약
+- 위치정보 활용 관련 제약
+- 고객 알림 / 전자문서 / 고지 관련 제약
+- 운송 / 물류 / 소비자 보호 관련 규제
+
+## 활용 방식
+- GitHub 저장소 `legalize-kr/legalize-kr`를 1차 법령 텍스트 자료원으로 사용
+- 필요 시 `law.go.kr` 원문 링크를 따라가 세부 조항 확인
+- stage 3 verifier 단계에서 규제 / 정책 리스크 확인용 근거로 사용
+
+## retrieval / MCP 관점
+전용 한국 법령 MCP가 없더라도 아래 조합으로 활용 가능하다.
+- GitHub MCP: 저장소 검색 / 조회
+- File System MCP: 로컬 clone 후 키워드 검색
+- Fetch / Firecrawl MCP: `law.go.kr` 또는 raw GitHub 문서 fetch
+
+## 주의점
+- 법령 검토는 보조 참고용으로 사용하고, 법률 자문 자체로 표현하지 않는다.
+- 저장소 README에 force-push 가능성이 명시되어 있으므로 commit hash 고정 참조에는 주의한다.
+
+## 추후 정리할 항목
+- 개인정보보호 관련 핵심 법령 목록
+- 위치정보 관련 핵심 법령 목록
+- 전자문서 / 고객 알림 관련 법령 목록
+- 물류 / 운송 / 소비자 보호 관련 법령 목록

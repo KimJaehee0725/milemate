@@ -1,140 +1,79 @@
-# Last-Mile Planning Agent Implementation Plan
+# 구현 계획
 
-> For Hermes: This is a project execution plan for a 4-person team. Use it as the source of truth for implementation sequencing, ownership, and integration.
+목표: stage 기반 human-in-the-loop planning agent를 4인 팀이 병렬 작업 가능하도록 모듈화하여 구현한다.
 
-Goal: Build a stage-gated, human-in-the-loop planning agent that helps planners structure last-mile service ideas, identify enabling technologies, and produce planner-facing and engineer-facing outputs.
+기본 기술 스택
+- 에이전트 / 워크플로우: Microsoft Agent Framework
+- backend: FastAPI
+- 모델 서빙: vLLM
+- 모델: google/gemma-4-26B-A4B-it
+- 설정 관리: YAML
+- 상태 저장: SQLite 우선
+- retrieval: MCP Hub + custom adapter
+- 프론트엔드: Streamlit 우선
 
-Architecture: The system will be built as a modular prototype with four separable layers: frontend interaction layer, orchestration/backend layer, knowledge/data layer, and evaluation/demo layer. The first demo will use the dynamic dispatch scenario, but the framework must support ETA prediction and failed-delivery risk scenarios with the same stage workflow.
+## 1. 팀원 4명 기준 모듈 분리
 
-Tech Stack: Python backend, FastAPI API server, simple frontend (Streamlit or Next.js), vector/database layer, local markdown knowledge base, MCP integrations via mcp-hub, and optional lightweight SQLite/Postgres for logs and stage state.
+### 모듈 A. UX / 프론트엔드 / stage 상호작용
+담당: 팀원 1
 
----
+목표
+- planner-facing UI 구현
+- stage 승인 / 수정 / rollback UX 구현
+- planner report / engineer report 화면 구성
 
-## 0. What the team is actually building
+주요 산출물
+- stage 화면
+- 승인 / 수정 / rollback 버튼
+- decision log 시각화
+- 데모 흐름
 
-The prototype should support the following minimum user flow:
-1. User enters a last-mile service idea.
-2. Agent classifies the idea into a scenario type.
-3. Agent runs stage 1 and proposes problem definition, KPI candidates, and scope candidates.
-4. User approves or edits stage 1.
-5. Agent runs stage 2 and proposes feature structure and MVP scope.
-6. User approves or edits stage 2.
-7. Agent runs stage 3 and verifies data/technical/regulatory feasibility.
-8. User approves or sends the workflow back to an earlier stage.
-9. Agent generates stage 4 outputs:
-   - planner report
-   - engineer report
-   - decision log
+### 모듈 B. backend / orchestration / stage 엔진
+담당: 팀원 2
 
-The first milestone does not need full production-grade agent autonomy. It only needs a convincing, modular prototype that clearly demonstrates:
-- stage-gated progression
-- human approval checkpoints
-- rollback to earlier stages
-- retrieval + web/document search
-- memory of prior stage decisions
-- verifier pass before final output
+목표
+- stage state machine 구현
+- workflow orchestration 구현
+- session / approval / rollback API 구현
+- output schema 관리
 
-## 1. Module breakdown for 4 team members
-
-The system is split into 4 modules so each team member can work mostly independently.
-
-### Module A. Product UX and Stage Workflow
-Owner: Team Member 1
-
-Objective: Design and implement the planner-facing interaction flow.
-
-Responsibilities:
-- Define stage UI and user actions
-- Implement stage approval / reject / rollback controls
-- Build demo flow for 3 scenarios
-- Define final report layout for planner and engineer outputs
-
-Primary outputs:
-- wireframes
-- frontend screens
-- stage transition UX
-- demo script alignment
-
-Dependencies:
-- needs API contract from Module B
-- needs scenario templates from Module D
-- can start before retrieval/MCP implementation is complete by using mock responses
-
-### Module B. Agent Orchestration Backend
-Owner: Team Member 2
-
-Objective: Build the central backend that manages stage state, calls retrieval/tools, and produces structured outputs.
-
-Responsibilities:
-- FastAPI server or equivalent backend
-- stage state machine implementation
-- orchestration logic for stage 1~4
-- short-term memory/session state
-- decision log generation
-- rollback logic
-- output schema enforcement
-
-Primary outputs:
+주요 산출물
 - backend API
 - stage manager
-- orchestration service
-- response schemas
+- orchestrator
+- response schema
 
-Dependencies:
-- needs prompt/templates from Module D
-- needs retrieval interfaces from Module C
-- can be developed with mocked retrieval adapters at first
+### 모듈 C. 지식 / retrieval / MCP 연동
+담당: 팀원 3
 
-### Module C. Knowledge, Retrieval, and MCP Integrations
-Owner: Team Member 3
+목표
+- knowledge 폴더 구성
+- retrieval adapter 구현
+- GitHub / Fetch / 법령 / MCP 연결
+- source citation 구조 설계
 
-Objective: Build the external knowledge pipeline and MCP-compatible retrieval layer.
-
-Responsibilities:
-- organize markdown knowledge base
-- connect mcp-hub candidates where possible
-- build retrieval adapters for papers, docs, GitHub repos, legal sources
-- prepare legalize-kr workflow for Korean law lookup
-- implement citation/source tracking
-
-Primary outputs:
+주요 산출물
 - source inventory
 - retrieval adapter layer
-- local knowledge base structure
-- mcp-hub config draft
-- citation format for outputs
+- legalize-kr 활용 경로
+- mcp-hub 설정 초안
 
-Dependencies:
-- can progress independently early
-- must provide APIs or mock interfaces to Module B
-- must align source categories with Module D evaluation needs
+### 모듈 D. prompt / verifier / 평가
+담당: 팀원 4
 
-### Module D. Scenario Design, Prompts, Verification, and Evaluation
-Owner: Team Member 4
+목표
+- agent별 × stage별 prompt 작성
+- scenario별 적용 규칙 정리
+- verifier 체크리스트 정리
+- demo input / expected output / 평가 기준 정리
 
-Objective: Define the intelligence layer: scenario templates, prompts, verifier logic, and evaluation/demo assets.
-
-Responsibilities:
-- create prompt templates for stage 1~4
-- define scenario-specific variations for 3 scenarios
-- design verifier checklists
-- define evaluation rubric
-- prepare sample inputs, expected outputs, and demo dataset
-
-Primary outputs:
+주요 산출물
 - prompt library
 - verifier rule set
-- scenario templates
 - evaluation checklist
-- demo examples
+- demo 예시
 
-Dependencies:
-- works with all modules but can begin immediately
-- should coordinate closely with Module B for structured output schemas
-
-## 2. Recommended repository structure
-
-Use this structure so work can be split cleanly.
+## 2. 추천 레포 구조
 
 ```text
 project-root/
@@ -142,6 +81,7 @@ project-root/
   docs/
     project-overview.md
     last-mile-service-options.md
+    framework-selection.md
     implementation-plan.md
   app/
     frontend/
@@ -151,25 +91,9 @@ project-root/
     backend/
       main.py
       api/
-        routes_stage.py
-        routes_session.py
-        routes_report.py
       core/
-        orchestrator.py
-        stage_manager.py
-        rollback_manager.py
-        schemas.py
       services/
-        planner_service.py
-        verifier_service.py
-        report_service.py
-        memory_service.py
       integrations/
-        retrieval_adapter.py
-        mcp_adapter.py
-        github_adapter.py
-        legal_adapter.py
-        web_search_adapter.py
   knowledge/
     papers/
     docs/
@@ -180,38 +104,14 @@ project-root/
   prompts/
     agents/
       orchestrator_agent/
-        system.txt
-        orchestrator_agent_stage1.txt
-        orchestrator_agent_stage2.txt
-        orchestrator_agent_stage3.txt
-        orchestrator_agent_stage4.txt
       planner_agent/
-        system.txt
-        planner_agent_stage1.txt
-        planner_agent_stage2.txt
-        planner_agent_stage3.txt
-        planner_agent_stage4.txt
       verifier_agent/
-        system.txt
-        verifier_agent_stage1.txt
-        verifier_agent_stage2.txt
-        verifier_agent_stage3.txt
-        verifier_agent_stage4.txt
       report_agent/
-        system.txt
-        report_agent_stage1.txt
-        report_agent_stage2.txt
-        report_agent_stage3.txt
-        report_agent_stage4.txt
   data/
     demo_inputs/
     demo_outputs/
     synthetic/
   tests/
-    test_stage_manager.py
-    test_verifier.py
-    test_report_schema.py
-    test_retrieval_adapters.py
   config/
     app.yaml
     stages.yaml
@@ -221,464 +121,168 @@ project-root/
     mcp-hub.yaml
 ```
 
-## 3. Build order
+## 3. 구현 순서
 
-Do not try to build everything at once. Build in this order.
-
-### Phase 1. Freeze the contracts
-Objective: Agree on interfaces before implementation diverges.
-
-Deliverables:
-- stage definitions
+### Phase 1. 계약 고정
+합의할 것
+- stage 정의
 - output schema
-- API contract between frontend and backend
-- source categories for retrieval
-- scenario template schema
+- API contract
+- source category
+- scenario enum
+- citation format
 
-Who leads:
-- Module B + Module D
-n
-Must decide now:
-- frontend framework: Streamlit or Next.js
-- backend framework: FastAPI recommended
-- state storage: in-memory + JSON for MVP, or SQLite if needed
-- output format: strict JSON internally, rendered markdown externally
+이 단계가 가장 중요하다. 이걸 먼저 맞추지 않으면 모듈 통합이 어려워진다.
 
-### Phase 2. Build a mocked end-to-end vertical slice
-Objective: Get one full path working before real retrieval is added.
-
-Scope:
-- one scenario only: dynamic dispatch
+### Phase 2. mock 기반 vertical slice
+범위
+- 시나리오 1개: 동적 배차 및 경로 재추천
 - mocked retrieval
 - mocked verifier
-- real stage approval UI
-- real rollback flow
+- 실제 stage approval UI
+- 실제 rollback 흐름
 
-Who leads:
-- Module A + Module B
+성공 기준
+- 사용자 입장에서 stage 1~4를 따라갈 수 있음
+- rollback 동작함
+- planner report / engineer report 렌더링 가능
 
-Success criteria:
-- user can complete stage 1~4 in the UI
-- rollback works
-- planner report and engineer report render correctly
-
-### Phase 3. Replace mocks with real retrieval and knowledge access
-Objective: Make the system grounded.
-
-Scope:
-- local markdown knowledge base
-- web/document retrieval adapters
+### Phase 3. 실제 retrieval 연결
+범위
+- markdown knowledge base
+- web / document retrieval adapter
 - legalize-kr law lookup
-- source citation display
+- source citation 출력
 
-Who leads:
-- Module C, supported by Module B
+성공 기준
+- 출력에 실제 source citation이 포함됨
+- 기술 source, 사례 source, 법령 source를 최소 하나씩 보여줄 수 있음
 
-Success criteria:
-- output includes cited sources
-- at least one legal source, one technical source, and one scenario source can be retrieved
+### Phase 4. verifier + 다중 시나리오 일반화
+범위
+- stage 3 verifier 규칙 활성화
+- ETA / failed-delivery 시나리오 추가
+- 같은 stage 엔진으로 3개 시나리오 처리
 
-### Phase 4. Add verifier and scenario generalization
-Objective: Show that the framework is reusable across scenarios.
+성공 기준
+- 3개 시나리오가 같은 workflow를 공유함
+- verifier가 rollback 추천을 줄 수 있음
 
-Scope:
-- implement stage 3 verifier rules
-- add ETA and failed-delivery scenario templates
-- ensure same stage workflow works across all three
+### Phase 5. 데모 고도화
+범위
+- demo script 정리
+- sample input 안정화
+- deterministic output 스타일 정리
+- fallback plan 정리
 
-Who leads:
-- Module D + Module B
+성공 기준
+- 3~5분 발표 데모가 안정적으로 작동함
 
-Success criteria:
-- all 3 scenarios can run through the same stage engine
-- verifier can trigger rollback suggestions
+## 4. 팀원별 세부 작업
 
-### Phase 5. Demo hardening
-Objective: Prepare for presentation.
+### 팀원 1
+- stage 1~4 화면 설계
+- 승인 / 수정 / rollback 버튼 배치
+- planner report / engineer report 화면 설계
+- 시나리오 전환 UI 설계
 
-Scope:
-- polished demo script
-- stable sample inputs
-- deterministic output style
-- fallback plan if retrieval fails
-- screenshots or recorded path
+### 팀원 2
+- stage response schema 작성
+- stage manager / rollback manager 작성
+- orchestrator 작성
+- FastAPI route 작성
 
-Who leads:
-- all members, Module A coordinating
+### 팀원 3
+- source inventory 정리
+- retrieval adapter 작성
+- MCP source mapping 정리
+- legalize-kr 활용 노트 정리
+- citation schema 적용
 
-Success criteria:
-- 3-minute demo runs without improvisation
-- each scenario has one prepared sample
-- final output is presentation-ready
+### 팀원 4
+- orchestrator / planner / verifier / report agent prompt 작성
+- dispatch / ETA / failed-delivery 적용 규칙 정리
+- verifier rule 작성
+- demo input / expected output / rubric 정리
 
-## 4. Detailed work package per team member
+## 5. 통합 전에 반드시 맞춰야 하는 것
 
-## Team Member 1: Frontend / UX / Demo Interaction
+### stage response schema
+최소 필드
+- stage_id
+- status
+- summary
+- decision_points
+- required_user_input
+- citations
+- rollback_targets
+- planner_view
+- engineer_view
 
-### Work Package A1: Stage UI spec
-Deliverables:
-- one screen flow per stage
-- approval, edit, rollback button placement
-- display format for decision log
+### 시나리오 enum
+- dispatch_recommendation
+- eta_prediction
+- failed_delivery_risk
+- other_last_mile
 
-Files:
-- Create: `app/frontend/stage_views/stage1.tsx` or `.py`
-- Create: `app/frontend/stage_views/stage2.tsx` or `.py`
-- Create: `app/frontend/stage_views/stage3.tsx` or `.py`
-- Create: `app/frontend/stage_views/stage4.tsx` or `.py`
-- Create: `app/frontend/components/decision_log.tsx` or `.py`
-
-### Work Package A2: Session and stage controls
-Deliverables:
-- next-stage button
-- approve/revise button
-- rollback button
-- stage status indicator
-
-Files:
-- Create: `app/frontend/components/stage_controls.*`
-- Create: `app/frontend/components/stage_status.*`
-
-### Work Package A3: Final report rendering
-Deliverables:
-- planner report view
-- engineer report view
-- citations view
-
-Files:
-- Create: `app/frontend/components/planner_report.*`
-- Create: `app/frontend/components/engineer_report.*`
-- Create: `app/frontend/components/source_list.*`
-
-### Work Package A4: Demo polish
-Deliverables:
-- preloaded scenario examples
-- easy switcher between 3 scenarios
-- presentation mode
-
-Files:
-- Modify: `app/frontend/pages/index.*`
-- Create: `data/demo_inputs/*.json`
-
-## Team Member 2: Backend / Stage Engine / APIs
-
-### Work Package B1: Core schemas
-Deliverables:
-- stage request schema
-- stage response schema
-- decision log schema
-- rollback schema
-
-Files:
-- Create: `app/backend/core/schemas.py`
-- Test: `tests/test_report_schema.py`
-
-### Work Package B2: Stage manager
-Deliverables:
-- stage transition logic
-- approval state management
-- rollback logic
-
-Files:
-- Create: `app/backend/core/stage_manager.py`
-- Create: `app/backend/core/rollback_manager.py`
-- Test: `tests/test_stage_manager.py`
-
-### Work Package B3: Orchestrator
-Deliverables:
-- route request by stage
-- call retrieval/planner/verifier/report services
-- merge short-term memory into prompts
-
-Files:
-- Create: `app/backend/core/orchestrator.py`
-- Create: `app/backend/services/memory_service.py`
-
-### Work Package B4: API routes
-Deliverables:
-- create session
-- submit stage input
-- approve stage
-- rollback stage
-- fetch final report
-
-Files:
-- Create: `app/backend/main.py`
-- Create: `app/backend/api/routes_stage.py`
-- Create: `app/backend/api/routes_session.py`
-- Create: `app/backend/api/routes_report.py`
-
-## Team Member 3: Retrieval / MCP / Knowledge Base
-
-### Work Package C1: Source inventory and folder structure
-Deliverables:
-- categorize sources by papers/docs/cases/laws/datasets/patents
-- seed the knowledge folder with initial notes and collected source files
-
-Files:
-- Use directories: `knowledge/papers/`, `knowledge/docs/`, `knowledge/cases/`, `knowledge/laws/`, `knowledge/datasets/`, `knowledge/patents/`
-- Create focused note files as needed, instead of placeholder README files in every folder
-
-### Work Package C2: Retrieval adapter contracts
-Deliverables:
-- common retrieval interface
-- stub implementations for paper/doc/law/case lookups
-
-Files:
-- Create: `app/backend/integrations/retrieval_adapter.py`
-- Create: `app/backend/integrations/web_search_adapter.py`
-- Create: `app/backend/integrations/github_adapter.py`
-- Create: `app/backend/integrations/legal_adapter.py`
-- Test: `tests/test_retrieval_adapters.py`
-
-### Work Package C3: MCP Hub configuration draft
-Deliverables:
-- initial MCP Hub YAML config
-- documented required API keys
-- recommended MCP set for the project
-
-Files:
-- Create: `config/mcp-hub.yaml`
-- Create: `docs/mcp-setup-notes.md`
-
-Recommended MCP first pass:
-- Fetch
-- GitHub
-- File System
-- Brave Search or Tavily
-- Memory
-- optional: Playwright
-
-### Work Package C4: legalize-kr integration
-Deliverables:
-- local clone strategy or remote GitHub access strategy
-- law lookup conventions for Korean regulations
-- example queries for logistics/privacy/notifications
-
-Files:
-- Create: `knowledge/laws/legalize-kr-notes.md`
-- Create: `app/backend/integrations/legal_adapter.py` behavior notes
-
-## Team Member 4: Prompts / Verifier / Evaluation
-
-### Work Package D1: Agent-specific stage prompt templates
-Deliverables:
-- orchestrator prompt set
-- planner prompt set
-- verifier prompt set
-- report prompt set
-
-Files:
-- Create: `prompts/agents/orchestrator_agent/system.txt`
-- Create: `prompts/agents/orchestrator_agent/orchestrator_agent_stage1.txt`
-- Create: `prompts/agents/orchestrator_agent/orchestrator_agent_stage2.txt`
-- Create: `prompts/agents/orchestrator_agent/orchestrator_agent_stage3.txt`
-- Create: `prompts/agents/orchestrator_agent/orchestrator_agent_stage4.txt`
-- Create: `prompts/agents/planner_agent/system.txt`
-- Create: `prompts/agents/planner_agent/planner_agent_stage1.txt`
-- Create: `prompts/agents/planner_agent/planner_agent_stage2.txt`
-- Create: `prompts/agents/planner_agent/planner_agent_stage3.txt`
-- Create: `prompts/agents/planner_agent/planner_agent_stage4.txt`
-- Create: `prompts/agents/verifier_agent/system.txt`
-- Create: `prompts/agents/verifier_agent/verifier_agent_stage1.txt`
-- Create: `prompts/agents/verifier_agent/verifier_agent_stage2.txt`
-- Create: `prompts/agents/verifier_agent/verifier_agent_stage3.txt`
-- Create: `prompts/agents/verifier_agent/verifier_agent_stage4.txt`
-- Create: `prompts/agents/report_agent/system.txt`
-- Create: `prompts/agents/report_agent/report_agent_stage1.txt`
-- Create: `prompts/agents/report_agent/report_agent_stage2.txt`
-- Create: `prompts/agents/report_agent/report_agent_stage3.txt`
-- Create: `prompts/agents/report_agent/report_agent_stage4.txt`
-
-### Work Package D2: Scenario adaptation rules
-Deliverables:
-- dispatch scenario adaptation guidance
-- ETA scenario adaptation guidance
-- failed-delivery scenario adaptation guidance
-
-Implementation note:
-- scenario differences are primarily driven by `config/scenarios.yaml` and retrieval context
-- avoid duplicating full prompt trees per scenario unless divergence becomes large
-
-### Work Package D3: Verifier rules
-Deliverables:
-- missing-data checks
-- over-scoped MVP checks
-- KPI-function alignment checks
-- regulatory-risk reminder checks
-- rollback recommendation logic
-
-Files:
-- Create: `app/backend/services/verifier_service.py`
-- Test: `tests/test_verifier.py`
-
-### Work Package D4: Evaluation and demo assets
-Deliverables:
-- golden sample inputs for 3 scenarios
-- expected output checklist
-- demo evaluation rubric
-
-Files:
-- Create: `data/demo_inputs/dispatch.json`
-- Create: `data/demo_inputs/eta.json`
-- Create: `data/demo_inputs/failed_delivery.json`
-- Use directory: `data/demo_outputs/`
-- Create: `docs/demo-rubric.md`
-
-## 5. Integration points the team must agree on early
-
-These are the most dangerous coordination points.
-
-### Integration Point 1: Stage response schema
-Every module depends on this.
-The schema should be driven by shared YAML config wherever possible.
-Minimum fields:
-- `stage_id`
-- `status`
-- `summary`
-- `decision_points`
-- `required_user_input`
-- `citations`
-- `rollback_targets`
-- `planner_view`
-- `engineer_view`
-
-### Integration Point 2: Scenario classification
-Need one shared enum:
-- `dispatch_recommendation`
-- `eta_prediction`
-- `failed_delivery_risk`
-- `other_last_mile`
-
-### Integration Point 3: Source citation format
-Need one shared citation object:
-- source type
+### citation format
+- source_type
 - title
-- url or file path
-- short relevance note
+- locator
+- relevance_note
 
-### Integration Point 4: Rollback semantics
-Need one shared rule:
+### rollback semantics
 - soft rollback suggestion
 - hard rollback required
 - blocked until user resolves
 
-## 6. Suggested 4-person working schedule
+## 6. 주차별 추천 일정
 
-### Week 1: specification freeze
-Member 1
-- UI wireframes
-- stage interaction design
+### 1주차
+- 팀원 1: UI wireframe
+- 팀원 2: schema + stage manager 초안
+- 팀원 3: source inventory + MCP 후보 정리
+- 팀원 4: prompt / verifier 초안
 
-Member 2
-- schemas and stage manager draft
+### 2주차
+- 팀원 1: stage UI 구현
+- 팀원 2: backend mock flow 구현
+- 팀원 3: retrieval mock 또는 단순 adapter 작성
+- 팀원 4: dispatch 시나리오 prompt와 sample output 작성
 
-Member 3
-- source inventory + MCP candidate list
+### 3주차
+- 팀원 1: report / UI 개선
+- 팀원 2: real adapter 연결
+- 팀원 3: MCP config + legalize-kr + citation 연결
+- 팀원 4: ETA / failed-delivery prompt + verifier 규칙 추가
 
-Member 4
-- prompt structure + verifier rubric draft
+### 4주차
+- 팀원 1: frontend demo polish
+- 팀원 2: API / rollback 안정화
+- 팀원 3: source pack / fallback retrieval 정리
+- 팀원 4: demo script / 평가 기준 / expected output 정리
 
-Shared checkpoint at end of week:
-- agree on schema
-- agree on stage outputs
-- agree on repository structure
+## 7. 시간 부족 시 우선순위
 
-### Week 2: vertical slice for one scenario
-Member 1
-- implement stage UI for one scenario
-
-Member 2
-- implement backend stage flow with mocks
-
-Member 3
-- build first retrieval adapters with mock or simple fetch
-
-Member 4
-- draft stage prompts and sample outputs for dispatch scenario
-
-Shared checkpoint:
-- dynamic dispatch scenario runs end-to-end with mocks
-
-### Week 3: real retrieval + verifier + extra scenarios
-Member 1
-- improve UI and reports
-
-Member 2
-- connect backend to real retrieval adapters
-
-Member 3
-- MCP config + legalize-kr + source citations
-
-Member 4
-- add ETA and failed-delivery prompts + verifier rules
-
-Shared checkpoint:
-- all 3 scenarios supported
-- stage 3 verifier active
-
-### Week 4: demo hardening
-Member 1
-- polish frontend demo mode
-
-Member 2
-- stabilize API and rollback behavior
-
-Member 3
-- finalize source pack and fallback retrieval plan
-
-Member 4
-- finalize scripts, evaluation rubric, expected outputs
-
-Shared checkpoint:
-- final dry run
-- slide screenshots
-- contingency plan if API/MCP fails
-
-## 7. Minimum viable implementation target
-
-If time becomes tight, reduce scope in this order.
-
-Keep:
+남겨야 할 것
 - stage workflow
-- one real scenario fully implemented
-- at least one real retrieval path
-- verifier logic
-- planner/engineer split output
+- 1개 시나리오 완전 구현
+- 1개 실제 retrieval 경로
+- verifier
+- planner / engineer 분리 출력
 
-Cut later if needed:
-- multi-agent decomposition
-- advanced long-term memory
+나중에 잘라도 되는 것
 - fancy frontend
-- full database persistence
-- all three scenarios fully interactive
+- advanced long-term memory
+- multi-agent decomposition
+- full DB persistence
+- 세 시나리오 모두 완전 인터랙티브 구현
 
-If very tight:
-- fully implement dispatch scenario
-- keep ETA and failed-delivery as template-backed semi-static examples
-
-## 8. Definition of done
-
-The prototype is done when all of the following are true:
-- user can complete stage 1 to stage 4 for the dispatch scenario
-- at least one rollback path works
-- planner report and engineer report are both generated
-- retrieval cites at least 3 real sources in the final output
-- one legal source path is demonstrated
-- the same stage framework is shown to apply to ETA and failed-delivery scenarios
-- the team can demo the system in under 5 minutes without manual patching
-
-## 9. Final recommendation on implementation strategy
-
-Start narrow.
-Do not begin by building a fully general agent platform.
-Build one strong vertical slice around dynamic dispatch first, then generalize the same stage engine to ETA and failed-delivery scenarios.
-
-Best first integrated milestone:
-- frontend with 4 stages
-- backend stage manager
-- one retrieval adapter using markdown/fetch/github
-- one verifier
-- one complete dispatch demo
-
-Once that is stable, the remaining two scenarios should be added mostly through prompt overlays, retrieval variations, and verifier checks rather than rebuilding the architecture.
+## 8. 완료 기준
+- dispatch 시나리오 기준 stage 1~4 완료 가능
+- rollback 경로 최소 1개 작동
+- planner report / engineer report 생성 가능
+- 최종 출력에 실제 source 3개 이상 인용
+- 법령 source 경로 1개 이상 시연 가능
+- 동일한 stage framework가 ETA / failed-delivery에도 적용 가능함을 보여줄 수 있음
+- 5분 이내 데모 가능
