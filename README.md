@@ -35,6 +35,89 @@ planning agent system을 만드는 것을 목표로 한다.
 - verifier가 중간 검증 수행
 - planner report / engineer report / decision log 생성
 
+### 전체 파이프라인 시각화
+
+```text
+[User / Planner Input]
+         |
+         v
++-------------------------+
+| Frontend / Demo UI      |
+| - stage 화면            |
+| - approve / revise      |
+| - rollback              |
++-------------------------+
+         |
+         v
++-------------------------+
+| FastAPI API Layer       |
+| - session               |
+| - stage submit          |
+| - report fetch          |
++-------------------------+
+         |
+         v
++---------------------------------------------------+
+| Microsoft Agent Framework Workflow Runtime        |
+|                                                   |
+|  [Stage 1] 문제 정의 / KPI 정렬                   |
+|        |                                          |
+|        | approve                                  |
+|        v                                          |
+|  [Stage 2] 서비스 구조 / MVP 범위                 |
+|        |                                          |
+|        | approve                                  |
+|        v                                          |
+|  [Stage 3] 기술 / 운영 / 규제 검증                |
+|        |                                          |
+|        | pass                                     |
+|        v                                          |
+|  [Stage 4] 최종 planner / engineer output         |
+|                                                   |
+|  * stage 3 또는 stage 4에서 문제 발견 시          |
+|    -> stage 1 또는 stage 2로 rollback 가능        |
++---------------------------------------------------+
+         |
+         +------------------------+
+         |                        |
+         v                        v
++---------------------+   +--------------------------+
+| Planner Agent       |   | Verifier Agent           |
+| - 문제 재정의       |   | - 데이터 현실성          |
+| - KPI / 기능 구조   |   | - 기술 가능성            |
+| - MVP 범위          |   | - 규제 / 법령 검토       |
++---------------------+   +--------------------------+
+         |                        |
+         +------------+-----------+
+                      |
+                      v
+             +---------------------+
+             | Report Agent        |
+             | - planner report    |
+             | - engineer report   |
+             | - decision log      |
+             +---------------------+
+                      |
+                      v
+            [Final Stage Output to Team/User]
+
+Supporting layers used across stages:
+- YAML Config: stages / scenarios / sources / prompts / mcp-hub / app
+- Prompt Files: prompts/agents/{agent_name}/*
+- Retrieval Layer: MCP Hub + GitHub + Fetch + legalize-kr + web search
+- Model Layer: local vLLM serving google/gemma-4-26B-A4B-it
+- Knowledge Layer: papers / docs / cases / laws / datasets / patents
+```
+
+### 파이프라인을 한 줄씩 해석하면
+1. 사용자가 라스트마일 서비스 아이디어를 입력한다.
+2. UI가 현재 stage 상태와 승인/수정/rollback 동작을 관리한다.
+3. FastAPI가 요청을 workflow runtime으로 전달한다.
+4. Microsoft Agent Framework workflow가 stage 1 -> 2 -> 3 -> 4를 관리한다.
+5. Planner / Verifier / Report agent가 각 역할에 맞는 작업을 수행한다.
+6. retrieval layer와 local vLLM이 각 stage를 뒷받침한다.
+7. 최종적으로 planner report, engineer report, decision log가 출력된다.
+
 ## 2. 프레임워크 방향
 
 현재 프레임워크 메모는 `docs/framework-selection.md`에 정리되어 있다.
