@@ -1,303 +1,155 @@
-# Framework Selection
+# Microsoft Agent Framework
 
-## Decision summary
-For this project, use the following implementation stack:
+## 선택 방향
+이 프로젝트의 에이전트 프레임워크는 Microsoft Agent Framework를 기준으로 검토한다.
 
-- Core agent orchestration: LangGraph
-- Model serving: vLLM
-- Model: google/gemma-4-26B-A4B-it
-- API/backend: FastAPI
-- Structured schemas and validation: Pydantic
-- Frontend/demo UI: Streamlit first, optional Next.js later
-- Retrieval layer: custom adapters + MCP Hub integrations
-- State/log storage: SQLite first, optional Postgres later
+이 문서는 다른 프레임워크와의 비교 메모를 남기지 않고, Microsoft Agent Framework를 우리 프로젝트에 어떻게 적용할지에만 집중한다.
 
-This means we are not choosing a single monolithic framework for everything.
-We are choosing one core orchestration framework and pairing it with simpler supporting tools.
+## 왜 이 프레임워크가 프로젝트와 맞는가
+우리 프로젝트는 다음 요구사항을 가진다.
+- stage-based workflow
+- human-in-the-loop 승인 구조
+- 이전 stage로의 rollback
+- verifier 기반 중간 검증
+- 장기적으로 multi-agent orchestration 가능성
+- Python 기반 구현
+- 로컬 vLLM 모델 연동
 
-## Why this stack fits the project
-The project needs all of the following:
-- stage-gated workflow
-- human approval checkpoints
-- rollback to previous stages
-- tool calling
-- source-grounded retrieval
-- planner-facing output and engineer-facing output
-- deterministic enough demo behavior
-- local model support through vLLM
-
-Among the frameworks we checked, LangGraph fits this best because it is explicitly oriented toward stateful graph workflows rather than only chat loops or role-playing agents.
-
-## Framework research snapshot
-We checked the following candidates using package metadata and repository information.
-
-| Framework | Version/metadata checked | GitHub stars checked | Strength | Main weakness for our use case |
-|---|---:|---:|---|---|
-| LangGraph | PyPI 1.1.6 | 29k+ | Strong state graph, checkpoints, workflow control, HITL-friendly | Slightly lower-level than chat-first frameworks |
-| Microsoft Agent Framework | GitHub repo metadata checked | 9k+ | Graph-based workflows, checkpointing, HITL, time-travel, Python/.NET, DevUI | Younger ecosystem, less battle-tested community footprint than LangGraph |
-| PydanticAI | PyPI 1.81.0 | 16k+ | Excellent typed outputs, Pythonic ergonomics | Not as naturally centered on rollbackable stage graphs |
-| Haystack | PyPI 2.27.0 | 24k+ | Strong retrieval pipelines and RAG | More retrieval-centric than workflow-centric |
-| AutoGen | PyPI 0.7.5 | 57k+ | Strong multi-agent orchestration | Heavier than needed for stage-gated planning MVP |
-| CrewAI | PyPI 1.14.1 | 48k+ | Easy role-based agent composition | Better for agent-team demos than explicit stage state machines |
-| smolagents | PyPI 1.24.0 | 26k+ | Lightweight and flexible | Better for tool/code agents than structured stage workflow |
-
-## Updated assessment after checking Microsoft Agent Framework
-Microsoft Agent Framework is a serious candidate, not just an enterprise-branded wrapper.
-From the repository README and metadata, the most relevant points for our project are:
+Microsoft Agent Framework는 저장소 설명과 README 기준으로 아래 특성을 전면에 둔다.
 - graph-based workflows
 - checkpointing
 - human-in-the-loop
 - time-travel
 - multi-agent workflows
-- Python support
-- DevUI for workflow testing/debugging
+- Python/.NET 지원
+- DevUI 기반 개발/디버깅 경험
 
-This means it is much closer to our needs than AutoGen alone.
-If the question is "is this framework compatible with our long-term direction?", the answer is yes.
+즉, 단순 채팅 에이전트보다 workflow 중심 구조가 필요한 우리 프로젝트와 잘 맞는다.
 
-## Final recommendation
-### 1. Core workflow framework: LangGraph for MVP, Microsoft Agent Framework as the strongest alternative
-Use LangGraph as the main orchestration layer for the first implementation unless the team explicitly wants to optimize for Microsoft ecosystem alignment from the start.
+## 이 프로젝트에서 기대하는 역할
+Microsoft Agent Framework는 아래 역할을 담당한다.
+- stage 1~4 흐름을 그래프 형태로 관리
+- 각 stage의 승인 여부를 상태로 관리
+- verifier 이후 rollback 가능 여부를 판단
+- 나중에 retrieval agent, verifier agent, legal/risk agent 같은 멀티에이전트 확장 가능성 제공
+- workflow 개발/디버깅 구조 제공
 
-Why:
-- Our project is naturally a graph/state problem, not just a prompt chaining problem.
-- Stage 1 -> Stage 2 -> Stage 3 -> Stage 4 is already a graph.
-- Human approval and rollback are first-class architectural concerns for us.
-- We need stage state, not just conversation history.
-- We may later add branching logic by scenario type.
+## 우리 프로젝트에 매핑되는 개념
+### 1. stage workflow
+프로젝트의 핵심 흐름은 아래와 같다.
+- stage 1: 문제 정의 및 KPI 정렬
+- stage 2: 서비스 구조 및 MVP 범위 설계
+- stage 3: 기술/운영/규제 검증
+- stage 4: 최종 planner/engineer output 생성
 
-LangGraph is still the best fit for the MVP because:
-- the Python ecosystem fit is simple and direct
-- examples and community usage for graph-style agent workflows are already mature
-- it introduces less framework surface area than Microsoft Agent Framework
-- it will likely be faster for a 4-person student team to stand up quickly
+Microsoft Agent Framework에서는 이를 workflow graph 또는 process 형태로 표현하는 방향을 기본으로 본다.
 
-LangGraph is the best fit for:
-- stage nodes
-- approval checkpoints
-- rollback edges
-- persistent state
-- verifier subgraph
-- future scenario branching
+### 2. human-in-the-loop
+각 stage는 자동으로 다음 단계로 넘어가지 않는다.
+사용자 승인 후 진행하며, 이 승인 상태가 workflow state에 반영되어야 한다.
 
-How to use it in our architecture:
-- one graph for the common stage engine
-- scenario-specific prompt overlays loaded from config
-- verifier node before finalization
-- rollback edges from stage 3 and stage 4 to earlier stages
-- state object containing
-  - selected scenario
-  - current stage
-  - approved stages
-  - decision log
-  - unresolved questions
-  - citations
+### 3. rollback
+미래 stage에서 새로운 제약이 발견되면 이전 stage로 되돌아갈 수 있어야 한다.
+예를 들어:
+- stage 3에서 데이터 가정이 틀리면 stage 2로 rollback
+- stage 3에서 KPI-기능 정렬이 깨지면 stage 1로 rollback
 
-### 1A. When Microsoft Agent Framework would be the better choice
-Choose Microsoft Agent Framework instead of LangGraph if the team strongly values one or more of the following:
-- long-term multi-agent expansion is a central requirement, not just a future possibility
-- built-in workflow debugging/DevUI would materially speed up development
-- a unified Python/.NET story is strategically valuable
-- the team wants to stay close to Microsoft's evolving agent ecosystem rather than LangChain's ecosystem
+### 4. verifier
+stage 3에서 verifier 또는 critic 역할을 가진 구성요소가
+- 데이터 현실성
+- 기술 구현 가능성
+- 규제/법령 제약
+- 사용자 피드백 반영 여부
+를 확인하도록 설계한다.
 
-Why it is attractive:
-- it explicitly advertises graph-based workflows
-- it explicitly advertises checkpointing and human-in-the-loop
-- it already frames workflows and agents inside one product family
-- it may reduce future migration cost if the project grows into a larger multi-agent system
+### 5. multi-agent 확장
+초기 MVP는 단일 workflow 중심으로 가되, 장기적으로는 다음과 같이 확장할 수 있다.
+- planner agent
+- retrieval agent
+- verifier agent
+- legal/risk agent
+- report generator agent
 
-Why I still would not switch immediately:
-- it is newer and less field-proven for this exact kind of student MVP
-- examples, community recipes, and troubleshooting density are still weaker than LangGraph's ecosystem
-- framework complexity may be slightly higher than what we need for the first prototype
+이 확장은 지금 당장 필수는 아니지만, Microsoft Agent Framework를 쓰는 중요한 이유 중 하나다.
 
-### 2. Backend framework: FastAPI
-Use FastAPI as the API layer around the graph or workflow runtime.
+## 로컬 vLLM + Gemma 연동 방향
+모델은 로컬에서 다음 구성으로 사용한다.
+- model: google/gemma-4-26B-A4B-it
+- serving: vLLM
 
-Why:
-- easy Python integration
-- clean request/response contracts
-- good fit with Pydantic models
-- easy frontend/backend separation for a 4-person team
-- works well with local vLLM deployments
+실행 전략:
+- vLLM을 OpenAI-compatible endpoint로 띄운다.
+- Microsoft Agent Framework의 Python 쪽 모델 클라이언트 레이어에서 이 로컬 endpoint를 호출하도록 맞춘다.
+- 모델 호출 설정은 코드에 하드코딩하지 않고 YAML config에서 관리한다.
 
-FastAPI should handle:
-- session creation
-- stage submission
-- stage approval
-- rollback request
-- final report retrieval
+즉 핵심은 특정 모델 전용 기능보다, OpenAI-compatible local endpoint와 잘 연결되는 구조를 유지하는 것이다.
 
-### 3. Validation layer: Pydantic, not full PydanticAI as the core
-Use Pydantic models directly for schemas and validation.
+## 구현 구조에서의 위치
+현재 레포 구조에서 Microsoft Agent Framework는 주로 backend orchestration 중심에 놓인다.
 
-Why:
-- we already need strict stage schemas
-- FastAPI uses Pydantic naturally
-- this avoids unnecessary framework overlap
-- PydanticAI is attractive, but our main bottleneck is workflow/state management, not typed agent ergonomics
+예상 매핑:
+- `app/backend/core/orchestrator.py`
+  - workflow 진입점
+- `app/backend/core/stage_manager.py`
+  - stage 상태 관리
+- `app/backend/core/rollback_manager.py`
+  - rollback 조건과 대상 관리
+- `app/backend/services/verifier_service.py`
+  - stage 3 검증 로직
+- `app/backend/services/report_service.py`
+  - planner/engineer 출력 생성
+- `app/backend/integrations/*`
+  - retrieval, GitHub, 법령, MCP 연동
 
-Where Pydantic should be used:
-- stage response schema
-- decision log schema
-- citation schema
-- planner report schema
-- engineer report schema
+즉 frontend나 retrieval보다 backend orchestration 계층에서 가장 중요한 프레임워크다.
 
-Note:
-PydanticAI is still a reasonable optional helper later if we want typed model wrappers, but it should not be the primary orchestration framework for this project.
+## YAML configuration과의 관계
+이 프로젝트는 중복을 줄이기 위해 YAML configuration을 중심으로 움직인다.
+Microsoft Agent Framework를 쓰더라도 아래 항목은 config에서 읽어야 한다.
+- stages.yaml: stage 정의와 rollback target
+- scenarios.yaml: 시나리오 정의
+- sources.yaml: source category와 citation schema
+- prompts.yaml: 공통 prompt 및 시나리오 overlay 경로
+- mcp-hub.yaml: MCP source mapping
+- app.yaml: 앱 전역 설정
 
-### 4. Retrieval approach: custom adapters + MCP Hub, not Haystack as the core
-Do not make Haystack the center of the system.
+즉 프레임워크가 workflow 엔진 역할을 하더라도, 도메인 정의는 YAML이 source of truth가 된다.
 
-Why:
-- our retrieval needs are real, but the project is not primarily a retrieval framework demo
-- most of our complexity lies in stage logic, human-in-the-loop flow, and verifier behavior
-- we already have a clear external-source plan through MCP Hub + markdown knowledge base
+## MVP 구현 원칙
+초기 MVP에서는 프레임워크의 모든 기능을 다 쓰지 않는다.
+우선 필요한 것만 쓴다.
 
-Recommended retrieval stack:
-- custom retrieval adapters in Python
-- MCP Hub integrations for web search / GitHub / fetch / filesystem / memory
-- local markdown knowledge base
-- legalize-kr integration for Korean laws
+우선 구현할 것
+- single workflow graph
+- stage state tracking
+- approval checkpoint
+- rollback path
+- verifier step
+- final report generation
 
-Haystack can still be used later if retrieval complexity grows, but it should not be the first framework we introduce.
+나중에 붙일 수 있는 것
+- multi-agent decomposition
+- advanced memory behavior
+- richer observability
+- DevUI 고도 활용
+- distributed orchestration
 
-### 5. Frontend choice: Streamlit first
-Use Streamlit first for the working prototype.
+즉 첫 단계에서는 workflow 엔진으로 쓰고, 이후 필요할 때 멀티에이전트 기능을 확장하는 전략이 적절하다.
 
-Why:
-- fastest path to a usable stage UI
-- easy form-driven interaction for stage approval/edit/rollback
-- simple for a research/demo prototype
-- Python-only stack reduces coordination overhead
+## 팀 구현 관점에서의 장점
+4인 팀 기준으로 보면 아래 장점이 있다.
+- workflow와 state 개념이 분명해서 역할 분담이 쉽다.
+- human approval과 rollback을 구조적으로 설명하기 좋다.
+- stage-driven 프로젝트와 개념적으로 잘 맞는다.
+- 장기적으로 multi-agent 확장 여지를 남긴다.
+- 발표에서 "단순 챗봇"이 아니라 "agent workflow system"이라고 설명하기 좋다.
 
-Use Streamlit for:
-- stage progression view
-- approve/edit buttons
-- rollback control
-- planner/engineer report rendering
-- scenario selector
+## 현재 선택 문장
+이 프로젝트는 Microsoft Agent Framework를 기반으로, 라스트마일 서비스 기획 아이디어를 stage-based human-in-the-loop workflow로 구조화하고, 필요한 기반 기술과 검증 쟁점을 단계적으로 도출하는 planning agent system으로 구현한다.
 
-If the team later wants a cleaner product-style UI, Next.js can be considered after the MVP is stable.
-
-## Why we are not choosing the other frameworks as the core
-### Why not AutoGen?
-AutoGen is powerful, but our MVP is not fundamentally a multi-agent conversation system.
-Our main need is a controlled stage machine with explicit approval and rollback.
-AutoGen is stronger when the main story is autonomous agent-team interaction.
-That is not the core of this project.
-
-### Why not Microsoft Agent Framework as the immediate default?
-This is not because it is weak. In fact, it is probably the strongest non-LangGraph alternative for us.
-The reason is prioritization:
-- MVP speed matters more than long-term platform elegance right now
-- LangGraph is simpler to justify and likely faster to wire into our current Python-first scaffold
-- Microsoft Agent Framework becomes more compelling as soon as multi-agent orchestration becomes an actual implementation milestone instead of a future possibility
-
-### Why not CrewAI?
-CrewAI is good for role-based task orchestration, but our architecture is better expressed as a state graph than as a crew of roles.
-It may be nice for presentation, but it is not the most direct implementation match.
-
-### Why not Haystack?
-Haystack is excellent for retrieval pipelines, but retrieval is only one part of our system.
-If we choose Haystack as the core, the system may become retrieval-centric rather than workflow-centric.
-
-### Why not smolagents?
-smolagents is lightweight and interesting, but we need more explicit stage control, rollback semantics, and state handling than it naturally emphasizes.
-
-### Why not PydanticAI as the main framework?
-PydanticAI is elegant and Pythonic, especially for typed outputs.
-However, our highest-priority problem is not just output typing.
-It is stage management, human approval, and rollbackable workflow.
-That makes LangGraph the better primary framework.
-
-## vLLM and Gemma integration plan
-The model will be served locally with vLLM.
-The important implementation point is to expose vLLM through an OpenAI-compatible API endpoint.
-
-Recommended architecture:
-- vLLM serves `google/gemma-4-26B-A4B-it`
-- backend uses an OpenAI-compatible client against the local base URL
-- LangGraph nodes call the local endpoint through a model wrapper
-
-This is important because it keeps the framework choice flexible.
-We do not need a framework with special Gemma-only support.
-We need a framework that works well with OpenAI-compatible endpoints.
-
-## Concrete architecture decision
-### Chosen stack
-- LangGraph for stage workflow orchestration
-- FastAPI for backend APIs
-- Pydantic for schemas
-- Streamlit for UI
-- vLLM for local inference
-- MCP Hub + custom adapters for retrieval
-- SQLite for state during MVP
-
-### Internal module mapping
-- Module A: Streamlit UI
-- Module B: FastAPI + LangGraph + stage manager
-- Module C: MCP adapters + knowledge base + legalize-kr + source retrieval
-- Module D: prompts + verifier + evaluation
-
-## What the first implementation milestone should look like
-The first integrated milestone should be:
-- Streamlit frontend with stage 1~4 screens
-- FastAPI backend wrapping a LangGraph workflow
-- one working scenario: dynamic dispatch
-- one retrieval path using local knowledge + fetch/github adapter
-- one verifier node
-- planner report + engineer report + decision log
-
-Do not begin with:
-- multi-agent teams
-- advanced long-term memory
-- multiple retrieval frameworks at once
-- a heavy JS frontend
-
-## Microsoft Agent Framework vs Semantic Kernel
-If we compare only these two Microsoft options, the choice depends on whether we prioritize stage workflow control or broader app/platform integration.
-
-### Microsoft Agent Framework strengths
-- explicit graph-based workflows
-- explicit checkpointing
-- explicit human-in-the-loop support
-- explicit time-travel support
-- multi-agent workflows as a first-class story
-- DevUI and workflow debugging appeal
-
-### Semantic Kernel strengths
-- larger and more mature GitHub footprint
-- broad model/provider support
-- plugin and memory story is clearer
-- process framework language is strong
-- local model wording includes Ollama in the README
-- strong general AI application SDK positioning
-
-### Recommendation between the two
-For our project specifically:
-- choose Microsoft Agent Framework if the priority is stage-gated workflow, rollback, checkpoints, and future multi-agent orchestration
-- choose Semantic Kernel if the priority is broader app integration, plugins, and a more general-purpose AI SDK feel
-
-Because our project is centered on explicit stage progression, approvals, and rollback, Microsoft Agent Framework is the better fit between the two.
-
-## Decision
-Primary framework decision:
-- Choose LangGraph as the core framework for MVP.
-- If we switch to a Microsoft-native option, choose Microsoft Agent Framework over Semantic Kernel.
-
-Supporting framework decisions:
-- Choose FastAPI for the backend API.
-- Choose Pydantic for validation and schemas.
-- Choose Streamlit for the first frontend prototype.
-- Keep retrieval lightweight and modular through MCP Hub + adapters.
-
-## Implementation note for the repo
-The current repository structure and YAML config already fit this decision well.
-What should happen next is:
-1. implement the LangGraph state model
-2. connect FastAPI routes to the stage graph
-3. wire Streamlit to those APIs
-4. connect local vLLM endpoint
-5. add retrieval adapters and verifier
+## 다음 구현 단계
+1. Microsoft Agent Framework의 Python workflow 기본 예제를 확인한다.
+2. stage 1~4를 workflow graph로 매핑한다.
+3. local vLLM endpoint를 연결한다.
+4. FastAPI route를 workflow 실행 계층 위에 얹는다.
+5. retrieval / verifier / report 모듈을 단계적으로 붙인다.
