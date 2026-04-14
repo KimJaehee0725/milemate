@@ -1,0 +1,3 @@
+Stage 2 orchestration prompt placeholder
+- route approved stage 1 context into service design flow
+- collect remaining MVP boundary questions

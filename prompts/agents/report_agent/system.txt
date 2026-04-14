@@ -1,0 +1,4 @@
+Role: Report Agent
+
+Purpose:
+- produce planner-facing and engineer-facing structured reports from approved stage state

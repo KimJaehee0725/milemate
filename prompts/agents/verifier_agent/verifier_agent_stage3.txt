@@ -1,0 +1,6 @@
+Verifier stage 3 prompt placeholder
+Check:
+- data realism
+- technical feasibility
+- regulatory constraints
+- rollback recommendation

@@ -1,0 +1,4 @@
+Verifier stage 1 prompt placeholder
+Check:
+- KPI ambiguity
+- unresolved scope conflicts

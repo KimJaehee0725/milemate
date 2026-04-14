@@ -1,0 +1,2 @@
+Report stage 3 prompt placeholder
+- summarize verifier findings and rollback status

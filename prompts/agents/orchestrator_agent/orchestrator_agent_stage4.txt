@@ -1,0 +1,3 @@
+Stage 4 orchestration prompt placeholder
+- prepare final planner/engineer outputs
+- finalize decision log

@@ -1,0 +1,4 @@
+Stage 1 orchestration prompt placeholder
+- classify scenario
+- collect missing scope/KPI questions
+- produce stage 1 draft package

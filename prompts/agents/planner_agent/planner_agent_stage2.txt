@@ -1,0 +1,6 @@
+Planner stage 2 prompt placeholder
+Output focus:
+- feature structure
+- in-scope MVP
+- out-of-scope items
+- dependencies and assumptions

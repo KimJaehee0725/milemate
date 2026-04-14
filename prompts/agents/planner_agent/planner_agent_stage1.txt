@@ -1,0 +1,6 @@
+Planner stage 1 prompt placeholder
+Output focus:
+- problem redefinition
+- prioritized KPI candidates
+- scope candidates
+- open questions

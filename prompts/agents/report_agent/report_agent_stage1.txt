@@ -1,0 +1,2 @@
+Report stage 1 prompt placeholder
+- generate stage summary and decision log draft

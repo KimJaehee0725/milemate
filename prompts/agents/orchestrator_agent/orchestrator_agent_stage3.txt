@@ -1,0 +1,3 @@
+Stage 3 orchestration prompt placeholder
+- call verifier path
+- determine if rollback recommendation is needed

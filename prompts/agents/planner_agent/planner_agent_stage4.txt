@@ -1,0 +1,4 @@
+Planner stage 4 prompt placeholder
+Output focus:
+- final planner-facing summary
+- next actions

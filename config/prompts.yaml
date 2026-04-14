@@ -1,14 +1,33 @@
 prompts:
-  common:
-    system: prompts/common/system.md
-    stage_1: prompts/common/stage_1.md
-    stage_2: prompts/common/stage_2.md
-    stage_3: prompts/common/stage_3.md
-    stage_4: prompts/common/stage_4.md
-  scenario_overlays:
-    dispatch_recommendation: prompts/scenarios/dispatch.md
-    eta_prediction: prompts/scenarios/eta.md
-    failed_delivery_risk: prompts/scenarios/failed_delivery.md
+  agents:
+    orchestrator_agent:
+      system: prompts/agents/orchestrator_agent/system.txt
+      stages:
+        stage_1: prompts/agents/orchestrator_agent/orchestrator_agent_stage1.txt
+        stage_2: prompts/agents/orchestrator_agent/orchestrator_agent_stage2.txt
+        stage_3: prompts/agents/orchestrator_agent/orchestrator_agent_stage3.txt
+        stage_4: prompts/agents/orchestrator_agent/orchestrator_agent_stage4.txt
+    planner_agent:
+      system: prompts/agents/planner_agent/system.txt
+      stages:
+        stage_1: prompts/agents/planner_agent/planner_agent_stage1.txt
+        stage_2: prompts/agents/planner_agent/planner_agent_stage2.txt
+        stage_3: prompts/agents/planner_agent/planner_agent_stage3.txt
+        stage_4: prompts/agents/planner_agent/planner_agent_stage4.txt
+    verifier_agent:
+      system: prompts/agents/verifier_agent/system.txt
+      stages:
+        stage_1: prompts/agents/verifier_agent/verifier_agent_stage1.txt
+        stage_2: prompts/agents/verifier_agent/verifier_agent_stage2.txt
+        stage_3: prompts/agents/verifier_agent/verifier_agent_stage3.txt
+        stage_4: prompts/agents/verifier_agent/verifier_agent_stage4.txt
+    report_agent:
+      system: prompts/agents/report_agent/system.txt
+      stages:
+        stage_1: prompts/agents/report_agent/report_agent_stage1.txt
+        stage_2: prompts/agents/report_agent/report_agent_stage2.txt
+        stage_3: prompts/agents/report_agent/report_agent_stage3.txt
+        stage_4: prompts/agents/report_agent/report_agent_stage4.txt
 
 rendering:
   planner_sections:

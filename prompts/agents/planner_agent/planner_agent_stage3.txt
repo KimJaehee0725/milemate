@@ -1,0 +1,4 @@
+Planner stage 3 support prompt placeholder
+Output focus:
+- revise plan based on verifier findings
+- mark rollback-sensitive assumptions

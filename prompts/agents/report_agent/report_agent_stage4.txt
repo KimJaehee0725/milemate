@@ -1,0 +1,4 @@
+Report stage 4 prompt placeholder
+- output planner report
+- output engineer report
+- output final decision log

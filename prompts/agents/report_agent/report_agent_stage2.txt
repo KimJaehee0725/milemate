@@ -1,0 +1,2 @@
+Report stage 2 prompt placeholder
+- summarize MVP boundary and unresolved items

@@ -1,0 +1,4 @@
+Verifier stage 2 prompt placeholder
+Check:
+- MVP over-scope
+- missing dependencies

@@ -178,16 +178,31 @@ project-root/
     datasets/
     patents/
   prompts/
-    common/
-      system.md
-      stage_1.md
-      stage_2.md
-      stage_3.md
-      stage_4.md
-    scenarios/
-      dispatch.md
-      eta.md
-      failed_delivery.md
+    agents/
+      orchestrator_agent/
+        system.txt
+        orchestrator_agent_stage1.txt
+        orchestrator_agent_stage2.txt
+        orchestrator_agent_stage3.txt
+        orchestrator_agent_stage4.txt
+      planner_agent/
+        system.txt
+        planner_agent_stage1.txt
+        planner_agent_stage2.txt
+        planner_agent_stage3.txt
+        planner_agent_stage4.txt
+      verifier_agent/
+        system.txt
+        verifier_agent_stage1.txt
+        verifier_agent_stage2.txt
+        verifier_agent_stage3.txt
+        verifier_agent_stage4.txt
+      report_agent/
+        system.txt
+        report_agent_stage1.txt
+        report_agent_stage2.txt
+        report_agent_stage3.txt
+        report_agent_stage4.txt
   data/
     demo_inputs/
     demo_outputs/
@@ -450,31 +465,44 @@ Files:
 
 ## Team Member 4: Prompts / Verifier / Evaluation
 
-### Work Package D1: Common stage prompt templates
+### Work Package D1: Agent-specific stage prompt templates
 Deliverables:
-- system prompt
-- stage 1 prompt
-- stage 2 prompt
-- stage 3 prompt
-- stage 4 prompt
+- orchestrator prompt set
+- planner prompt set
+- verifier prompt set
+- report prompt set
 
 Files:
-- Create: `prompts/common/system.md`
-- Create: `prompts/common/stage_1.md`
-- Create: `prompts/common/stage_2.md`
-- Create: `prompts/common/stage_3.md`
-- Create: `prompts/common/stage_4.md`
+- Create: `prompts/agents/orchestrator_agent/system.txt`
+- Create: `prompts/agents/orchestrator_agent/orchestrator_agent_stage1.txt`
+- Create: `prompts/agents/orchestrator_agent/orchestrator_agent_stage2.txt`
+- Create: `prompts/agents/orchestrator_agent/orchestrator_agent_stage3.txt`
+- Create: `prompts/agents/orchestrator_agent/orchestrator_agent_stage4.txt`
+- Create: `prompts/agents/planner_agent/system.txt`
+- Create: `prompts/agents/planner_agent/planner_agent_stage1.txt`
+- Create: `prompts/agents/planner_agent/planner_agent_stage2.txt`
+- Create: `prompts/agents/planner_agent/planner_agent_stage3.txt`
+- Create: `prompts/agents/planner_agent/planner_agent_stage4.txt`
+- Create: `prompts/agents/verifier_agent/system.txt`
+- Create: `prompts/agents/verifier_agent/verifier_agent_stage1.txt`
+- Create: `prompts/agents/verifier_agent/verifier_agent_stage2.txt`
+- Create: `prompts/agents/verifier_agent/verifier_agent_stage3.txt`
+- Create: `prompts/agents/verifier_agent/verifier_agent_stage4.txt`
+- Create: `prompts/agents/report_agent/system.txt`
+- Create: `prompts/agents/report_agent/report_agent_stage1.txt`
+- Create: `prompts/agents/report_agent/report_agent_stage2.txt`
+- Create: `prompts/agents/report_agent/report_agent_stage3.txt`
+- Create: `prompts/agents/report_agent/report_agent_stage4.txt`
 
-### Work Package D2: Scenario-specific prompt overlays
+### Work Package D2: Scenario adaptation rules
 Deliverables:
-- dispatch scenario overlay
-- ETA scenario overlay
-- failed-delivery scenario overlay
+- dispatch scenario adaptation guidance
+- ETA scenario adaptation guidance
+- failed-delivery scenario adaptation guidance
 
-Files:
-- Create: `prompts/scenarios/dispatch.md`
-- Create: `prompts/scenarios/eta.md`
-- Create: `prompts/scenarios/failed_delivery.md`
+Implementation note:
+- scenario differences are primarily driven by `config/scenarios.yaml` and retrieval context
+- avoid duplicating full prompt trees per scenario unless divergence becomes large
 
 ### Work Package D3: Verifier rules
 Deliverables:
