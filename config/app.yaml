@@ -1,0 +1,23 @@
+app:
+  name: last-mile-planning-agent
+  environment: local
+  backend:
+    host: 0.0.0.0
+    port: 8000
+  frontend:
+    framework: streamlit
+  defaults:
+    default_scenario: dispatch_recommendation
+    citation_limit: 5
+    allow_rollback: true
+
+storage:
+  stage_state: sqlite
+  stage_state_path: data/app_state.sqlite
+  memory_mode: local
+
+features:
+  use_mcp: true
+  use_verifier: true
+  use_long_term_memory: false
+  require_stage_approval: true

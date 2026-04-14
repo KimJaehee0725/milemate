@@ -1,0 +1,25 @@
+prompts:
+  common:
+    system: prompts/common/system.md
+    stage_1: prompts/common/stage_1.md
+    stage_2: prompts/common/stage_2.md
+    stage_3: prompts/common/stage_3.md
+    stage_4: prompts/common/stage_4.md
+  scenario_overlays:
+    dispatch_recommendation: prompts/scenarios/dispatch.md
+    eta_prediction: prompts/scenarios/eta.md
+    failed_delivery_risk: prompts/scenarios/failed_delivery.md
+
+rendering:
+  planner_sections:
+    - problem_redefinition
+    - target_users
+    - prioritized_kpis
+    - mvp_scope
+    - expected_value
+  engineer_sections:
+    - required_data
+    - required_tech_blocks
+    - constraints
+    - implementation_order
+    - verification_plan

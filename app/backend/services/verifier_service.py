@@ -1,0 +1,1 @@
+"""Verifier service placeholder."""

@@ -198,8 +198,12 @@ project-root/
     test_report_schema.py
     test_retrieval_adapters.py
   config/
-    app.example.yaml
-    mcphub.example.json
+    app.yaml
+    stages.yaml
+    scenarios.yaml
+    sources.yaml
+    prompts.yaml
+    mcp-hub.yaml
 ```
 
 ## 3. Build order
@@ -418,12 +422,12 @@ Files:
 
 ### Work Package C3: MCP Hub configuration draft
 Deliverables:
-- initial mcphub config
+- initial MCP Hub YAML config
 - documented required API keys
 - recommended MCP set for the project
 
 Files:
-- Create: `config/mcphub.example.json`
+- Create: `config/mcp-hub.yaml`
 - Create: `docs/mcp-setup-notes.md`
 
 Recommended MCP first pass:
@@ -503,6 +507,7 @@ These are the most dangerous coordination points.
 
 ### Integration Point 1: Stage response schema
 Every module depends on this.
+The schema should be driven by shared YAML config wherever possible.
 Minimum fields:
 - `stage_id`
 - `status`

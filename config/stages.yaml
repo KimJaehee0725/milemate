@@ -1,0 +1,46 @@
+stages:
+  - id: stage_1
+    name: problem_definition
+    title: Problem Definition and KPI Alignment
+    required_approval: true
+    outputs:
+      - problem_summary
+      - kpi_candidates
+      - scope_candidates
+      - decision_log
+    rollback_targets: []
+  - id: stage_2
+    name: service_design
+    title: Service Structure and MVP Scope
+    required_approval: true
+    outputs:
+      - feature_structure
+      - mvp_in_scope
+      - mvp_out_of_scope
+      - open_questions
+    rollback_targets:
+      - stage_1
+  - id: stage_3
+    name: feasibility_verification
+    title: Technical and Operational Verification
+    required_approval: true
+    outputs:
+      - verifier_result
+      - source_backed_risks
+      - data_feasibility
+      - rollback_recommendation
+    rollback_targets:
+      - stage_1
+      - stage_2
+  - id: stage_4
+    name: finalization
+    title: Final Planner and Engineer Outputs
+    required_approval: true
+    outputs:
+      - planner_report
+      - engineer_report
+      - decision_log
+      - next_actions
+    rollback_targets:
+      - stage_2
+      - stage_3

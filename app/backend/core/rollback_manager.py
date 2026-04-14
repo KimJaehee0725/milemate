@@ -1,0 +1,1 @@
+"""Rollback manager placeholder."""

@@ -1,0 +1,35 @@
+sources:
+  categories:
+    papers:
+      enabled: true
+      priority: 1
+      retrieval_modes: [web_search, manual_curated]
+    technical_docs:
+      enabled: true
+      priority: 1
+      retrieval_modes: [fetch, github, crawl]
+    laws:
+      enabled: true
+      priority: 2
+      retrieval_modes: [github, filesystem, fetch]
+      repositories:
+        - https://github.com/legalize-kr/legalize-kr
+    patents:
+      enabled: true
+      priority: 3
+      retrieval_modes: [web_search, fetch]
+    datasets:
+      enabled: true
+      priority: 2
+      retrieval_modes: [web_search, github, manual_curated]
+    industry_cases:
+      enabled: true
+      priority: 1
+      retrieval_modes: [web_search, fetch, crawl]
+
+  citation_schema:
+    required_fields:
+      - source_type
+      - title
+      - locator
+      - relevance_note

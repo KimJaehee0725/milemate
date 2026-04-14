@@ -1,0 +1,41 @@
+mcp_servers:
+  fetch:
+    enabled: true
+    transport: stdio
+    command: uvx
+    args: [mcp-server-fetch]
+  github:
+    enabled: true
+    transport: streamable-http
+    url: https://api.githubcopilot.com/mcp/
+    auth_env: GITHUB_PERSONAL_ACCESS_TOKEN
+  filesystem:
+    enabled: true
+    transport: stdio
+    command: npx
+    args: [-y, @modelcontextprotocol/server-filesystem, ${workspaceFolder}]
+  brave_search:
+    enabled: false
+    transport: stdio
+    command: npx
+    args: [-y, @modelcontextprotocol/server-brave-search]
+    auth_env: BRAVE_API_KEY
+  tavily:
+    enabled: false
+    transport: stdio
+    command: npx
+    args: [-y, tavily-mcp]
+    auth_env: TAVILY_API_KEY
+  memory:
+    enabled: true
+    transport: stdio
+    command: npx
+    args: [-y, @modelcontextprotocol/server-memory]
+
+source_mapping:
+  papers: [brave_search, tavily, fetch]
+  technical_docs: [fetch, github]
+  laws: [github, filesystem, fetch]
+  patents: [brave_search, tavily, fetch]
+  datasets: [github, fetch]
+  industry_cases: [brave_search, tavily, fetch]

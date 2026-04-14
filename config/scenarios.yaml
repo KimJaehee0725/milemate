@@ -1,0 +1,43 @@
+scenarios:
+  dispatch_recommendation:
+    label: Dynamic Dispatch and Route Recommendation
+    primary_users:
+      - operations_manager
+      - dispatch_controller
+    primary_kpis:
+      - delay_rate
+      - sla_compliance
+      - courier_workload_balance
+    core_data:
+      - order_status
+      - courier_location
+      - time_window
+      - zone_metadata
+  eta_prediction:
+    label: ETA Prediction and Delay Notification
+    primary_users:
+      - customer_experience_manager
+      - operations_team
+    primary_kpis:
+      - eta_accuracy
+      - inquiry_reduction
+      - sla_compliance
+    core_data:
+      - live_location
+      - travel_history
+      - order_state
+      - delay_logs
+  failed_delivery_risk:
+    label: Failed Delivery Risk and Preemptive Intervention
+    primary_users:
+      - operations_quality_manager
+      - cs_operations_team
+    primary_kpis:
+      - failed_delivery_rate
+      - redelivery_rate
+      - operational_loss
+    core_data:
+      - failed_delivery_logs
+      - order_attributes
+      - customer_response_history
+      - intervention_logs
