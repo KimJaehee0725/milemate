@@ -411,7 +411,33 @@ stage 4
 - 기존 솔루션/아이디어의 차별점 파악
 - 발표에서 산업적 relevance 보강
 
-### 4. 공개 산업 데이터 / 공개 데이터셋
+### 4. 법령 / 공공 규제 자료
+확보 가능성: 높음
+
+확인 근거
+- `legalize-kr/legalize-kr` 저장소를 확인한 결과, 대한민국 법령을 Git 저장소 형태의 Markdown으로 관리하고 있음
+- 각 법령 파일에 YAML frontmatter가 포함되어 있고, 출처가 `law.go.kr`로 연결됨
+- 현재 법령 내용, 개정 이력, 시행령/시행규칙 비교, 특정 키워드 검색이 모두 Git + Markdown 기반으로 가능함
+- 데이터 출처가 국가법령정보센터 OpenAPI이며, README에 원문/제개정문/신구법비교 링크 구조도 명시되어 있음
+
+활용 방식
+- 라스트마일 서비스 기획 시 개인정보, 위치정보, 전자문서/알림, 소비자 고지, 운송/물류 관련 법령 검토
+- stage 3 verifier 단계에서 규제/정책 제약 확인
+- 발표에서 "한국 법령 기준 검토 가능" 근거로 사용
+
+MCP 연결 준비 방식
+- mcp-hub registry에서 한국 법령 전용 MCP는 이번 확인 범위에서 직접 보이지 않았음
+- 대신 아래 조합으로 사실상 연결 가능
+  - GitHub MCP: `legalize-kr/legalize-kr` 저장소 검색/조회
+  - File System MCP: 로컬 clone 후 법령 Markdown 검색
+  - Fetch / Firecrawl MCP: law.go.kr 또는 raw GitHub 문서 fetch
+- 즉 전용 법령 MCP가 없어도 Git 기반 법령 저장소를 MCP 워크플로우에 편입할 수 있음
+
+주의점
+- force-push 가능성이 README에 명시되어 있어 commit hash 고정 참조에는 주의 필요
+- 규제 해석은 보조 참고용으로 쓰고, 최종 법률 자문으로 오인되지 않도록 표현 관리 필요
+
+### 5. 공개 산업 데이터 / 공개 데이터셋
 확보 가능성: 중상
 
 확인 근거
@@ -441,6 +467,45 @@ stage 4
 - 발표에서 시장성과 실무 relevance 보강
 - agent의 web search stage에서 최신 사례 검색 대상으로 활용
 
+## MCP Hub 기준 연결 후보 정리
+이번에 mcp-hub + mcp-registry를 직접 확인한 결과, 자료 수집용으로 바로 붙이기 좋은 후보는 아래와 같다.
+
+### 바로 유용한 MCP 후보
+- Brave Search MCP
+  - 용도: 웹 검색, 기업 사례/산업 자료 탐색
+- Tavily MCP
+  - 용도: 실시간 웹 검색 + 내용 추출
+- Perplexity MCP
+  - 용도: 최신 자료 탐색과 요약형 검색
+- Fetch MCP
+  - 용도: 문서/웹페이지를 Markdown 형태로 가져오기
+- Firecrawl MCP
+  - 용도: 문서/사이트 크롤링과 배치 수집
+- GitHub MCP
+  - 용도: GitHub 저장소 기반 자료 조회, `legalize-kr` 같은 repo 검색/탐색
+- File System MCP
+  - 용도: 로컬 clone 후 법령/문서 검색
+- Memory MCP
+  - 용도: 자료 조사 중 찾은 규제/패턴/쟁점 누적
+- Playwright / Browserbase MCP
+  - 용도: 동적 사이트 접근, 스냅샷, 브라우저 상호작용
+
+### 자료 유형별 추천 MCP 매핑
+- 논문/최신 웹 자료: Brave Search, Tavily, Perplexity, Fetch
+- 기술 문서: Fetch, Firecrawl, GitHub, Playwright
+- 특허: Brave Search, Tavily, Fetch, Browser automation 계열
+- 한국 법령: GitHub + File System + Fetch 조합으로 `legalize-kr` 활용
+- 공개 데이터셋: GitHub, Fetch, Web search 계열
+
+### 아직 직접 확인되지 않은 것
+- arXiv 전용 MCP
+- Google Patents 전용 MCP
+- Kaggle 전용 MCP
+- 한국 법령 전용 MCP
+
+즉 전용 MCP가 없는 자료원도 꽤 있지만,
+검색 MCP + fetch/crawl MCP + GitHub/File System MCP 조합으로 대부분 커버할 수 있다.
+
 ## 자료 확보에 대한 결론
 모든 자료를 "완벽한 수준"으로 다 구할 수 있는 것은 아니다.
 하지만 프로젝트 수준에서는 충분히 가능하다.
@@ -449,13 +514,14 @@ stage 4
 - 논문: 충분히 구할 수 있음
 - 기술문서: 매우 잘 구할 수 있음
 - 특허: 구할 수 있으나 정리 비용이 듦
+- 법령/공공 규제 자료: legalize-kr를 통해 꽤 안정적으로 확보 가능
 - 산업 보고서/기업 사례: 꽤 잘 구할 수 있음
 - 공개 데이터셋: 일부는 충분히 구할 수 있으나, 실제 기업 내부 데이터 수준은 아님
 
 따라서 결론은 다음과 같다.
 - "필요한 자료 범주를 전부 어느 정도는 확보할 수 있다"는 답이 맞다.
 - 다만 가장 취약한 부분은 실제 기업 내부 운영 데이터와 고품질 실패배송 라벨 데이터다.
-- 그래서 발표와 프로토타입에서는 공개 논문 + 기술문서 + 공개 데이터셋 + 기업 사례를 조합하는 전략이 가장 현실적이다.
+- 그래서 발표와 프로토타입에서는 공개 논문 + 기술문서 + 법령 저장소 + 공개 데이터셋 + 기업 사례를 조합하는 전략이 가장 현실적이다.
 
 ## 데모에서 강조할 현대 에이전트 요소
 - stage-gated planning
