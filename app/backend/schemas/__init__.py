@@ -4,6 +4,8 @@ from .retrieval import RetrievalQuery, RetrievalResult
 from .session import CreateSessionRequest, RollbackEvent, SessionState, StageStatus
 from .stage import (
     ApproveStageRequest,
+    PrdPacket,
+    PrdQualityReport,
     RollbackRequest,
     RunStageRequest,
     StageOutputBundle,
@@ -22,6 +24,8 @@ __all__ = [
     "SessionState",
     "StageStatus",
     "ApproveStageRequest",
+    "PrdPacket",
+    "PrdQualityReport",
     "RunStageRequest",
     "StageRequest",
     "StageResponse",

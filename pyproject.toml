@@ -11,6 +11,7 @@ dependencies = [
   "uvicorn>=0.30",
   "openai>=2.38.0",
   "agent-framework-core>=1.7.0",
+  "reportlab>=4.2",
 ]
 
 [project.optional-dependencies]

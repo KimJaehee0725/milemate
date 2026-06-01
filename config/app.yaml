@@ -13,17 +13,18 @@ app:
 
 model:
   provider: openai
-  model_id: gpt-5.2-codex
+  model_id: gpt-5.5
   dtype: managed
   max_context_tokens: 32768
+  reasoning_effort: medium
   temperature: 0.2
   max_output_tokens: 2048
   api_style: responses
 
 serving:
-  engine: codex_sdk
-  api_key_env: OPENAI_API_KEY
-  request_timeout_seconds: 120
+  engine: codex_cli
+  cli_binary: codex
+  request_timeout_seconds: 600
 
 storage:
   stage_state: memory
@@ -34,3 +35,5 @@ features:
   use_verifier: true
   use_long_term_memory: false
   require_stage_approval: true
+  use_codex_generation: true
+  allow_deterministic_fallback: false

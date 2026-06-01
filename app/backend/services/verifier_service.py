@@ -7,6 +7,7 @@ from typing import Any, Dict, List, Optional
 from app.backend.core.config_loader import get_scenario_definition, get_stage_definition
 from app.backend.schemas.common import Citation, DecisionItem, RiskItem
 from app.backend.schemas.stage import StageOutputBundle
+from app.backend.services.prd_packet_factory import build_demo_prd_packet, ready_prd_quality
 
 
 class VerifierService:
@@ -92,12 +93,13 @@ class VerifierService:
             and result["rollback_recommendation"] not in rollback_targets
         ):
             rollback_targets.append(result["rollback_recommendation"])
+        summary = (
+            f"Verification status is {result['status']} for "
+            f"{scenario_def.label if scenario_def else scenario}."
+        )
 
         return StageOutputBundle(
-            summary=(
-                f"Verification status is {result['status']} for "
-                f"{scenario_def.label if scenario_def else scenario}."
-            ),
+            summary=summary,
             planner_view={
                 "verifier_status": result["status"],
                 "decision": (
@@ -116,6 +118,14 @@ class VerifierService:
                     "monitor delay and workload balance daily",
                 ],
             },
+            prd_packet=build_demo_prd_packet(
+                stage_id="stage_3",
+                scenario=scenario,
+                summary=summary,
+                citations=citations or [],
+                evidence=evidence,
+            ),
+            prd_quality=ready_prd_quality(),
             decision_points=[
                 DecisionItem(
                     item="Lock MVP to dispatch recommendations before full route optimization.",

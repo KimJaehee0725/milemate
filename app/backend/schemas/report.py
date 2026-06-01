@@ -5,6 +5,7 @@ from typing import List
 from pydantic import BaseModel, Field
 
 from .common import Citation, DecisionItem, RiskItem
+from .stage import PrdPacket, PrdQualityReport
 
 
 class PlannerReport(BaseModel):
@@ -26,6 +27,8 @@ class EngineerReport(BaseModel):
 class FinalReportBundle(BaseModel):
     planner_report: PlannerReport
     engineer_report: EngineerReport
+    prd_report: PrdPacket = Field(default_factory=PrdPacket)
+    prd_quality: PrdQualityReport = Field(default_factory=PrdQualityReport)
     decision_log: List[DecisionItem] = Field(default_factory=list)
     citations: List[Citation] = Field(default_factory=list)
     risks: List[RiskItem] = Field(default_factory=list)

@@ -39,9 +39,7 @@ class Orchestrator:
         self.legal = legal or LegalAdapter()
         self.model_client = model_client
         self.graph_runner = graph_runner or MilemateAgentGraphRunner(
-            planner=self.planner,
-            verifier=self.verifier,
-            reporter=self.reporter,
+            codex_client=model_client,
         )
 
     def run_current_stage(
@@ -70,7 +68,11 @@ class Orchestrator:
         response = StageResponse(
             session_id=session.session_id,
             stage_id=stage_id,
-            status=StageRunStatus.COMPLETED,
+            status=(
+                StageRunStatus.COMPLETED
+                if output.prd_quality.status == "ready"
+                else StageRunStatus.WARNING
+            ),
             output=output,
         )
         self.stage_manager.store_stage_response(session, response)
@@ -103,8 +105,10 @@ class Orchestrator:
             {
                 "planner_report": output.get("planner_view", {}),
                 "engineer_report": output.get("engineer_view", {}),
+                "prd_report": output.get("prd_packet", {}),
+                "prd_quality": output.get("prd_quality", {}),
                 "decision_log": output.get("decision_points", []),
-                "citations": output.get("citations", []),
+                "citations": self._all_stage_citations(session),
                 "risks": output.get("risks", []),
             }
         )
@@ -127,6 +131,20 @@ class Orchestrator:
         return citations
 
     @staticmethod
+    def _all_stage_citations(session) -> List[dict]:
+        citations: List[Citation] = []
+        seen: set[str] = set()
+        for output in session.stage_outputs.values():
+            for item in output.get("citations", []):
+                citation = Citation.model_validate(item)
+                key = citation.locator or f"{citation.source_type}:{citation.title}"
+                if key in seen:
+                    continue
+                citations.append(citation)
+                seen.add(key)
+        return [item.model_dump(mode="json") for item in citations]
+
+    @staticmethod
     def _stage_output(session, stage_id: str) -> Dict[str, Any]:
         return session.stage_outputs.get(stage_id, {})
 
@@ -135,13 +153,30 @@ class Orchestrator:
         stage_1 = self._stage_output(session, "stage_1").get("planner_view", {})
         stage_2_planner = self._stage_output(session, "stage_2").get("planner_view", {})
         stage_2_engineer = self._stage_output(session, "stage_2").get("engineer_view", {})
+        approved_prd_packets = {
+            stage_id: self._stage_output(session, stage_id).get("prd_packet", {})
+            for stage_id in session.approved_stages
+            if self._stage_output(session, stage_id).get("prd_packet")
+        }
 
         if "problem_summary" in stage_1:
             state["problem_summary"] = stage_1["problem_summary"]
+        stage_1_problem = (
+            approved_prd_packets.get("stage_1", {}).get("problem", {}).get("customer_pain")
+        )
+        if stage_1_problem:
+            state.setdefault("problem_summary", stage_1_problem)
         if "mvp_in_scope" in stage_2_planner:
             state["mvp_scope"] = stage_2_planner["mvp_in_scope"]
         elif "mvp_scope" in stage_2_engineer:
             state["mvp_scope"] = stage_2_engineer["mvp_scope"]
+        stage_2_scope = (
+            approved_prd_packets.get("stage_2", {}).get("scope", {}).get("in_scope")
+        )
+        if stage_2_scope:
+            state.setdefault("mvp_scope", stage_2_scope)
+        if approved_prd_packets:
+            state["approved_prd_packets"] = approved_prd_packets
         return state
 
     def _proposal_state(self, session) -> Dict[str, Any]:

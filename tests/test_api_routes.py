@@ -1,10 +1,67 @@
 from fastapi.testclient import TestClient
 
+from app.backend.core.agent_graph import MilemateAgentGraphRunner
+from app.backend.core.orchestrator import Orchestrator
+from app.backend.core.stage_manager import StageManager
+from app.backend.integrations.codex_client import (
+    ModelCallFailedError,
+    ModelNotConfiguredError,
+)
 from app.backend.main import create_app
+from app.frontend.demo_backend import LocalFakeCodexClient
 
 
 def make_client():
-    return TestClient(create_app())
+    manager = StageManager()
+    orchestrator = Orchestrator(
+        stage_manager=manager,
+        graph_runner=MilemateAgentGraphRunner(codex_client=LocalFakeCodexClient()),
+    )
+    return TestClient(create_app(stage_manager=manager, orchestrator=orchestrator))
+
+
+def test_stage_run_maps_model_not_configured_to_503():
+    class MissingCodex:
+        def generate_stage_output(self, **kwargs):
+            raise ModelNotConfiguredError("codex auth is not configured")
+
+    manager = StageManager()
+    orchestrator = Orchestrator(
+        stage_manager=manager,
+        graph_runner=MilemateAgentGraphRunner(codex_client=MissingCodex()),
+    )
+    client = TestClient(create_app(stage_manager=manager, orchestrator=orchestrator))
+    session = client.post(
+        "/sessions",
+        json={"scenario": "dispatch_recommendation"},
+    ).json()
+
+    response = client.post("/stages/run", json={"session_id": session["session_id"]})
+
+    assert response.status_code == 503
+    assert response.json()["detail"]["code"] == "MODEL_NOT_CONFIGURED"
+
+
+def test_stage_run_maps_model_call_failure_to_502():
+    class FailingCodex:
+        def generate_stage_output(self, **kwargs):
+            raise ModelCallFailedError("upstream unavailable")
+
+    manager = StageManager()
+    orchestrator = Orchestrator(
+        stage_manager=manager,
+        graph_runner=MilemateAgentGraphRunner(codex_client=FailingCodex()),
+    )
+    client = TestClient(create_app(stage_manager=manager, orchestrator=orchestrator))
+    session = client.post(
+        "/sessions",
+        json={"scenario": "dispatch_recommendation"},
+    ).json()
+
+    response = client.post("/stages/run", json={"session_id": session["session_id"]})
+
+    assert response.status_code == 502
+    assert response.json()["detail"]["code"] == "MODEL_CALL_FAILED"
 
 
 def test_session_routes_reject_unknown_session_ids():
@@ -59,6 +116,8 @@ def test_dispatch_happy_path_runs_stage_1_to_report():
         assert stage_response["output"]["summary"]
         assert "planner_view" in stage_response["output"]
         assert "engineer_view" in stage_response["output"]
+        assert stage_response["output"]["prd_packet"]["screens"]
+        assert stage_response["output"]["prd_quality"]["status"] == "ready"
 
         approve_response = client.post("/stages/approve", json={"session_id": session_id})
         assert approve_response.status_code == 200
@@ -68,6 +127,7 @@ def test_dispatch_happy_path_runs_stage_1_to_report():
     report = report_response.json()
     assert report["planner_report"]["problem_redefinition"]
     assert report["engineer_report"]["required_data"]
+    assert report["prd_report"]["screens"]
     assert report["decision_log"]
 
 

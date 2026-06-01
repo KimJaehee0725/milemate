@@ -7,6 +7,7 @@ from typing import List, Optional
 from app.backend.core.config_loader import get_scenario_definition, get_stage_definition
 from app.backend.schemas.common import Citation, DecisionItem, RiskItem
 from app.backend.schemas.stage import StageOutputBundle
+from app.backend.services.prd_packet_factory import build_demo_prd_packet, ready_prd_quality
 
 
 class PlannerService:
@@ -51,9 +52,10 @@ class PlannerService:
         )
         if user_input:
             problem_summary = f"{problem_summary} Initial user note: {user_input}"
+        summary = "Problem and KPI frame created for the dispatch planning slice."
 
         return StageOutputBundle(
-            summary="Problem and KPI frame created for the dispatch planning slice.",
+            summary=summary,
             planner_view={
                 "problem_summary": problem_summary,
                 "target_users": users,
@@ -71,6 +73,14 @@ class PlannerService:
                 ),
                 "initial_service_boundary": "decision support only; no automatic reassignment",
             },
+            prd_packet=build_demo_prd_packet(
+                stage_id="stage_1",
+                scenario=scenario,
+                summary=summary,
+                citations=citations,
+                user_input=user_input,
+            ),
+            prd_quality=ready_prd_quality(),
             decision_points=[
                 DecisionItem(
                     item="Optimize for dispatcher decision support before automation.",
@@ -109,8 +119,9 @@ class PlannerService:
             "dispatcher approve/defer action",
             "decision log for later evaluation",
         ]
+        summary = "Service structure narrowed to a human-approved recommendation MVP."
         return StageOutputBundle(
-            summary="Service structure narrowed to a human-approved recommendation MVP.",
+            summary=summary,
             planner_view={
                 "feature_structure": {
                     "input": "live order and courier state",
@@ -139,6 +150,14 @@ class PlannerService:
                 "mvp_scope": mvp_in_scope,
                 "demo_note": user_input or "Use dispatch.json default input.",
             },
+            prd_packet=build_demo_prd_packet(
+                stage_id="stage_2",
+                scenario=scenario,
+                summary=summary,
+                citations=citations,
+                user_input=user_input,
+            ),
+            prd_quality=ready_prd_quality(),
             decision_points=[
                 DecisionItem(
                     item="Keep route changes as recommendations requiring dispatcher approval.",

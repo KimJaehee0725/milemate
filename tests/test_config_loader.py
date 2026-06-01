@@ -10,9 +10,13 @@ from app.backend.core.config_loader import (
 def test_config_loader_loads_root_config():
     cfg = load_app_config()
     assert cfg.app.name == "last-mile-planning-agent"
-    assert cfg.model.model_id == "gpt-5.2-codex"
-    assert cfg.serving.engine == "codex_sdk"
+    assert cfg.model.model_id == "gpt-5.5"
+    assert cfg.model.reasoning_effort == "medium"
+    assert cfg.serving.engine == "codex_cli"
+    assert cfg.serving.cli_binary == "codex"
     assert cfg.storage.stage_state == "memory"
+    assert cfg.features.use_codex_generation is True
+    assert cfg.features.allow_deterministic_fallback is False
 
 
 def test_stage_definitions_available_from_config():
@@ -37,7 +41,9 @@ def test_prompt_paths_are_resolved_from_config():
 
 def test_model_runtime_config_exposes_codex_ready_settings():
     runtime = get_model_runtime_config()
-    assert runtime["engine"] == "codex_sdk"
+    assert runtime["engine"] == "codex_cli"
     assert runtime["provider"] == "openai"
     assert runtime["api_style"] == "responses"
-    assert runtime["model_id"] == "gpt-5.2-codex"
+    assert runtime["model_id"] == "gpt-5.5"
+    assert runtime["reasoning_effort"] == "medium"
+    assert runtime["cli_binary"] == "codex"

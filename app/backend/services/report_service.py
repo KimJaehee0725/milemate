@@ -8,6 +8,7 @@ from app.backend.core.config_loader import get_scenario_definition, get_stage_de
 from app.backend.schemas.common import Citation, DecisionItem, RiskItem
 from app.backend.schemas.report import EngineerReport, FinalReportBundle, PlannerReport
 from app.backend.schemas.stage import StageOutputBundle
+from app.backend.services.prd_packet_factory import build_demo_prd_packet, ready_prd_quality
 
 
 class ReportService:
@@ -75,6 +76,16 @@ class ReportService:
         bundle = FinalReportBundle(
             planner_report=planner_report,
             engineer_report=engineer_report,
+            prd_report=build_demo_prd_packet(
+                stage_id="stage_4",
+                scenario=scenario,
+                summary=problem_summary,
+                citations=[
+                    item if isinstance(item, Citation) else Citation.model_validate(item)
+                    for item in (citations or [])
+                ],
+            ),
+            prd_quality=ready_prd_quality(),
             decision_log=[
                 DecisionItem(
                     item="Use a human-approved dispatch recommendation MVP.",
@@ -112,10 +123,18 @@ class ReportService:
             citations=citations or [],
             risks=risks or [],
         )
+        summary = "Final planner and engineer reports are ready for presentation."
         return StageOutputBundle(
-            summary="Final planner and engineer reports are ready for presentation.",
+            summary=summary,
             planner_view=report["planner_report"],
             engineer_view=report["engineer_report"],
+            prd_packet=build_demo_prd_packet(
+                stage_id="stage_4",
+                scenario=scenario,
+                summary=summary,
+                citations=[Citation.model_validate(item) for item in report["citations"]],
+            ),
+            prd_quality=ready_prd_quality(),
             decision_points=[
                 DecisionItem.model_validate(item) for item in report["decision_log"]
             ],

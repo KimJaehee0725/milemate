@@ -1,6 +1,6 @@
 # 병렬 구현 및 데모 실행 계획
 
-이 문서는 mock MVP를 Codex SDK/MCP 실연동 전 단계의 implementation skeleton으로 강화한 현재 기준을 정리한다.
+이 문서는 mock MVP를 Codex CLI/MCP 실연동 전 단계의 implementation skeleton으로 강화한 현재 기준을 정리한다.
 
 ## 현재 구현 기준
 
@@ -23,7 +23,7 @@
 | Worker A: State/Demo Memory | `app/backend/core/stage_manager.py`, `session_store.py`, `rollback_manager.py`, `tests/test_stage_manager.py` | in-memory store boundary, approval gate, rollback history |
 | Worker B: API Contract | `app/backend/api/**`, `app/backend/main.py`, `tests/test_api_routes.py` | app factory, dependency injection, shared request models, error code |
 | Worker C: Orchestrator/Graph | `app/backend/core/orchestrator.py`, `agent_graph.py`, `tests/test_orchestrator.py` | MAF graph runner boundary, injected services, final report gate |
-| Worker D: Retrieval/Model | `app/backend/integrations/**`, `tests/test_retrieval_adapters.py` | provider boundary, citation normalization, Codex SDK boundary |
+| Worker D: Retrieval/Model | `app/backend/integrations/**`, `tests/test_retrieval_adapters.py` | provider boundary, citation normalization, Codex CLI boundary |
 | Worker E: Frontend/Demo | `app/frontend/**`, `data/demo_inputs/**`, Streamlit tests | scenario demo input, safe approve, rollback preset/context |
 | Worker F: Docs/Runbook | `README.md`, `docs/**` | workflow docs, verification commands, demo script, caveats |
 
@@ -87,5 +87,5 @@ uv run streamlit run app/frontend/streamlit_app.py
 
 - 현재 retrieval 결과는 deterministic mock provider와 local legal note를 사용한다.
 - MCP/GitHub/Web provider class는 no-network boundary만 제공한다.
-- `CodexClient`는 OpenAI Responses API payload를 만들고 호출할 수 있지만, unit test는 fake/request construction만 검증한다.
-- `MilemateAgentGraphRunner`는 Microsoft Agent Framework core dependency가 설치되어 있는지 감지하고, 발표 demo에서는 deterministic graph nodes를 기본으로 사용한다.
+- `CodexClient`는 Codex CLI `codex exec --output-schema` 호출과 structured output 변환을 담당한다.
+- `MilemateAgentGraphRunner`는 기본 runtime에서 Codex 경로만 사용하며, 발표 demo/test는 explicit fake Codex client를 주입한다.

@@ -11,7 +11,7 @@ milemate는 라스트마일 서비스 기획의 동반자라는 의미를 담은
 기술기획 에이전트 시스템을 만드는 것을 목표로 한다.
 
 현재 프레임워크 방향은 Microsoft Agent Framework 기준으로 정리되어 있다.
-모델 호출 경계는 OpenAI Codex SDK(Responses API) 기준으로 정리되어 있다.
+모델 호출 경계는 Codex CLI(`codex exec`) 기준으로 정리되어 있다.
 
 ## 1. 핵심 방향
 
@@ -106,7 +106,7 @@ milemate는 라스트마일 서비스 기획의 동반자라는 의미를 담은
 - YAML 설정: stages / scenarios / sources / prompts / mcp-hub / app
 - 프롬프트 파일: prompts/agents/{agent_name}/*
 - 검색 계층: MCP Hub + GitHub + Fetch + legalize-kr + 웹 검색
-- 모델 계층: OpenAI Codex SDK + fakeable client boundary
+- 모델 계층: Codex CLI + fakeable client boundary
 - 지식 계층: papers / docs / cases / laws / datasets / patents
 ```
 
@@ -116,7 +116,7 @@ milemate는 라스트마일 서비스 기획의 동반자라는 의미를 담은
 3. FastAPI가 요청을 workflow runtime으로 전달한다.
 4. Microsoft Agent Framework workflow가 stage 1 -> 2 -> 3 -> 4를 관리한다.
 5. Planner / Verifier / Report agent가 각 역할에 맞는 작업을 수행한다.
-6. retrieval layer와 Codex SDK boundary가 각 stage를 뒷받침한다.
+6. retrieval layer와 Codex CLI boundary가 각 stage를 뒷받침한다.
 7. 최종적으로 planner report, engineer report, decision log가 출력된다.
 
 ## 2. 프레임워크 방향
@@ -125,7 +125,7 @@ milemate는 라스트마일 서비스 기획의 동반자라는 의미를 담은
 - 에이전트/워크플로우 프레임워크: Microsoft Agent Framework
 - backend/API: FastAPI
 - 설정 관리: YAML 기반
-- 모델 호출: OpenAI Codex SDK / Responses API
+- 모델 호출: Codex CLI / `codex exec`
 - retrieval: MCP Hub + custom adapter
 - Python/버전 관리: uv 기반
 
@@ -185,9 +185,10 @@ milemate는 라스트마일 서비스 기획의 동반자라는 의미를 담은
 ## 5. 모델 및 실행 설정
 
 현재 기본 가정
-- model: `gpt-5.2-codex`
-- runtime engine: `codex_sdk`
-- API style: OpenAI Responses API
+- model: `gpt-5.5`
+- runtime engine: `codex_cli`
+- runtime command: `codex exec`
+- reasoning effort: `medium`
 
 관련 설정은 `config/app.yaml`에 있다.
 
@@ -195,7 +196,7 @@ milemate는 라스트마일 서비스 기획의 동반자라는 의미를 담은
 - `model.provider`
 - `model.model_id`
 - `serving.engine`
-- `serving.api_key_env`
+- `serving.cli_binary`
 - `serving.request_timeout_seconds`
 - `storage.stage_state`
 
@@ -206,7 +207,7 @@ milemate는 라스트마일 서비스 기획의 동반자라는 의미를 담은
 - `${ENV_VAR}` 형태 env 치환
 - typed config validation
 - stage/scenario/prompt 조회 helper 제공
-- Codex SDK runtime 설정 helper 제공
+- Codex CLI runtime 설정 helper 제공
 
 대표 helper
 - `load_app_config()`
@@ -240,7 +241,7 @@ milemate는 라스트마일 서비스 기획의 동반자라는 의미를 담은
 - 프레임워크 방향 정리
 - mock MVP backend 구현
   - in-memory session/state 관리
-  - stage 1-4 deterministic output 생성
+  - stage 1-4 Codex/fake-Codex output 생성
   - approve / advance / rollback 규칙 구현
   - final planner / engineer report 생성
 - FastAPI endpoint 구현
@@ -252,13 +253,13 @@ milemate는 라스트마일 서비스 기획의 동반자라는 의미를 담은
   - rollback event/history 기록
   - FastAPI app factory와 dependency injection 적용
   - Microsoft Agent Framework core dependency와 graph runner boundary 추가
-  - retrieval provider boundary와 Codex SDK client boundary 추가
+  - retrieval provider boundary와 Codex CLI client boundary 추가
   - scenario-aware Streamlit demo input과 stage 3 verification preset 추가
   - Streamlit AppTest smoke 추가
 
 아직 구현하지 않은 것
 - Microsoft Agent Framework 고급 graph/checkpoint 기능 활용
-- Codex SDK 실호출을 stage output 생성에 기본 활성화
+- Codex CLI 실호출을 stage output 생성에 기본 활성화
 - 외부 retrieval / MCP 실연동
 
 즉, 현재는 `dispatch_recommendation` 기준으로 발표 가능한 mock vertical slice가 동작한다.

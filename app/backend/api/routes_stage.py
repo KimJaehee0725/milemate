@@ -8,6 +8,7 @@ from app.backend.api.errors import raise_bad_request, raise_stage_http_error
 from app.backend.api.state import get_orchestrator
 from app.backend.core.orchestrator import Orchestrator
 from app.backend.core.stage_manager import StageTransitionError
+from app.backend.integrations.codex_client import CodexClientError
 from app.backend.schemas.session import SessionState
 from app.backend.schemas.stage import (
     ApproveStageRequest,
@@ -30,6 +31,8 @@ def run_stage(
             user_input=request.user_input,
             context=request.context,
         )
+    except CodexClientError as exc:
+        raise_stage_http_error(StageTransitionError(str(exc), exc.error_code))
     except StageTransitionError as exc:
         raise_stage_http_error(exc)
     except ValueError as exc:

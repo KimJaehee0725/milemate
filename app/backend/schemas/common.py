@@ -11,6 +11,9 @@ class ErrorCode(str, Enum):
     UNKNOWN_SCENARIO = "unknown_scenario"
     INVALID_STAGE_TRANSITION = "invalid_stage_transition"
     REPORT_NOT_READY = "report_not_ready"
+    MODEL_NOT_CONFIGURED = "MODEL_NOT_CONFIGURED"
+    MODEL_CALL_FAILED = "MODEL_CALL_FAILED"
+    MODEL_OUTPUT_INVALID = "MODEL_OUTPUT_INVALID"
 
 
 class StageRunStatus(str, Enum):

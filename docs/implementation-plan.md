@@ -6,8 +6,8 @@
 - 에이전트 / 워크플로우: Microsoft Agent Framework
 - backend: FastAPI
 - 데이터 스키마: Pydantic 기반 모듈
-- 모델 호출: OpenAI Codex SDK / Responses API
-- 모델: gpt-5.2-codex
+- 모델 호출: Codex CLI / `codex exec`
+- 모델: gpt-5.5
 - 설정 관리: YAML
 - Python / 의존성 관리: uv
 - 상태 저장: demo-only in-memory 우선
@@ -176,8 +176,8 @@ project-root/
 범위
 - demo script 정리
 - sample input 안정화
-- deterministic output 스타일 정리
-- fallback plan 정리
+- fake Codex output 스타일 정리
+- fallback 없는 오류 노출 plan 정리
 
 성공 기준
 - 3~5분 발표 데모가 안정적으로 작동함

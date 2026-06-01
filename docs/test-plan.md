@@ -64,7 +64,7 @@
 ### `tests/test_config_loader.py`
 목적:
 - YAML config가 프로젝트의 single source of truth로 정상 로딩되는지 검증
-- Codex SDK / prompt 경로 / scenario / stage 정의를 읽는지 확인
+- Codex CLI / prompt 경로 / scenario / stage 정의를 읽는지 확인
 
 ### `tests/test_stage_manager.py`
 목적:
@@ -85,7 +85,7 @@
 목적:
 - retrieval 결과가 source_type/title/locator/relevance_note를 포함하는지 검증
 - source category와 legal adapter 연결 경로를 확인
-- fake provider, legal metadata disclaimer, Codex SDK request boundary를 확인
+- fake provider, legal metadata disclaimer, Codex CLI structured output boundary를 확인
 
 ### `tests/test_api_routes.py`
 목적:
@@ -97,7 +97,7 @@
 목적:
 - Microsoft Agent Framework graph runner flow 검증
 - fake retrieval/legal client injection 검증
-- final report gate와 deterministic output contract 검증
+- final report gate와 explicit fake Codex output contract 검증
 
 ### `tests/test_frontend_demo_data.py`
 목적:
