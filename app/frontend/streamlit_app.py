@@ -9,6 +9,7 @@ from urllib import error, request
 import streamlit as st
 import yaml
 
+from app.frontend.demo_backend import LocalDemoAPI
 from app.frontend.demo_data import (
     VERIFICATION_PRESETS,
     load_demo_inputs,
@@ -18,9 +19,18 @@ from app.frontend.demo_data import (
 
 ROOT_DIR = Path(__file__).resolve().parents[2]
 API_BASE_URL = os.getenv("MILEMATE_API_BASE", "http://127.0.0.1:8000").rstrip("/")
+API_MODE = os.getenv("MILEMATE_API_MODE", "http")
+
+
+@st.cache_resource
+def local_demo_api() -> LocalDemoAPI:
+    return LocalDemoAPI()
 
 
 def api_request(method: str, path: str, payload: Dict[str, Any] | None = None) -> Dict[str, Any]:
+    if API_MODE == "local":
+        return local_demo_api().request(method=method, path=path, payload=payload)
+
     data = None if payload is None else json.dumps(payload).encode("utf-8")
     req = request.Request(
         f"{API_BASE_URL}{path}",
@@ -241,7 +251,7 @@ with st.sidebar:
             set_error(str(exc))
 
     st.divider()
-    st.caption(f"Backend {API_BASE_URL}")
+    st.caption("Backend local demo" if API_MODE == "local" else f"Backend {API_BASE_URL}")
 
 if st.session_state["error"]:
     st.error(st.session_state["error"])

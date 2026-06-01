@@ -1,8 +1,8 @@
 """Application configuration loader.
 
 Loads YAML config files, resolves environment placeholders, and returns typed
-configuration objects suitable for Microsoft Agent Framework orchestration,
-local vLLM serving, and Hugging Face model metadata.
+configuration objects suitable for Microsoft Agent Framework orchestration and
+OpenAI Codex SDK-backed stage generation.
 """
 
 from __future__ import annotations
@@ -64,21 +64,21 @@ class AppSection(BaseModel):
 class ModelSettings(BaseModel):
     model_config = {"protected_namespaces": ()}
 
-    provider: str = "huggingface"
+    provider: str = "openai"
     model_id: str
-    dtype: str = "auto"
+    dtype: str = "managed"
     max_context_tokens: int = 32768
     temperature: float = 0.2
     max_output_tokens: int = 2048
-    api_style: str = "openai_compatible"
+    api_style: str = "responses"
 
 
 class ServingSettings(BaseModel):
-    engine: str = "vllm"
-    base_url: str
-    chat_completions_path: str = "/chat/completions"
+    engine: str = "codex_sdk"
+    base_url: Optional[str] = None
+    chat_completions_path: str = "/responses"
     models_path: str = "/models"
-    api_key_env: str = "VLLM_API_KEY"
+    api_key_env: str = "OPENAI_API_KEY"
     request_timeout_seconds: int = 120
 
     @property
@@ -87,26 +87,20 @@ class ServingSettings(BaseModel):
 
     @property
     def chat_completions_url(self) -> str:
+        if self.base_url is None:
+            return ""
         return self.base_url.rstrip("/") + self.chat_completions_path
 
     @property
     def models_url(self) -> str:
+        if self.base_url is None:
+            return ""
         return self.base_url.rstrip("/") + self.models_path
 
 
-class HuggingFaceSettings(BaseModel):
-    cache_dir: Optional[str] = None
-    token_env: str = "HUGGINGFACE_HUB_TOKEN"
-    trust_remote_code: bool = False
-
-    @property
-    def token(self) -> Optional[str]:
-        return os.getenv(self.token_env)
-
-
 class StorageSettings(BaseModel):
-    stage_state: str = "sqlite"
-    stage_state_path: str = "data/app_state.sqlite"
+    stage_state: str = "memory"
+    stage_state_path: Optional[str] = None
     memory_mode: str = "local"
 
 
@@ -204,7 +198,6 @@ class RootConfig(BaseModel):
     app: AppSection
     model: ModelSettings
     serving: ServingSettings
-    huggingface: HuggingFaceSettings
     storage: StorageSettings
     features: FeatureSettings
     stages: StagesConfig
@@ -242,7 +235,6 @@ def load_app_config() -> RootConfig:
         "app": merged["app"],
         "model": merged["model"],
         "serving": merged["serving"],
-        "huggingface": merged["huggingface"],
         "storage": merged["storage"],
         "features": merged["features"],
         "stages": {"stages": merged["stages"]},
@@ -298,10 +290,7 @@ def get_model_runtime_config() -> Dict[str, Any]:
         "api_style": config.model.api_style,
         "engine": config.serving.engine,
         "base_url": config.serving.base_url,
-        "chat_completions_url": config.serving.chat_completions_url,
         "api_key": config.serving.api_key,
         "timeout": config.serving.request_timeout_seconds,
-        "hf_cache_dir": config.huggingface.cache_dir,
-        "hf_token": config.huggingface.token,
-        "trust_remote_code": config.huggingface.trust_remote_code,
+        "responses_url": config.serving.chat_completions_url,
     }

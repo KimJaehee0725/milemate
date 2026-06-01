@@ -6,11 +6,11 @@
 - 에이전트 / 워크플로우: Microsoft Agent Framework
 - backend: FastAPI
 - 데이터 스키마: Pydantic 기반 모듈
-- 모델 서빙: vLLM
-- 모델: google/gemma-4-26B-A4B-it
+- 모델 호출: OpenAI Codex SDK / Responses API
+- 모델: gpt-5.2-codex
 - 설정 관리: YAML
 - Python / 의존성 관리: uv
-- 상태 저장: SQLite 우선
+- 상태 저장: demo-only in-memory 우선
 - retrieval: MCP Hub + custom adapter
 - 프론트엔드: Streamlit 우선
 

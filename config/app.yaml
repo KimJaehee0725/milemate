@@ -12,30 +12,21 @@ app:
     allow_rollback: true
 
 model:
-  provider: huggingface
-  model_id: google/gemma-4-26B-A4B-it
-  dtype: auto
+  provider: openai
+  model_id: gpt-5.2-codex
+  dtype: managed
   max_context_tokens: 32768
   temperature: 0.2
   max_output_tokens: 2048
-  api_style: openai_compatible
+  api_style: responses
 
 serving:
-  engine: vllm
-  base_url: http://127.0.0.1:8001/v1
-  chat_completions_path: /chat/completions
-  models_path: /models
-  api_key_env: VLLM_API_KEY
+  engine: codex_sdk
+  api_key_env: OPENAI_API_KEY
   request_timeout_seconds: 120
 
-huggingface:
-  cache_dir: ${HF_HOME}
-  token_env: HUGGINGFACE_HUB_TOKEN
-  trust_remote_code: false
-
 storage:
-  stage_state: sqlite
-  stage_state_path: data/app_state.sqlite
+  stage_state: memory
   memory_mode: local
 
 features:

@@ -1,6 +1,5 @@
 import pytest
 
-from app.backend.core.session_store import SQLiteSessionStore
 from app.backend.core.stage_manager import StageManager, StageTransitionError
 from app.backend.schemas.stage import StageOutputBundle, StageResponse
 
@@ -145,14 +144,15 @@ def test_stage_manager_advance_from_final_stage_is_noop_after_approval():
     assert session.approved_stages == ["stage_1", "stage_2", "stage_3", "stage_4"]
 
 
-def test_sqlite_session_store_persists_across_manager_reload(tmp_path):
-    db_path = tmp_path / "sessions.sqlite"
-    first_manager = StageManager(store=SQLiteSessionStore(db_path))
-    session = first_manager.create_session(scenario="dispatch_recommendation")
-    session = run_current_stage(first_manager, session, summary="persisted output")
+def test_stage_manager_uses_in_memory_store_for_demo_state():
+    manager = StageManager()
+    session = manager.create_session(scenario="dispatch_recommendation")
+    session = run_current_stage(manager, session, summary="demo-only output")
 
-    reloaded_manager = StageManager(store=SQLiteSessionStore(db_path))
-    reloaded = reloaded_manager.get_session(session.session_id)
+    reloaded_manager = StageManager()
 
-    assert reloaded.stage_outputs["stage_1"]["summary"] == "persisted output"
-    assert reloaded.current_stage == "stage_1"
+    assert manager.get_session(session.session_id).stage_outputs["stage_1"]["summary"] == (
+        "demo-only output"
+    )
+    with pytest.raises(StageTransitionError, match="session not found"):
+        reloaded_manager.get_session(session.session_id)

@@ -1,6 +1,6 @@
 from app.backend.core.config_loader import load_app_config
+from app.backend.integrations.codex_client import CodexClient
 from app.backend.integrations.retrieval_adapter import RetrievalAdapter
-from app.backend.integrations.vllm_client import VLLMClient
 from app.backend.schemas.retrieval import RetrievalResult
 
 
@@ -64,25 +64,53 @@ def test_retrieval_adapter_accepts_fake_provider_without_network():
     assert results[0]["metadata"]["provider"] == "fake"
 
 
-def test_vllm_client_builds_openai_compatible_request_without_calling_network():
-    client = VLLMClient(
+def test_codex_client_builds_responses_request_without_calling_network():
+    client = CodexClient(
         runtime_config={
-            "model_id": "local-test-model",
-            "temperature": 0.1,
-            "max_output_tokens": 128,
-            "chat_completions_url": "http://127.0.0.1:8001/v1/chat/completions",
+            "model_id": "gpt-test-codex",
+            "provider": "openai",
+            "api_style": "responses",
+            "engine": "codex_sdk",
             "api_key": None,
             "timeout": 5,
         }
     )
 
-    payload = client.build_chat_completion_request(
-        messages=[{"role": "user", "content": "hello"}],
-        response_format={"type": "json_object"},
+    payload = client.build_response_request(
+        instructions="Plan the stage",
+        input_text="stage_id: stage_1",
+        reasoning_effort="high",
     )
 
-    assert payload["model"] == "local-test-model"
-    assert payload["messages"][0]["role"] == "user"
-    assert payload["temperature"] == 0.1
-    assert payload["max_tokens"] == 128
-    assert payload["response_format"] == {"type": "json_object"}
+    assert payload["model"] == "gpt-test-codex"
+    assert payload["instructions"] == "Plan the stage"
+    assert payload["input"] == "stage_id: stage_1"
+    assert payload["reasoning"] == {"effort": "high"}
+
+
+def test_codex_client_uses_injected_sdk_client_without_network():
+    class FakeResponse:
+        output_text = "codex generated note"
+
+    class FakeResponses:
+        def __init__(self):
+            self.payload = None
+
+        def create(self, **payload):
+            self.payload = payload
+            return FakeResponse()
+
+    class FakeSDK:
+        def __init__(self):
+            self.responses = FakeResponses()
+
+    fake_sdk = FakeSDK()
+    client = CodexClient(
+        runtime_config={"model_id": "gpt-test-codex"},
+        sdk_client=fake_sdk,
+    )
+
+    result = client.generate_text(instructions="Do work", input_text="hello")
+
+    assert result == "codex generated note"
+    assert fake_sdk.responses.payload["input"] == "hello"

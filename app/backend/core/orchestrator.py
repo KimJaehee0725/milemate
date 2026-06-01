@@ -1,33 +1,24 @@
-"""Internal workflow entrypoint for the mock MVP.
-
-This module keeps service calls behind a small boundary so the implementation
-can later be swapped for a Microsoft Agent Framework graph.
-"""
+"""Internal workflow entrypoint for the mock MVP."""
 
 from __future__ import annotations
 
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
+from app.backend.core.agent_graph import AgentGraphInput, MilemateAgentGraphRunner
 from app.backend.integrations.legal_adapter import LegalAdapter
 from app.backend.integrations.retrieval_adapter import RetrievalAdapter
 from app.backend.schemas.common import Citation, ErrorCode, RiskItem, StageRunStatus
 from app.backend.schemas.report import FinalReportBundle
-from app.backend.schemas.session import SessionState
-from app.backend.schemas.stage import StageOutputBundle, StageResponse
+from app.backend.schemas.stage import StageResponse
 from app.backend.services.planner_service import PlannerService
 from app.backend.services.report_service import ReportService
 from app.backend.services.verifier_service import VerifierService
 
 from .stage_manager import StageManager, StageTransitionError
 
-StageHandler = Callable[
-    [SessionState, str, str, Dict[str, Any], List[Citation]],
-    StageOutputBundle,
-]
-
 
 class Orchestrator:
-    """Run the deterministic stage workflow behind a swappable boundary."""
+    """Run the stage workflow through the graph runner boundary."""
 
     def __init__(
         self,
@@ -38,7 +29,7 @@ class Orchestrator:
         retrieval: Optional[RetrievalAdapter] = None,
         legal: Optional[LegalAdapter] = None,
         model_client: Optional[object] = None,
-        stage_handlers: Optional[Dict[str, StageHandler]] = None,
+        graph_runner: Optional[MilemateAgentGraphRunner] = None,
     ) -> None:
         self.stage_manager = stage_manager or StageManager()
         self.planner = planner or PlannerService()
@@ -47,7 +38,11 @@ class Orchestrator:
         self.retrieval = retrieval or RetrievalAdapter()
         self.legal = legal or LegalAdapter()
         self.model_client = model_client
-        self.stage_handlers = stage_handlers or self._default_stage_handlers()
+        self.graph_runner = graph_runner or MilemateAgentGraphRunner(
+            planner=self.planner,
+            verifier=self.verifier,
+            reporter=self.reporter,
+        )
 
     def run_current_stage(
         self,
@@ -59,11 +54,19 @@ class Orchestrator:
         stage_id = session.current_stage
         context = context or {}
         citations = self._citations(session.scenario, stage_id)
-        handler = self.stage_handlers.get(stage_id)
-        if handler is None:
-            raise ValueError(f"unsupported stage: {stage_id}")
-
-        output = handler(session, stage_id, user_input, context, citations)
+        output = self.graph_runner.run(
+            AgentGraphInput(
+                session=session,
+                stage_id=stage_id,
+                user_input=user_input,
+                context=context,
+                citations=citations,
+                approved_state=self._approved_state(session),
+                proposal_state=self._proposal_state(session),
+                evidence_state=self._evidence_state(session, context),
+                collected_risks=self._collected_risks(session),
+            )
+        )
         response = StageResponse(
             session_id=session.session_id,
             stage_id=stage_id,
@@ -104,62 +107,6 @@ class Orchestrator:
                 "citations": output.get("citations", []),
                 "risks": output.get("risks", []),
             }
-        )
-
-    def _default_stage_handlers(self) -> Dict[str, StageHandler]:
-        return {
-            "stage_1": self._run_planner_stage,
-            "stage_2": self._run_planner_stage,
-            "stage_3": self._run_verifier_stage,
-            "stage_4": self._run_report_stage,
-        }
-
-    def _run_planner_stage(
-        self,
-        session: SessionState,
-        stage_id: str,
-        user_input: str,
-        context: Dict[str, Any],
-        citations: List[Citation],
-    ) -> StageOutputBundle:
-        del context
-        return self.planner.build_stage_output(
-            stage_id=stage_id,
-            scenario=session.scenario,
-            user_input=user_input or str(session.metadata.get("user_input", "")),
-            citations=citations,
-        )
-
-    def _run_verifier_stage(
-        self,
-        session: SessionState,
-        stage_id: str,
-        user_input: str,
-        context: Dict[str, Any],
-        citations: List[Citation],
-    ) -> StageOutputBundle:
-        del stage_id, user_input
-        return self.verifier.build_stage_output(
-            scenario=session.scenario,
-            proposal=self._proposal_state(session),
-            evidence=self._evidence_state(session, context),
-            citations=citations,
-        )
-
-    def _run_report_stage(
-        self,
-        session: SessionState,
-        stage_id: str,
-        user_input: str,
-        context: Dict[str, Any],
-        citations: List[Citation],
-    ) -> StageOutputBundle:
-        del stage_id, user_input, context
-        return self.reporter.build_stage_output(
-            scenario=session.scenario,
-            approved_state=self._approved_state(session),
-            citations=citations,
-            risks=self._collected_risks(session),
         )
 
     def _citations(self, scenario: str, stage_id: str) -> List[Citation]:

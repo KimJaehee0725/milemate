@@ -10,8 +10,9 @@ from app.backend.core.config_loader import (
 def test_config_loader_loads_root_config():
     cfg = load_app_config()
     assert cfg.app.name == "last-mile-planning-agent"
-    assert cfg.model.model_id == "google/gemma-4-26B-A4B-it"
-    assert cfg.serving.engine == "vllm"
+    assert cfg.model.model_id == "gpt-5.2-codex"
+    assert cfg.serving.engine == "codex_sdk"
+    assert cfg.storage.stage_state == "memory"
 
 
 def test_stage_definitions_available_from_config():
@@ -34,9 +35,9 @@ def test_prompt_paths_are_resolved_from_config():
     assert str(path).endswith("prompts/agents/planner_agent/planner_agent_stage1.txt")
 
 
-def test_model_runtime_config_exposes_vllm_ready_settings():
+def test_model_runtime_config_exposes_codex_ready_settings():
     runtime = get_model_runtime_config()
-    assert runtime["engine"] == "vllm"
-    assert runtime["provider"] == "huggingface"
-    assert runtime["api_style"] == "openai_compatible"
-    assert runtime["chat_completions_url"].endswith("/chat/completions")
+    assert runtime["engine"] == "codex_sdk"
+    assert runtime["provider"] == "openai"
+    assert runtime["api_style"] == "responses"
+    assert runtime["model_id"] == "gpt-5.2-codex"

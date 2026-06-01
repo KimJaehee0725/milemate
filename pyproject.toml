@@ -9,6 +9,8 @@ dependencies = [
   "pyyaml>=6.0",
   "fastapi>=0.115",
   "uvicorn>=0.30",
+  "openai>=2.38.0",
+  "agent-framework-core>=1.7.0",
 ]
 
 [project.optional-dependencies]
@@ -19,9 +21,6 @@ dev = [
 ]
 ui = [
   "streamlit>=1.58",
-]
-llm = [
-  "openai>=1.40",
 ]
 
 [dependency-groups]

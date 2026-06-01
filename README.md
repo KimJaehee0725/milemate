@@ -11,7 +11,7 @@ milemate는 라스트마일 서비스 기획의 동반자라는 의미를 담은
 기술기획 에이전트 시스템을 만드는 것을 목표로 한다.
 
 현재 프레임워크 방향은 Microsoft Agent Framework 기준으로 정리되어 있다.
-모델은 로컬에서 `google/gemma-4-26B-A4B-it`을 vLLM으로 서빙하는 구성을 전제로 한다.
+모델 호출 경계는 OpenAI Codex SDK(Responses API) 기준으로 정리되어 있다.
 
 ## 1. 핵심 방향
 
@@ -106,7 +106,7 @@ milemate는 라스트마일 서비스 기획의 동반자라는 의미를 담은
 - YAML 설정: stages / scenarios / sources / prompts / mcp-hub / app
 - 프롬프트 파일: prompts/agents/{agent_name}/*
 - 검색 계층: MCP Hub + GitHub + Fetch + legalize-kr + 웹 검색
-- 모델 계층: local vLLM + google/gemma-4-26B-A4B-it
+- 모델 계층: OpenAI Codex SDK + fakeable client boundary
 - 지식 계층: papers / docs / cases / laws / datasets / patents
 ```
 
@@ -116,7 +116,7 @@ milemate는 라스트마일 서비스 기획의 동반자라는 의미를 담은
 3. FastAPI가 요청을 workflow runtime으로 전달한다.
 4. Microsoft Agent Framework workflow가 stage 1 -> 2 -> 3 -> 4를 관리한다.
 5. Planner / Verifier / Report agent가 각 역할에 맞는 작업을 수행한다.
-6. retrieval layer와 local vLLM이 각 stage를 뒷받침한다.
+6. retrieval layer와 Codex SDK boundary가 각 stage를 뒷받침한다.
 7. 최종적으로 planner report, engineer report, decision log가 출력된다.
 
 ## 2. 프레임워크 방향
@@ -125,8 +125,7 @@ milemate는 라스트마일 서비스 기획의 동반자라는 의미를 담은
 - 에이전트/워크플로우 프레임워크: Microsoft Agent Framework
 - backend/API: FastAPI
 - 설정 관리: YAML 기반
-- 모델 서빙: vLLM
-- 모델 메타데이터: Hugging Face 기준 관리
+- 모델 호출: OpenAI Codex SDK / Responses API
 - retrieval: MCP Hub + custom adapter
 - Python/버전 관리: uv 기반
 
@@ -174,7 +173,7 @@ milemate는 라스트마일 서비스 기획의 동반자라는 의미를 담은
 - prompt는 agent별 × stage별 텍스트 파일 구조를 사용한다.
 
 중요 파일
-- `config/app.yaml`: app/model/serving/huggingface/storage/features 설정
+- `config/app.yaml`: app/model/serving/storage/features 설정
 - `config/stages.yaml`: stage 정의, outputs, rollback target
 - `config/scenarios.yaml`: dispatch / eta / failed-delivery 시나리오 메타데이터
 - `config/sources.yaml`: retrieval/citation/source category
@@ -183,12 +182,12 @@ milemate는 라스트마일 서비스 기획의 동반자라는 의미를 담은
 - `pyproject.toml`: uv 기반 프로젝트/의존성 정의
 - `.python-version`: Python 버전 고정
 
-## 5. 모델 및 서빙 설정
+## 5. 모델 및 실행 설정
 
 현재 기본 가정
-- model: `google/gemma-4-26B-A4B-it`
-- serving engine: `vllm`
-- API style: OpenAI-compatible endpoint
+- model: `gpt-5.2-codex`
+- runtime engine: `codex_sdk`
+- API style: OpenAI Responses API
 
 관련 설정은 `config/app.yaml`에 있다.
 
@@ -196,10 +195,9 @@ milemate는 라스트마일 서비스 기획의 동반자라는 의미를 담은
 - `model.provider`
 - `model.model_id`
 - `serving.engine`
-- `serving.base_url`
-- `serving.chat_completions_path`
-- `huggingface.token_env`
-- `huggingface.cache_dir`
+- `serving.api_key_env`
+- `serving.request_timeout_seconds`
+- `storage.stage_state`
 
 ## 6. config_loader 상태
 
@@ -208,7 +206,7 @@ milemate는 라스트마일 서비스 기획의 동반자라는 의미를 담은
 - `${ENV_VAR}` 형태 env 치환
 - typed config validation
 - stage/scenario/prompt 조회 helper 제공
-- vLLM/Hugging Face runtime 설정 helper 제공
+- Codex SDK runtime 설정 helper 제공
 
 대표 helper
 - `load_app_config()`
@@ -249,20 +247,22 @@ milemate는 라스트마일 서비스 기획의 동반자라는 의미를 담은
 - citation-ready mock retrieval / legal adapter 구현
 - Streamlit demo UI 구현
 - mock MVP hardening
-  - session store boundary와 SQLite persistence 구현
+  - demo-only in-memory session store boundary 정리
   - approval-before-run 및 final report approval gate 적용
   - rollback event/history 기록
   - FastAPI app factory와 dependency injection 적용
-  - retrieval provider boundary와 vLLM OpenAI-compatible client boundary 추가
+  - Microsoft Agent Framework core dependency와 graph runner boundary 추가
+  - retrieval provider boundary와 Codex SDK client boundary 추가
   - scenario-aware Streamlit demo input과 stage 3 verification preset 추가
+  - Streamlit AppTest smoke 추가
 
 아직 구현하지 않은 것
-- Microsoft Agent Framework 실제 연결 코드
-- vLLM 기반 LLM 호출
+- Microsoft Agent Framework 고급 graph/checkpoint 기능 활용
+- Codex SDK 실호출을 stage output 생성에 기본 활성화
 - 외부 retrieval / MCP 실연동
 
 즉, 현재는 `dispatch_recommendation` 기준으로 발표 가능한 mock vertical slice가 동작한다.
-실제 agent runtime, model serving, external retrieval은 다음 phase에서 붙인다.
+실제 Codex 기반 생성과 external retrieval은 다음 phase에서 붙인다.
 
 ## 9. 실행 및 검증
 

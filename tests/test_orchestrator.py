@@ -1,5 +1,6 @@
 import pytest
 
+from app.backend.core.agent_graph import AgentGraphInput, MilemateAgentGraphRunner
 from app.backend.core.orchestrator import Orchestrator
 from app.backend.core.stage_manager import StageManager, StageTransitionError
 
@@ -89,10 +90,10 @@ def test_orchestrator_is_deterministic_for_same_stage_input():
     assert first_response.output.model_dump() == second_response.output.model_dump()
 
 
-def test_orchestrator_exposes_stage_handler_registry():
+def test_orchestrator_uses_graph_runner_boundary():
     manager, orchestrator = make_orchestrator()
 
-    assert set(manager.stage_ids()) <= set(orchestrator.stage_handlers)
+    assert set(manager.stage_ids()) <= set(orchestrator.graph_runner.nodes)
 
 
 def test_orchestrator_rejects_final_report_before_stage_4_approval():
@@ -146,3 +147,34 @@ def test_orchestrator_accepts_fake_retrieval_and_legal_clients():
     response = orchestrator.run_current_stage(session.session_id)
 
     assert response.output.citations[0].title == "fake retrieval"
+
+
+def test_graph_runner_can_attach_codex_output_with_fake_client():
+    class FakeCodex:
+        def generate_stage_text(self, stage_id, scenario, user_input, context):
+            return f"{stage_id}:{scenario}:{user_input}:{bool(context)}"
+
+    manager = StageManager()
+    session = manager.create_session(scenario="dispatch_recommendation")
+    runner = MilemateAgentGraphRunner(codex_client=FakeCodex(), use_codex=True)
+    graph_input = AgentGraphInput(
+        session=session,
+        stage_id="stage_1",
+        user_input="codex note",
+        context={"demo": True},
+        citations=[],
+        approved_state={},
+        proposal_state={},
+        evidence_state={},
+        collected_risks=[],
+    )
+
+    output = runner.run(graph_input)
+
+    assert output.engineer_view["codex_note"] == (
+        "stage_1:dispatch_recommendation:codex note:True"
+    )
+    assert output.engineer_view["graph_runtime"] in {
+        "microsoft_agent_framework_core",
+        "deterministic_graph_adapter",
+    }

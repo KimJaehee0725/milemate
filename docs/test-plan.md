@@ -47,7 +47,7 @@
 - retrieval adapter 인터페이스 구현
 - legalize-kr 경로 연결 가능
 - config loader가 source / MCP / prompt 경로를 올바르게 읽음
-- vLLM client는 OpenAI-compatible request payload를 만들되 unit test에서 network를 호출하지 않음
+- Codex client는 Responses API payload를 만들되 unit test에서 network를 호출하지 않음
 
 ### 팀원 4: prompt / verifier / evaluation
 직접 책임 테스트:
@@ -64,13 +64,13 @@
 ### `tests/test_config_loader.py`
 목적:
 - YAML config가 프로젝트의 single source of truth로 정상 로딩되는지 검증
-- vLLM / Hugging Face / prompt 경로 / scenario / stage 정의를 읽는지 확인
+- Codex SDK / prompt 경로 / scenario / stage 정의를 읽는지 확인
 
 ### `tests/test_stage_manager.py`
 목적:
 - stage progression, approval, rollback 계약 검증
 - stage 엔진의 최소 동작 보장
-- SQLite reload, approval-before-run, non-current output rejection, rollback event 검증
+- demo-only memory state, approval-before-run, non-current output rejection, rollback event 검증
 
 ### `tests/test_verifier.py`
 목적:
@@ -85,7 +85,7 @@
 목적:
 - retrieval 결과가 source_type/title/locator/relevance_note를 포함하는지 검증
 - source category와 legal adapter 연결 경로를 확인
-- fake provider, legal metadata disclaimer, vLLM request boundary를 확인
+- fake provider, legal metadata disclaimer, Codex SDK request boundary를 확인
 
 ### `tests/test_api_routes.py`
 목적:
@@ -95,7 +95,7 @@
 
 ### `tests/test_orchestrator.py`
 목적:
-- stage handler registry flow 검증
+- Microsoft Agent Framework graph runner flow 검증
 - fake retrieval/legal client injection 검증
 - final report gate와 deterministic output contract 검증
 
@@ -103,6 +103,11 @@
 목적:
 - scenario별 demo input 선택 검증
 - stage 3 verification preset context 생성 검증
+
+### `tests/test_streamlit_app.py`
+목적:
+- Streamlit AppTest로 start -> run -> approve smoke 검증
+- stage 3 preset -> rollback -> stale output clear 동작 검증
 
 ## 4. 완료 판정 기준
 
