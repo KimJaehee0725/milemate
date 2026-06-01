@@ -240,16 +240,53 @@ milemate는 라스트마일 서비스 기획의 동반자라는 의미를 담은
 - 에이전트별 prompt 파일 구조 생성
 - config loader 구체화
 - 프레임워크 방향 정리
+- mock MVP backend 구현
+  - in-memory session/state 관리
+  - stage 1-4 deterministic output 생성
+  - approve / advance / rollback 규칙 구현
+  - final planner / engineer report 생성
+- FastAPI endpoint 구현
+- citation-ready mock retrieval / legal adapter 구현
+- Streamlit demo UI 구현
+- mock MVP hardening
+  - session store boundary와 SQLite persistence 구현
+  - approval-before-run 및 final report approval gate 적용
+  - rollback event/history 기록
+  - FastAPI app factory와 dependency injection 적용
+  - retrieval provider boundary와 vLLM OpenAI-compatible client boundary 추가
+  - scenario-aware Streamlit demo input과 stage 3 verification preset 추가
 
 아직 구현하지 않은 것
-- 실제 backend workflow 로직
-- frontend 화면
-- retrieval adapter 구현
-- verifier 구현
-- report 생성 로직
 - Microsoft Agent Framework 실제 연결 코드
+- vLLM 기반 LLM 호출
+- 외부 retrieval / MCP 실연동
 
-즉, 현재는 구조와 설계는 정리되었고 구현은 팀원들과 함께 시작할 단계다.
+즉, 현재는 `dispatch_recommendation` 기준으로 발표 가능한 mock vertical slice가 동작한다.
+실제 agent runtime, model serving, external retrieval은 다음 phase에서 붙인다.
+
+## 9. 실행 및 검증
+
+테스트:
+
+```bash
+uv run pytest -q
+uv run ruff check .
+uv run python -m py_compile app/frontend/streamlit_app.py
+```
+
+API 서버:
+
+```bash
+uv run uvicorn app.backend.main:app --host 127.0.0.1 --port 8000
+```
+
+Streamlit demo:
+
+```bash
+uv run streamlit run app/frontend/streamlit_app.py
+```
+
+병렬 구현 상세와 발표용 runbook은 `docs/parallel-implementation-plan.md`에 정리되어 있다.
 
 ## 10. 개발 환경 메모
 - 의존성/버전 관리는 `uv` 기준으로 진행한다.
@@ -273,10 +310,39 @@ macOS / Linux 예시
 - macOS / Linux: `source .venv/bin/activate`
 
 ### 자주 쓰는 명령
-- 테스트 실행: `uv run pytest`
+- 테스트 실행: `uv run pytest -q`
 - 특정 테스트 실행: `uv run pytest tests/test_config_loader.py`
 - 린트 실행: `uv run ruff check .`
 - FastAPI 실행 예시: `uv run uvicorn app.backend.main:app --reload`
+- Streamlit 실행 예시: `uv run --extra ui streamlit run app/frontend/streamlit_app.py`
+
+### Mock MVP 실행
+터미널 1에서 backend를 실행한다.
+
+```bash
+uv run uvicorn app.backend.main:app --reload
+```
+
+터미널 2에서 Streamlit UI를 실행한다.
+
+```bash
+uv run --extra ui streamlit run app/frontend/streamlit_app.py
+```
+
+기본 UI는 `http://127.0.0.1:8000` backend를 호출한다.
+다른 주소를 사용할 때는 `MILEMATE_API_BASE`를 지정한다.
+
+```bash
+MILEMATE_API_BASE=http://127.0.0.1:8010 uv run --extra ui streamlit run app/frontend/streamlit_app.py
+```
+
+현재 public API는 다음 최소 endpoint를 제공한다.
+- `POST /sessions`
+- `GET /sessions/{session_id}`
+- `POST /stages/run`
+- `POST /stages/approve`
+- `POST /stages/rollback`
+- `GET /reports/{session_id}`
 
 ### 참고
 - 새 의존성을 추가할 때는 `pyproject.toml` 기준으로 관리한다.

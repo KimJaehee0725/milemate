@@ -1,7 +1,3 @@
-import pytest
-
-
-@pytest.mark.xfail(reason="ReportService contract not implemented yet")
 def test_report_service_builds_planner_and_engineer_outputs():
     from app.backend.services.report_service import ReportService
 
@@ -19,7 +15,6 @@ def test_report_service_builds_planner_and_engineer_outputs():
     assert "decision_log" in result
 
 
-@pytest.mark.xfail(reason="Planner report structure not implemented yet")
 def test_planner_report_contains_required_sections():
     from app.backend.services.report_service import ReportService
 
@@ -34,7 +29,6 @@ def test_planner_report_contains_required_sections():
         assert key in report
 
 
-@pytest.mark.xfail(reason="Engineer report structure not implemented yet")
 def test_engineer_report_contains_required_sections():
     from app.backend.services.report_service import ReportService
 

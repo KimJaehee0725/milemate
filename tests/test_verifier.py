@@ -1,7 +1,3 @@
-import pytest
-
-
-@pytest.mark.xfail(reason="VerifierService contract not implemented yet")
 def test_verifier_returns_structured_result_for_stage_3_review():
     from app.backend.services.verifier_service import VerifierService
 
@@ -17,7 +13,6 @@ def test_verifier_returns_structured_result_for_stage_3_review():
     assert "rollback_recommendation" in result
 
 
-@pytest.mark.xfail(reason="Verifier risk detection not implemented yet")
 def test_verifier_flags_missing_data_as_risk():
     from app.backend.services.verifier_service import VerifierService
 
@@ -32,7 +27,6 @@ def test_verifier_flags_missing_data_as_risk():
     assert any("data" in r.lower() for r in result["risks"])
 
 
-@pytest.mark.xfail(reason="Rollback recommendation logic not implemented yet")
 def test_verifier_can_recommend_rollback_to_previous_stage():
     from app.backend.services.verifier_service import VerifierService
 

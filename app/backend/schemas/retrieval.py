@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from typing import List, Optional
-from pydantic import BaseModel
+from typing import Any, Dict, Optional
+
+from pydantic import BaseModel, Field
 
 from .common import Citation
 
@@ -19,6 +20,7 @@ class RetrievalResult(BaseModel):
     locator: str
     relevance_note: str
     snippet: Optional[str] = None
+    metadata: Dict[str, Any] = Field(default_factory=dict)
 
     def as_citation(self) -> Citation:
         return Citation(
@@ -26,4 +28,5 @@ class RetrievalResult(BaseModel):
             title=self.title,
             locator=self.locator,
             relevance_note=self.relevance_note,
+            metadata=self.metadata,
         )

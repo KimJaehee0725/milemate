@@ -5,7 +5,7 @@
 
 - 각 팀원은 자신이 맡은 모듈의 테스트를 통과시키는 것을 1차 목표로 한다.
 - 전체 구현 완료는 핵심 테스트 케이스가 모두 통과하는 상태로 판단한다.
-- 현재 일부 테스트는 아직 구현 전이므로 실패할 수 있으며, 이 실패가 곧 구현 TODO를 의미한다.
+- mock MVP 범위의 테스트는 active contract로 유지하며, 구현 전제의 xfail은 제거한다.
 
 ## 1. 테스트 철학
 
@@ -47,6 +47,7 @@
 - retrieval adapter 인터페이스 구현
 - legalize-kr 경로 연결 가능
 - config loader가 source / MCP / prompt 경로를 올바르게 읽음
+- vLLM client는 OpenAI-compatible request payload를 만들되 unit test에서 network를 호출하지 않음
 
 ### 팀원 4: prompt / verifier / evaluation
 직접 책임 테스트:
@@ -69,6 +70,7 @@
 목적:
 - stage progression, approval, rollback 계약 검증
 - stage 엔진의 최소 동작 보장
+- SQLite reload, approval-before-run, non-current output rejection, rollback event 검증
 
 ### `tests/test_verifier.py`
 목적:
@@ -83,6 +85,24 @@
 목적:
 - retrieval 결과가 source_type/title/locator/relevance_note를 포함하는지 검증
 - source category와 legal adapter 연결 경로를 확인
+- fake provider, legal metadata disclaimer, vLLM request boundary를 확인
+
+### `tests/test_api_routes.py`
+목적:
+- FastAPI app factory 기반 runtime 격리 검증
+- shared request schema와 error code contract 검증
+- final report가 stage 4 run/approval 전에는 열리지 않는지 확인
+
+### `tests/test_orchestrator.py`
+목적:
+- stage handler registry flow 검증
+- fake retrieval/legal client injection 검증
+- final report gate와 deterministic output contract 검증
+
+### `tests/test_frontend_demo_data.py`
+목적:
+- scenario별 demo input 선택 검증
+- stage 3 verification preset context 생성 검증
 
 ## 4. 완료 판정 기준
 
@@ -94,12 +114,15 @@
 - retrieval adapter 테스트 통과
 - dispatch 시나리오 기준 stage 1 -> 4 경로가 동작
 - rollback 경로 1개 이상 동작
+- current stage output 없이 approval이 불가능함
+- final report는 stage 4 output 생성 및 approval 후에만 조회 가능함
 
 ## 5. 현재 상태 해석
 
-현재 테스트 중 일부는 아직 구현이 없기 때문에 실패하도록 설계되어 있다.
-이는 문제라기보다 구현 계약을 미리 고정한 상태로 보는 것이 맞다.
+현재 mock MVP 테스트는 모두 통과해야 한다.
+실패하는 테스트는 active regression 또는 아직 구현되지 않은 새 계약으로 해석한다.
 
 즉,
-- 지금 실패하는 테스트 = 아직 구현되지 않은 약속
-- 나중에 모두 통과하는 상태 = 협업 관점에서 구현 완료
+- `uv run pytest -q` 통과 = mock MVP backend/frontend helper contract 충족
+- `uv run ruff check .` 통과 = Python lint contract 충족
+- 새 xfail 추가는 Phase 2 이상의 외부 연동 계약을 문서화할 때만 사용

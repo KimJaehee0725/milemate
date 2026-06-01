@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 from typing import Any, Dict, List, Optional
+
 from pydantic import BaseModel, Field
 
-from .common import Citation, DecisionItem, RiskItem
+from .common import Citation, DecisionItem, RiskItem, StageRunStatus
 
 
 class StageRequest(BaseModel):
@@ -20,6 +21,17 @@ class RollbackRequest(BaseModel):
     reason: str
 
 
+class RunStageRequest(BaseModel):
+    session_id: str
+    user_input: str = ""
+    context: Dict[str, Any] = Field(default_factory=dict)
+
+
+class ApproveStageRequest(BaseModel):
+    session_id: str
+    stage_id: Optional[str] = None
+
+
 class StageOutputBundle(BaseModel):
     summary: str
     planner_view: Dict[str, Any] = Field(default_factory=dict)
@@ -34,5 +46,5 @@ class StageOutputBundle(BaseModel):
 class StageResponse(BaseModel):
     session_id: str
     stage_id: str
-    status: str
+    status: StageRunStatus
     output: StageOutputBundle

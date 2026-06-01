@@ -1,15 +1,28 @@
-from .common import Citation, DecisionItem, RiskItem
-from .session import SessionState, StageStatus
-from .stage import StageRequest, StageResponse, StageOutputBundle, RollbackRequest
-from .report import PlannerReport, EngineerReport, FinalReportBundle
+from .common import Citation, DecisionItem, ErrorCode, RiskItem, StageRunStatus
+from .report import EngineerReport, FinalReportBundle, PlannerReport
 from .retrieval import RetrievalQuery, RetrievalResult
+from .session import CreateSessionRequest, RollbackEvent, SessionState, StageStatus
+from .stage import (
+    ApproveStageRequest,
+    RollbackRequest,
+    RunStageRequest,
+    StageOutputBundle,
+    StageRequest,
+    StageResponse,
+)
 
 __all__ = [
     "Citation",
     "DecisionItem",
+    "ErrorCode",
     "RiskItem",
+    "StageRunStatus",
+    "CreateSessionRequest",
+    "RollbackEvent",
     "SessionState",
     "StageStatus",
+    "ApproveStageRequest",
+    "RunStageRequest",
     "StageRequest",
     "StageResponse",
     "StageOutputBundle",
