@@ -1160,12 +1160,13 @@ def start_stage_generation(
     base_input: str,
     context: Dict[str, Any],
 ) -> None:
+    started_at = time.time()
     st.session_state["pending_stage_run"] = {
         "session_id": session["session_id"],
         "stage_id": session["current_stage"],
         "user_input": build_stage_user_input(session, base_input),
         "context": context,
-        "started_at": time.time(),
+        "started_at": started_at,
     }
     st.session_state["is_generating"] = True
     st.rerun()
@@ -1246,6 +1247,11 @@ st.markdown(
       background: #eef6ff;
       padding: 18px 20px;
       margin: 12px 0 16px;
+    }
+    .generation-panel strong {
+      display: block;
+      font-size: 1rem;
+      color: #1f2d3d;
     }
     .generation-copy {
       color: #425466;
