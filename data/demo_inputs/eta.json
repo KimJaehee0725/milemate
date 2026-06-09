@@ -1,4 +1,15 @@
 {
   "scenario": "eta_prediction",
-  "title": "eta sample"
+  "title": "지연 위험 주문 선제 안내",
+  "context": "고객은 도착 시간을 신뢰하고 기다리는데 ETA가 자주 바뀌거나 지연 안내가 늦으면 곧바로 문의와 불만으로 이어진다. 운영팀이 언제 먼저 알릴지 판단하지 못하는 것도 문제다.",
+  "data_sources": [
+    "live_location",
+    "travel_history",
+    "delay_logs"
+  ],
+  "constraints": [
+    "자동 보상 지급은 이번 범위에서 제외",
+    "알림 과다 발송으로 인한 고객 피로도 관리 필요",
+    "위치/이동 이력 데이터 지연 시 알림 타이밍 흔들림"
+  ]
 }

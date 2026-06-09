@@ -8,6 +8,7 @@ from app.backend.core.config_loader import get_scenario_definition, get_stage_de
 from app.backend.schemas.common import Citation, DecisionItem, RiskItem
 from app.backend.schemas.stage import StageOutputBundle
 from app.backend.services.prd_packet_factory import build_demo_prd_packet, ready_prd_quality
+from app.backend.services.scenario_profiles import get_scenario_profile
 
 
 class PlannerService:
@@ -42,17 +43,14 @@ class PlannerService:
     ) -> StageOutputBundle:
         scenario_def = get_scenario_definition(scenario)
         stage_def = get_stage_definition("stage_1")
-        label = scenario_def.label if scenario_def else scenario
+        profile = get_scenario_profile(scenario)
         users = scenario_def.primary_users if scenario_def else []
         kpis = scenario_def.primary_kpis if scenario_def else []
         core_data = scenario_def.core_data if scenario_def else []
-        problem_summary = (
-            f"{label} should reduce peak-time dispatch bottlenecks by surfacing "
-            "which active orders need controller attention first."
-        )
+        problem_summary = profile["stage1_problem_summary"]
         if user_input:
-            problem_summary = f"{problem_summary} Initial user note: {user_input}"
-        summary = "Problem and KPI frame created for the dispatch planning slice."
+            problem_summary = f"{problem_summary} 사용자 메모: {user_input}"
+        summary = "문제와 KPI 프레임을 정리했습니다."
 
         return StageOutputBundle(
             summary=summary,
@@ -60,18 +58,12 @@ class PlannerService:
                 "problem_summary": problem_summary,
                 "target_users": users,
                 "kpi_candidates": kpis,
-                "scope_candidates": [
-                    "risk order queue",
-                    "priority recommendation",
-                    "dispatcher approval log",
-                ],
+                "scope_candidates": list(profile["stage1_scope_candidates"]),
             },
             engineer_view={
                 "core_data": core_data,
-                "data_readiness_question": (
-                    "Can order status and courier location be joined by time window?"
-                ),
-                "initial_service_boundary": "decision support only; no automatic reassignment",
+                "data_readiness_question": profile["stage1_engineer"]["data_readiness_question"],
+                "initial_service_boundary": profile["stage1_engineer"]["initial_service_boundary"],
             },
             prd_packet=build_demo_prd_packet(
                 stage_id="stage_1",
@@ -83,22 +75,22 @@ class PlannerService:
             prd_quality=ready_prd_quality(),
             decision_points=[
                 DecisionItem(
-                    item="Optimize for dispatcher decision support before automation.",
+                    item="자동화 이전에 운영자 의사결정 지원부터 최적화한다.",
                     status="proposed",
-                    rationale="This creates a demoable MVP while limiting operational risk.",
+                    rationale="시연 가능한 MVP를 만들면서 운영 리스크를 제한할 수 있다.",
                 )
             ],
             required_user_input=[
-                "Confirm the primary dispatch user for the demo.",
-                "Confirm which KPI should be treated as the presentation headline.",
+                "데모에서 다룰 주요 사용자를 확정해주세요.",
+                "발표 헤드라인으로 삼을 KPI를 확정해주세요.",
             ],
             citations=citations,
             risks=[
                 RiskItem(
                     category="data",
                     severity="medium",
-                    description="Courier location freshness may limit recommendation accuracy.",
-                    mitigation="Start with high-delay zones and expose confidence notes.",
+                    description="핵심 데이터의 최신성이 추천 정확도를 제한할 수 있다.",
+                    mitigation="위험이 높은 구간부터 시작하고 신뢰도 메모를 함께 노출한다.",
                 )
             ],
             rollback_targets=list(stage_def.rollback_targets if stage_def else []),
@@ -112,43 +104,23 @@ class PlannerService:
     ) -> StageOutputBundle:
         scenario_def = get_scenario_definition(scenario)
         stage_def = get_stage_definition("stage_2")
+        profile = get_scenario_profile(scenario)
         users = scenario_def.primary_users if scenario_def else []
-        mvp_in_scope = [
-            "active order risk ranking",
-            "recommended courier or route adjustment reason",
-            "dispatcher approve/defer action",
-            "decision log for later evaluation",
-        ]
-        summary = "Service structure narrowed to a human-approved recommendation MVP."
+        mvp_in_scope = list(profile["stage2_in_scope"])
+        summary = "서비스 구조를 운영자 승인 기반 추천형 MVP로 좁혔습니다."
         return StageOutputBundle(
             summary=summary,
             planner_view={
-                "feature_structure": {
-                    "input": "live order and courier state",
-                    "decision": "rank and explain dispatch intervention candidates",
-                    "output": "dispatcher-approved recommendation log",
-                },
+                "feature_structure": dict(profile["stage2_feature_structure"]),
                 "mvp_in_scope": mvp_in_scope,
-                "mvp_out_of_scope": [
-                    "fully automated reassignment",
-                    "global route optimization",
-                    "customer-facing delay notification",
-                ],
-                "open_questions": [
-                    "Which zone should be the pilot area?",
-                    "What delay threshold triggers recommendation review?",
-                ],
+                "mvp_out_of_scope": list(profile["stage2_out_scope"]),
+                "open_questions": list(profile["stage2_open_questions"]),
             },
             engineer_view={
-                "service_blocks": [
-                    "state ingestion",
-                    "risk scoring",
-                    "recommendation renderer",
-                    "approval event store",
-                ],
+                "service_blocks": list(profile["stage2_service_blocks"]),
                 "primary_users": users,
                 "mvp_scope": mvp_in_scope,
-                "demo_note": user_input or "Use dispatch.json default input.",
+                "demo_note": user_input or "기본 데모 입력을 사용합니다.",
             },
             prd_packet=build_demo_prd_packet(
                 stage_id="stage_2",
@@ -160,25 +132,24 @@ class PlannerService:
             prd_quality=ready_prd_quality(),
             decision_points=[
                 DecisionItem(
-                    item="Keep route changes as recommendations requiring dispatcher approval.",
+                    item="개입 액션은 운영자 승인이 필요한 추천 형태로 유지한다.",
                     status="proposed",
                     rationale=(
-                        "This lets stage 3 verify feasibility without regulatory "
-                        "or trust overreach."
+                        "이렇게 하면 3단계에서 규제나 신뢰 과잉 없이 실현 가능성을 검증할 수 있다."
                     ),
                 )
             ],
-            required_user_input=["Choose pilot zone and peak-hour window."],
+            required_user_input=["파일럿 대상 범위와 피크 시간대를 선택해주세요."],
             citations=citations,
             risks=[
                 RiskItem(
                     category="operational",
                     severity="medium",
                     description=(
-                        "Dispatcher overload can grow if too many recommendations are shown."
+                        "추천을 너무 많이 노출하면 운영자 과부하가 커질 수 있다."
                     ),
                     mitigation=(
-                        "Limit the queue to the highest-risk orders and support defer actions."
+                        "검토 큐를 위험이 가장 높은 항목으로 제한하고 보류 액션을 지원한다."
                     ),
                 )
             ],

@@ -8,6 +8,21 @@ from app.backend.core.config_loader import get_scenario_definition, get_stage_de
 from app.backend.schemas.common import Citation, DecisionItem, RiskItem
 from app.backend.schemas.stage import StageOutputBundle
 from app.backend.services.prd_packet_factory import build_demo_prd_packet, ready_prd_quality
+from app.backend.services.scenario_profiles import get_scenario_profile
+
+# Localized display text for verifier risk findings. verify() keeps English
+# strings (tests assert keyword substrings); UI-facing RiskItems use Korean.
+_RISK_DISPLAY_KO = {
+    "Missing operational data sources for verification.": (
+        "검증에 필요한 운영 데이터 소스가 없습니다."
+    ),
+    "Poor label quality makes the proposed model scope unreliable.": (
+        "라벨 품질이 낮아 제안된 모델 범위의 신뢰도가 떨어집니다."
+    ),
+    "Scope may be too broad for a first MVP without baseline rules.": (
+        "기준 규칙 없이는 첫 MVP 범위가 너무 넓을 수 있습니다."
+    ),
+}
 
 
 class VerifierService:
@@ -32,7 +47,10 @@ class VerifierService:
             rollback_recommendation = "stage_2"
 
         mvp_scope = proposal.get("mvp_scope", [])
-        if any("root_cause" in item or "prediction" in item for item in mvp_scope):
+        scope_keywords = ["root_cause", "prediction", *get_scenario_profile(scenario)[
+            "verify_scope_keywords"
+        ]]
+        if any(any(keyword in item for keyword in scope_keywords) for item in mvp_scope):
             risks.append("Scope may be too broad for a first MVP without baseline rules.")
             rollback_recommendation = rollback_recommendation or "stage_2"
 
@@ -64,14 +82,15 @@ class VerifierService:
     ) -> StageOutputBundle:
         scenario_def = get_scenario_definition(scenario)
         stage_def = get_stage_definition("stage_3")
+        profile = get_scenario_profile(scenario)
         result = self.verify(scenario=scenario, proposal=proposal, evidence=evidence)
 
         risks = [
             RiskItem(
                 category="data" if "data" in risk.lower() or "label" in risk.lower() else "scope",
                 severity="medium",
-                description=risk,
-                mitigation="Reconfirm the previous stage assumptions before implementation.",
+                description=_RISK_DISPLAY_KO.get(risk, risk),
+                mitigation="구현 전에 이전 단계의 가정을 다시 확인한다.",
             )
             for risk in result["risks"]
         ]
@@ -81,9 +100,9 @@ class VerifierService:
                     category="operational",
                     severity="low",
                     description=(
-                        "Operational feasibility is acceptable for a rule-first dispatch MVP."
+                        "규칙 우선 MVP 기준으로 운영 실현 가능성이 수용 가능한 수준이다."
                     ),
-                    mitigation="Keep the first pilot limited to high-delay zones.",
+                    mitigation="첫 파일럿은 위험이 높은 구간으로 제한한다.",
                 )
             )
 
@@ -93,30 +112,25 @@ class VerifierService:
             and result["rollback_recommendation"] not in rollback_targets
         ):
             rollback_targets.append(result["rollback_recommendation"])
-        summary = (
-            f"Verification status is {result['status']} for "
-            f"{scenario_def.label if scenario_def else scenario}."
-        )
+        scenario_label = scenario_def.display_label if scenario_def else scenario
+        status_label = "통과" if result["status"] == "pass" else "주의"
+        summary = f"{scenario_label} 검증 상태: {status_label}."
 
         return StageOutputBundle(
             summary=summary,
             planner_view={
                 "verifier_status": result["status"],
                 "decision": (
-                    "Proceed with pilot"
+                    "파일럿 진행"
                     if result["status"] == "pass"
-                    else "Proceed after tightening scope"
+                    else "범위를 좁힌 뒤 진행"
                 ),
                 "rollback_recommendation": result["rollback_recommendation"],
             },
             engineer_view={
                 "checked_items": result["checked_items"],
                 "required_data": evidence.get("data_sources", []),
-                "implementation_guardrails": [
-                    "start with rules and ranked recommendations",
-                    "log dispatcher overrides",
-                    "monitor delay and workload balance daily",
-                ],
+                "implementation_guardrails": list(profile["verify_guardrails"]),
             },
             prd_packet=build_demo_prd_packet(
                 stage_id="stage_3",
@@ -128,17 +142,17 @@ class VerifierService:
             prd_quality=ready_prd_quality(),
             decision_points=[
                 DecisionItem(
-                    item="Lock MVP to dispatch recommendations before full route optimization.",
+                    item="전면 최적화 이전에 MVP를 운영자 검토 추천 범위로 고정한다.",
                     status="proposed",
                     rationale=(
-                        "This keeps the first pilot verifiable with available operations data."
+                        "이렇게 하면 확보 가능한 운영 데이터로 첫 파일럿을 검증할 수 있다."
                     ),
                 )
             ],
             required_user_input=(
                 []
                 if result["status"] == "pass"
-                else ["Confirm missing data owner and pilot zone."]
+                else ["누락된 데이터 담당자와 파일럿 범위를 확정해주세요."]
             ),
             citations=citations or [],
             risks=risks,

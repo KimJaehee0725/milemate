@@ -1,4 +1,15 @@
 {
   "scenario": "dispatch_recommendation",
-  "title": "dynamic dispatch sample"
+  "title": "강남/서초 피크타임 배차 집중 완화",
+  "context": "저녁 피크타임에 강남/서초 권역 주문이 한꺼번에 몰리면 일부 배송원에게 배차가 집중되고, 늦은 주문은 CS 문의와 쿠폰 보상 비용으로 이어진다.",
+  "data_sources": [
+    "order_status",
+    "courier_location",
+    "zone_metadata"
+  ],
+  "constraints": [
+    "완전 자동 재배차는 이번 범위에서 제외",
+    "배송원 위치 데이터 최신성이 추천 신뢰도를 좌우",
+    "운영자 승인 없이는 배차를 변경하지 않음"
+  ]
 }

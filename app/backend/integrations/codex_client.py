@@ -94,17 +94,19 @@ class CodexClient:
         schema_path: Optional[str] = None,
         model: Optional[str] = None,
     ) -> List[str]:
+        resolved_model = model or str(self.runtime_config.get("model_id", ""))
+        reasoning_effort = str(self.runtime_config.get("reasoning_effort", "medium"))
         command = [
             str(self.runtime_config.get("cli_binary", "codex")),
             "--search",
             "exec",
-            "-m",
-            model or str(self.runtime_config["model_id"]),
-            "--ephemeral",
-            "--json",
-            "--sandbox",
-            "read-only",
         ]
+        if resolved_model:
+            command.extend(["-m", resolved_model])
+        # Override user's global reasoning_effort setting (may be "xhigh") to
+        # keep stage generation latency predictable.
+        command.extend(["-c", f'reasoning_effort="{reasoning_effort}"'])
+        command.extend(["--ephemeral", "--json", "--sandbox", "read-only"])
         if schema_path is not None:
             command.extend(["--output-schema", schema_path])
         command.extend(["--output-last-message", output_path])

@@ -56,6 +56,13 @@ SEVERITY_LABELS = {
     "medium": "중간",
     "high": "높음",
 }
+STAGE_STATUS_STYLE = {
+    "승인 완료": ("✅", "done"),
+    "승인 대기": ("🕓", "review"),
+    "작업 중": ("🔵", "active"),
+    "생성 완료": ("◽", "generated"),
+    "대기": ("⚪", "pending"),
+}
 PDF_FONT_CANDIDATES = [
     (
         "MilemateNanum",
@@ -343,6 +350,14 @@ def format_label(value: str) -> str:
         "evidence_links": "근거 링크",
         "findings": "점검 결과",
         "repair_attempted": "자동 보강 여부",
+        "delay_rate": "지연률",
+        "sla_compliance": "SLA 준수율",
+        "courier_workload_balance": "배송원 업무 균형",
+        "eta_accuracy": "ETA 정확도",
+        "inquiry_reduction": "문의 감소",
+        "failed_delivery_rate": "배송 실패율",
+        "redelivery_rate": "재배송율",
+        "operational_loss": "운영 손실",
     }
     return labels.get(value, value.replace("_", " ").title())
 
@@ -799,6 +814,17 @@ def render_downloads(stage_id: str, output: Dict[str, Any], key_prefix: str) -> 
     )
 
 
+def render_verifier_banner(output: Dict[str, Any]) -> None:
+    status = str(output.get("planner_view", {}).get("verifier_status", ""))
+    if not status:
+        return
+    decision = str(output.get("planner_view", {}).get("decision", ""))
+    if status == "pass":
+        st.success(f"검증 통과 · {decision}")
+    else:
+        st.warning(f"검증 주의 · {decision}")
+
+
 def render_stage_output(stage_response: Dict[str, Any]) -> None:
     output = stage_response.get("output", {})
     stage_id = stage_response.get("stage_id", "")
@@ -807,12 +833,25 @@ def render_stage_output(stage_response: Dict[str, Any]) -> None:
     st.subheader(f"{stage_title(stage_id)} 산출물")
     st.markdown(f"**핵심 요약**\n\n{output.get('summary', '')}")
 
+    if stage_id == "stage_3":
+        render_verifier_banner(output)
+
+    quality_status = str(quality.get("status", ""))
+    quality_label = {"ready": "충족", "needs_review": "검토 필요"}.get(
+        quality_status, quality_status or "-"
+    )
     metric_cols = st.columns(5)
-    metric_cols[0].metric("결정 항목", len(output.get("decision_points", [])))
-    metric_cols[1].metric("추가 요청", len(output.get("required_user_input", [])))
-    metric_cols[2].metric("리스크", len(output.get("risks", [])))
-    metric_cols[3].metric("근거 자료", len(output.get("citations", [])))
-    metric_cols[4].metric("PRD 품질", str(quality.get("score", 0)))
+    metric_cols[0].metric(
+        "결정 항목", len(output.get("decision_points", [])), help="이번 단계에서 제안된 의사결정 수"
+    )
+    metric_cols[1].metric(
+        "추가 요청", len(output.get("required_user_input", [])), help="사용자 확인이 필요한 항목 수"
+    )
+    metric_cols[2].metric("리스크", len(output.get("risks", [])), help="식별된 리스크 수")
+    metric_cols[3].metric("근거 자료", len(output.get("citations", [])), help="연결된 근거 자료 수")
+    metric_cols[4].metric(
+        "PRD 품질", str(quality.get("score", 0)), help=f"PRD 완성도 점수 · 상태 {quality_label}"
+    )
 
     tab_labels = [
         "PRD 요약",
@@ -874,6 +913,26 @@ def render_stage_output(stage_response: Dict[str, Any]) -> None:
         render_key_values(output.get("engineer_view", {}))
 
 
+def render_scenario_info(scenario_meta: Dict[str, Any]) -> None:
+    description = scenario_meta.get("description", "")
+    if description:
+        st.caption(description)
+
+    pain_points = scenario_meta.get("pain_points", [])
+    if pain_points:
+        st.markdown("**현재 문제**")
+        render_list(pain_points)
+
+    kpi_targets = scenario_meta.get("kpi_targets", {})
+    if kpi_targets:
+        st.markdown("**KPI 목표**")
+        rows = [
+            {"KPI": format_label(str(key)), "목표": str(value)}
+            for key, value in kpi_targets.items()
+        ]
+        st.dataframe(rows, width="stretch", hide_index=True)
+
+
 def render_session(session: Dict[str, Any]) -> None:
     st.caption(f"세션 {session['session_id']}")
     cols = st.columns(3)
@@ -893,9 +952,26 @@ def render_session(session: Dict[str, Any]) -> None:
                 st.dataframe(rollback_events, width="stretch", hide_index=True)
 
 
+def render_stage_stepper(session: Dict[str, Any]) -> None:
+    steps = []
+    for idx, stage_id in enumerate(STAGE_IDS, start=1):
+        status = stage_status(session, stage_id)
+        icon, css_class = STAGE_STATUS_STYLE.get(status, ("⚪", "pending"))
+        name = stage_title(stage_id).split(" ", 1)[-1]
+        steps.append(
+            f'<div class="stage-step {css_class}">'
+            f'<div class="stage-dot">{icon}</div>'
+            f'<div class="stage-name">{idx}. {name}</div>'
+            f'<div class="stage-state">{status}</div>'
+            f"</div>"
+        )
+    st.markdown(f'<div class="stage-stepper">{"".join(steps)}</div>', unsafe_allow_html=True)
+
+
 def render_stage_navigator(session: Dict[str, Any]) -> str:
     selected = ensure_selected_stage(session)
     st.subheader("스테이지 탐색")
+    render_stage_stepper(session)
     selected = st.radio(
         "열람할 스테이지",
         STAGE_IDS,
@@ -904,13 +980,6 @@ def render_stage_navigator(session: Dict[str, Any]) -> str:
         horizontal=True,
     )
     st.session_state["selected_stage_id"] = selected
-
-    cols = st.columns(len(STAGE_IDS))
-    for idx, stage_id in enumerate(STAGE_IDS):
-        with cols[idx]:
-            with st.container(border=True):
-                st.markdown(f"**{stage_title(stage_id)}**")
-                st.caption(stage_status(session, stage_id))
     return selected
 
 
@@ -971,25 +1040,53 @@ def render_artifact_library(session: Dict[str, Any], report: Dict[str, Any] | No
 
 def render_report(report: Dict[str, Any]) -> None:
     st.subheader("최종 보고서")
+
+    prd_report = report.get("prd_report", {})
+    quality = report.get("prd_quality", {})
+    summary_cols = st.columns(4)
+    summary_cols[0].metric("결정 이력", len(report.get("decision_log", [])))
+    summary_cols[1].metric("리스크", len(report.get("risks", [])))
+    summary_cols[2].metric("근거 자료", len(report.get("citations", [])))
+    summary_cols[3].metric("PRD 품질", str(quality.get("score", 0)))
+
+    one_page = prd_report.get("one_page_summary")
+    if one_page:
+        with st.container(border=True):
+            st.markdown(f"**한 장 요약**\n\n{one_page}")
+
     prd_tab, planner_tab, engineer_tab, log_tab = st.tabs(
         ["PRD 보고서", "업무보고 요약", "실행 계획", "결정 이력"]
     )
     with prd_tab:
-        render_prd_packet(report.get("prd_report", {}), report.get("prd_quality", {}))
-        if has_prd_packet(report.get("prd_report", {})):
-            render_prd_execution(report.get("prd_report", {}))
-            render_prd_data(report.get("prd_report", {}))
-            render_prd_handoff(report.get("prd_report", {}))
+        render_prd_packet(prd_report, quality)
+        if has_prd_packet(prd_report):
+            st.divider()
+            st.markdown("##### 화면 · 정책 · KPI")
+            render_prd_execution(prd_report)
+            st.divider()
+            st.markdown("##### 데이터 · 이벤트 로그")
+            render_prd_data(prd_report)
+            st.divider()
+            st.markdown("##### 개발 전달 · 안건")
+            render_prd_handoff(prd_report)
     with planner_tab:
         render_key_values(report.get("planner_report", {}))
     with engineer_tab:
         render_key_values(report.get("engineer_report", {}))
     with log_tab:
-        st.dataframe(
-            rows_for_decisions(report.get("decision_log", [])),
-            width="stretch",
-            hide_index=True,
-        )
+        decisions = report.get("decision_log", [])
+        if decisions:
+            st.dataframe(
+                rows_for_decisions(decisions),
+                width="stretch",
+                hide_index=True,
+            )
+        else:
+            st.info("기록된 결정 이력이 없습니다.")
+        risks = report.get("risks", [])
+        if risks:
+            st.markdown("**리스크**")
+            st.dataframe(rows_for_risks(risks), width="stretch", hide_index=True)
 
 
 def set_error(message: str) -> None:
@@ -1179,12 +1276,15 @@ def run_pending_stage_generation() -> None:
     started_at = pending.get("started_at", time.time())
     st.markdown(
         f"""
-        <div class="generation-panel">
-          {generation_visual_markup()}
-          <div>
-            <strong>Codex가 현재 단계를 생성 중입니다</strong>
+        <div class="generation-overlay">
+          <div class="generation-panel">
+            {generation_visual_markup()}
+            <div class="generation-title">
+              {stage_title(stage_id)} 생성 중&hellip;
+            </div>
             <div class="generation-copy">
-              웹 검색으로 외부 자료를 확인하고, 근거 링크를 포함한 한국어 결과를 구성하고 있습니다.
+              웹 검색으로 외부 자료를 확인하고<br>
+              근거 링크를 포함한 한국어 결과를 구성하고 있습니다.
             </div>
             <div class="generation-dots"><span></span><span></span><span></span></div>
           </div>
@@ -1230,75 +1330,274 @@ st.set_page_config(page_title="milemate", layout="wide")
 st.markdown(
     """
     <style>
-    .block-container { max-width: 1180px; padding-top: 1.25rem; }
-    div[data-testid="stMetric"] {
-      border: 1px solid #d8dee4;
-      background: #f6f8fa;
-      padding: 10px 12px;
+    /* ── 색상 토큰 ───────────────────────────────────────────────────────── */
+    :root {
+      --brand:        #0f766e;   /* teal-700  — 주 액션·강조 */
+      --brand-mid:    #14b8a6;   /* teal-500  — 호버·보조 액션 */
+      --brand-light:  #ccfbf1;   /* teal-100  — 연한 강조 배경 */
+      --brand-bg:     #f0fdfa;   /* teal-50   — 섹션 배경 */
+      --brand-dark:   #134e4a;   /* teal-900  — 헤더·진한 텍스트 */
+      --done:         #15803d;   /* green-700 — 승인 완료 */
+      --done-bg:      #dcfce7;   /* green-100 */
+      --warn:         #b45309;   /* amber-700 — 검토 대기 */
+      --warn-bg:      #fef9c3;   /* amber-100 */
+      --text:         #0f172a;   /* slate-900 */
+      --text-muted:   #475569;   /* slate-600 */
+      --surface:      #f8fafc;   /* slate-50  */
+      --border:       #e2e8f0;   /* slate-200 */
+      --border-brand: #99f6e4;   /* teal-200  */
     }
-    div[data-testid="stMetric"] label { color: #57606a; }
-    .stTabs [data-baseweb="tab-list"] { gap: 6px; }
-    .generation-panel {
+
+    /* ── 레이아웃 ────────────────────────────────────────────────────────── */
+    .block-container { max-width: 1180px; padding-top: 1rem; }
+
+    /* ── 페이지 타이틀 ───────────────────────────────────────────────────── */
+    h1:first-of-type {
+      color: var(--brand-dark);
+      border-bottom: 3px solid var(--brand);
+      padding-bottom: 8px;
+      margin-bottom: 16px;
+    }
+
+    /* ── 메트릭 카드 ─────────────────────────────────────────────────────── */
+    div[data-testid="stMetric"] {
+      border: 1px solid var(--border);
+      border-top: 3px solid var(--brand);
+      background: var(--brand-bg);
+      padding: 10px 12px;
+      border-radius: 8px;
+    }
+    div[data-testid="stMetric"] label { color: var(--text-muted); }
+    div[data-testid="stMetric"] [data-testid="stMetricValue"] {
+      color: var(--brand-dark);
+      font-weight: 700;
+    }
+
+    /* ── 사이드바 ────────────────────────────────────────────────────────── */
+    [data-testid="stSidebar"] {
+      background: var(--brand-bg);
+      border-right: 1px solid var(--border-brand);
+    }
+    [data-testid="stSidebar"] h2,
+    [data-testid="stSidebar"] label { color: var(--brand-dark) !important; }
+
+    /* ── 탭 ──────────────────────────────────────────────────────────────── */
+    .stTabs [data-baseweb="tab-list"] { gap: 4px; border-bottom: 2px solid var(--border); }
+    .stTabs [data-baseweb="tab"] {
+      color: var(--text-muted);
+      border-radius: 6px 6px 0 0;
+    }
+    .stTabs [aria-selected="true"] {
+      color: var(--brand) !important;
+      border-bottom: 2px solid var(--brand) !important;
+      font-weight: 600;
+    }
+
+    /* ── 컨테이너 (border=True) ──────────────────────────────────────────── */
+    [data-testid="stVerticalBlockBorderWrapper"] > div {
+      border-color: var(--border-brand) !important;
+      border-radius: 10px !important;
+    }
+
+    /* ── 버튼 ────────────────────────────────────────────────────────────── */
+    .stButton > button[kind="primary"] {
+      background: var(--brand);
+      border: none;
+      color: #fff;
+    }
+    .stButton > button[kind="primary"]:hover {
+      background: var(--brand-mid);
+    }
+    .stButton > button:not([kind="primary"]) {
+      border-color: var(--border-brand);
+      color: var(--brand-dark);
+    }
+    .stButton > button:not([kind="primary"]):hover {
+      background: var(--brand-bg);
+      border-color: var(--brand);
+    }
+
+    /* ── 다운로드 버튼 ───────────────────────────────────────────────────── */
+    .stDownloadButton > button {
+      border-color: var(--border-brand);
+      color: var(--brand-dark);
+    }
+    .stDownloadButton > button:hover {
+      background: var(--brand-bg);
+      border-color: var(--brand);
+    }
+
+    /* ── 알림/배너 ───────────────────────────────────────────────────────── */
+    [data-testid="stInfo"] {
+      background: var(--brand-bg);
+      border-left-color: var(--brand) !important;
+      color: var(--brand-dark);
+    }
+
+    /* ── 스테이지 스테퍼 ─────────────────────────────────────────────────── */
+    .stage-stepper {
+      display: flex;
+      align-items: stretch;
+      gap: 0;
+      margin: 6px 0 18px;
+      padding: 16px 20px;
+      background: var(--brand-bg);
+      border: 1px solid var(--border-brand);
+      border-radius: 14px;
+    }
+    .stage-step {
+      flex: 1 1 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      position: relative;
+      padding: 0 6px;
+    }
+    .stage-step .stage-dot {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
       display: flex;
       align-items: center;
-      gap: 20px;
-      border: 1px solid #b6d4fe;
-      background: #eef6ff;
-      padding: 18px 20px;
-      margin: 12px 0 16px;
+      justify-content: center;
+      font-size: 16px;
+      border: 2px solid var(--border);
+      background: #ffffff;
+      z-index: 1;
     }
-    .generation-copy {
-      color: #425466;
-      font-size: 0.92rem;
+    .stage-step .stage-name {
+      font-size: 0.84rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-top: 7px;
+    }
+    .stage-step .stage-state {
+      font-size: 0.72rem;
+      color: var(--text-muted);
       margin-top: 2px;
     }
+    .stage-step::before, .stage-step::after {
+      content: "";
+      position: absolute;
+      top: 18px;
+      height: 2px;
+      background: var(--border);
+      width: 50%;
+      z-index: 0;
+    }
+    .stage-step::before { left: 0; }
+    .stage-step::after  { right: 0; }
+    .stage-step:first-child::before { display: none; }
+    .stage-step:last-child::after   { display: none; }
+    /* 상태별 dot 색 */
+    .stage-step.done .stage-dot {
+      border-color: var(--done); background: var(--done); color: #fff;
+    }
+    .stage-step.done .stage-name  { color: var(--done); }
+    .stage-step.review .stage-dot {
+      border-color: var(--warn); background: var(--warn-bg);
+    }
+    .stage-step.review .stage-name { color: var(--warn); }
+    .stage-step.active .stage-dot {
+      border-color: var(--brand); background: var(--brand-light);
+    }
+    .stage-step.active .stage-name { color: var(--brand); }
+    .stage-step.generated .stage-dot {
+      border-color: var(--border-brand); background: var(--brand-bg);
+    }
+    /* 커넥터 선 */
+    .stage-step.done::before, .stage-step.done::after { background: var(--done); }
+    .stage-step.review::before { background: var(--done); }
+    .stage-step.active::before { background: var(--brand); }
+
+    /* ── 생성 오버레이 ───────────────────────────────────────────────────── */
+    .generation-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: rgba(19, 78, 74, 0.65);
+      backdrop-filter: blur(5px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .generation-panel {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      background: #ffffff;
+      border-top: 4px solid var(--brand);
+      border-radius: 24px;
+      padding: 44px 52px 36px;
+      width: min(480px, 90vw);
+      box-shadow: 0 32px 80px rgba(15, 118, 110, 0.25);
+      text-align: center;
+    }
+    .generation-title {
+      font-size: 1.22rem;
+      font-weight: 700;
+      color: var(--brand-dark);
+      letter-spacing: -0.01em;
+    }
+    .generation-copy {
+      color: var(--text-muted);
+      font-size: 0.93rem;
+      line-height: 1.55;
+      margin-top: -6px;
+    }
     .generation-orbit {
-      width: 32px;
-      height: 32px;
-      border: 3px solid #b6d4fe;
-      border-top-color: #0969da;
+      width: 64px;
+      height: 64px;
+      border: 5px solid var(--brand-light);
+      border-top-color: var(--brand);
       border-radius: 50%;
       animation: spin 0.9s linear infinite;
-      flex: 0 0 auto;
     }
     .generation-cat-sprite {
-      width: clamp(136px, 18vw, 184px);
-      height: clamp(136px, 18vw, 184px);
-      flex: 0 0 clamp(136px, 18vw, 184px);
+      width: 220px;
+      height: 220px;
+      background-color: #ffffff;
       background-repeat: no-repeat;
       background-size: 400% 200%;
       background-position: 0% 0%;
-      border-radius: 16px;
-      box-shadow:
-        inset 0 0 0 1px rgba(9, 105, 218, 0.12),
-        0 8px 18px rgba(31, 35, 40, 0.1);
+      border-radius: 20px;
+      box-shadow: 0 8px 28px rgba(15, 118, 110, 0.22);
       animation: catYarnFrames 1.35s steps(1) infinite;
+      mix-blend-mode: multiply;
+    }
+    .generation-dots {
+      display: flex;
+      gap: 6px;
+      justify-content: center;
     }
     .generation-dots span {
       display: inline-block;
-      width: 6px;
-      height: 6px;
-      margin-right: 4px;
-      background: #0969da;
+      width: 8px;
+      height: 8px;
+      background: var(--brand);
       border-radius: 50%;
       animation: pulse 1.2s ease-in-out infinite;
     }
     .generation-dots span:nth-child(2) { animation-delay: 0.18s; }
     .generation-dots span:nth-child(3) { animation-delay: 0.36s; }
+
+    /* ── 키프레임 ────────────────────────────────────────────────────────── */
     @keyframes spin { to { transform: rotate(360deg); } }
     @keyframes catYarnFrames {
-      0%, 12.49% { background-position: 0% 0%; }
+      0%,   12.49% { background-position: 0%      0%; }
       12.5%, 24.99% { background-position: 33.333% 0%; }
-      25%, 37.49% { background-position: 66.666% 0%; }
-      37.5%, 49.99% { background-position: 100% 0%; }
-      50%, 62.49% { background-position: 0% 100%; }
+      25%,  37.49% { background-position: 66.666% 0%; }
+      37.5%, 49.99% { background-position: 100%    0%; }
+      50%,  62.49% { background-position: 0%      100%; }
       62.5%, 74.99% { background-position: 33.333% 100%; }
-      75%, 87.49% { background-position: 66.666% 100%; }
-      87.5%, 100% { background-position: 100% 100%; }
+      75%,  87.49% { background-position: 66.666% 100%; }
+      87.5%, 100%  { background-position: 100%    100%; }
     }
     @keyframes pulse {
-      0%, 80%, 100% { opacity: 0.25; transform: translateY(0); }
-      40% { opacity: 1; transform: translateY(-3px); }
+      0%, 80%, 100% { opacity: 0.22; transform: translateY(0); }
+      40%           { opacity: 1;    transform: translateY(-4px); }
     }
     </style>
     """,
@@ -1344,10 +1643,12 @@ with st.sidebar:
     scenario_id = st.selectbox(
         "시나리오",
         options=list(scenarios),
-        format_func=lambda key: scenarios[key]["label"],
+        format_func=lambda key: scenarios[key].get("label_ko") or scenarios[key]["label"],
         key="scenario_id",
         on_change=sync_input_to_scenario,
     )
+    with st.expander("시나리오 개요", expanded=False):
+        render_scenario_info(scenarios[scenario_id])
     user_input = st.text_area(
         "초기 설명",
         height=92,

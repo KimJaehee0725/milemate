@@ -13,7 +13,7 @@ app:
 
 model:
   provider: openai
-  model_id: gpt-5.5
+  model_id: ""
   dtype: managed
   max_context_tokens: 32768
   reasoning_effort: medium
