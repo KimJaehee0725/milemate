@@ -122,7 +122,7 @@ def test_streamlit_can_view_previous_stage_output(monkeypatch):
 
     assert metrics(app)["현재 단계"] == "2단계 서비스 구조"
     assert app.radio[0].value == "stage_1"
-    assert any("아이디어를 문제 정의와 KPI" in item.value for item in app.markdown)
+    assert any("문제와 KPI 프레임을 정리" in item.value for item in app.markdown)
 
 
 def test_streamlit_prefills_demo_chat_by_scenario(monkeypatch):

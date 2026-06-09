@@ -1,6 +1,12 @@
 scenarios:
   dispatch_recommendation:
     label: Dynamic Dispatch and Route Recommendation
+    label_ko: 동적 배차 및 경로 재추천
+    description: 피크타임 주문 급증 시 배차 집중을 운영자가 빠르게 확인하고, 우선순위 추천으로 지연 비용을 줄이는 서비스
+    pain_points:
+      - 피크타임 상위 20% 배송원이 전체 배차의 45% 담당
+      - 지연 주문 1건당 평균 CS 처리 비용 3,200원
+      - 수동 배차 조정에 운영팀 시간의 30% 소요
     primary_users:
       - operations_manager
       - dispatch_controller
@@ -8,6 +14,10 @@ scenarios:
       - delay_rate
       - sla_compliance
       - courier_workload_balance
+    kpi_targets:
+      delay_rate: "5% 이하 (현재 12%)"
+      sla_compliance: "95% 이상 (현재 83%)"
+      courier_workload_balance: "상위 20% 배송원 집중률 30% 이하"
     core_data:
       - order_status
       - courier_location
@@ -15,6 +25,12 @@ scenarios:
       - zone_metadata
   eta_prediction:
     label: ETA Prediction and Delay Notification
+    label_ko: ETA 예측 및 지연 알림
+    description: 고객이 도착시간을 신뢰하고 기다릴 수 있도록, 지연 가능성이 높은 주문을 선제적으로 감지해 안내하는 서비스
+    pain_points:
+      - 평균 ETA 오차 22분 (고객 기대치 10분 이내)
+      - 지연 안내 늦음으로 CS 문의 하루 평균 340건 발생
+      - 운영팀이 수동으로 지연 주문을 모니터링하는 데 2시간 소요
     primary_users:
       - customer_experience_manager
       - operations_team
@@ -22,6 +38,10 @@ scenarios:
       - eta_accuracy
       - inquiry_reduction
       - sla_compliance
+    kpi_targets:
+      eta_accuracy: "오차 ±10분 이내 80% (현재 55%)"
+      inquiry_reduction: "지연 관련 CS 문의 30% 감소"
+      sla_compliance: "알림 적시성 90% (현재 70%)"
     core_data:
       - live_location
       - travel_history
@@ -29,6 +49,12 @@ scenarios:
       - delay_logs
   failed_delivery_risk:
     label: Failed Delivery Risk and Preemptive Intervention
+    label_ko: 실패 배송 리스크 및 사전 개입
+    description: 배송 실패 가능성이 높은 주문을 미리 감지해 운영팀이 선제적으로 확인·조치함으로써 재배송 비용과 고객 불편을 줄이는 서비스
+    pain_points:
+      - 일 평균 배송 실패율 15% (업계 평균 8%)
+      - 재배송 1건당 추가 비용 4,500원
+      - 배송 실패 후 고객 CS 처리까지 평균 45분 소요
     primary_users:
       - operations_quality_manager
       - cs_operations_team
@@ -36,6 +62,10 @@ scenarios:
       - failed_delivery_rate
       - redelivery_rate
       - operational_loss
+    kpi_targets:
+      failed_delivery_rate: "8% 이하 (현재 15%)"
+      redelivery_rate: "재배송 발생 시 익일 완료율 90%"
+      operational_loss: "재배송 비용 월 20% 절감"
     core_data:
       - failed_delivery_logs
       - order_attributes

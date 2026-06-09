@@ -321,7 +321,7 @@ def test_runtime_status_reports_local_demo_readiness(monkeypatch):
         "api_mode": "responses",
         "runtime_mode": "live_codex_cli",
         "serving_engine": "codex_cli",
-        "model_id": "gpt-5.5",
+        "model_id": "",
         "reasoning_effort": "medium",
         "cli_binary": "codex",
         "cli_available": True,

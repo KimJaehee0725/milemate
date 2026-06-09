@@ -120,9 +120,17 @@ class StagesConfig(BaseModel):
 
 class ScenarioDefinition(BaseModel):
     label: str
+    label_ko: str = ""
+    description: str = ""
+    pain_points: List[str] = Field(default_factory=list)
+    kpi_targets: Dict[str, str] = Field(default_factory=dict)
     primary_users: List[str] = Field(default_factory=list)
     primary_kpis: List[str] = Field(default_factory=list)
     core_data: List[str] = Field(default_factory=list)
+
+    @property
+    def display_label(self) -> str:
+        return self.label_ko or self.label
 
 
 class ScenariosConfig(BaseModel):

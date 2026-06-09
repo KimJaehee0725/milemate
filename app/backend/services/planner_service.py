@@ -8,6 +8,7 @@ from app.backend.core.config_loader import get_scenario_definition, get_stage_de
 from app.backend.schemas.common import Citation, DecisionItem, RiskItem
 from app.backend.schemas.stage import StageOutputBundle
 from app.backend.services.prd_packet_factory import build_demo_prd_packet, ready_prd_quality
+from app.backend.services.scenario_profiles import get_scenario_profile
 
 
 class PlannerService:
@@ -42,17 +43,14 @@ class PlannerService:
     ) -> StageOutputBundle:
         scenario_def = get_scenario_definition(scenario)
         stage_def = get_stage_definition("stage_1")
-        label = scenario_def.label if scenario_def else scenario
+        profile = get_scenario_profile(scenario)
         users = scenario_def.primary_users if scenario_def else []
         kpis = scenario_def.primary_kpis if scenario_def else []
         core_data = scenario_def.core_data if scenario_def else []
-        problem_summary = (
-            f"{label} 아이디어를 기술기획서로 옮기려면 해결할 사용자 문제, "
-            "성공 KPI, MVP 경계를 먼저 합의해야 합니다."
-        )
+        problem_summary = profile["stage1_problem_summary"]
         if user_input:
-            problem_summary = f"{problem_summary} 기획자 메모: {user_input}"
-        summary = "아이디어를 문제 정의와 KPI 초안으로 구조화했습니다."
+            problem_summary = f"{problem_summary} 사용자 메모: {user_input}"
+        summary = "문제와 KPI 프레임을 정리했습니다."
 
         return StageOutputBundle(
             summary=summary,
@@ -60,18 +58,12 @@ class PlannerService:
                 "problem_summary": problem_summary,
                 "target_users": users,
                 "kpi_candidates": kpis,
-                "scope_candidates": [
-                    "기획자가 설명할 사용자 문제",
-                    "회의에서 결정할 MVP 경계",
-                    "개발팀과 공유할 결정 로그",
-                ],
+                "scope_candidates": list(profile["stage1_scope_candidates"]),
             },
             engineer_view={
                 "core_data": core_data,
-                "data_readiness_question": (
-                    "이 기획을 검토하는 데 필요한 데이터가 실제로 존재하고 연결 가능한가?"
-                ),
-                "initial_service_boundary": "기획자 승인형 의사결정 보조부터 시작",
+                "data_readiness_question": profile["stage1_engineer"]["data_readiness_question"],
+                "initial_service_boundary": profile["stage1_engineer"]["initial_service_boundary"],
             },
             prd_packet=build_demo_prd_packet(
                 stage_id="stage_1",
@@ -83,31 +75,22 @@ class PlannerService:
             prd_quality=ready_prd_quality(),
             decision_points=[
                 DecisionItem(
-                    item="자동화보다 기획자가 설명하고 승인할 수 있는 MVP 범위를 먼저 확정합니다.",
+                    item="자동화 이전에 운영자 의사결정 지원부터 최적화한다.",
                     status="proposed",
-                    rationale=(
-                        "비개발 기획자가 개발팀과 논의할 수 있는 최소 단위로 "
-                        "범위를 좁힙니다."
-                    ),
+                    rationale="시연 가능한 MVP를 만들면서 운영 리스크를 제한할 수 있다.",
                 )
             ],
             required_user_input=[
-                "이 아이디어의 1차 사용자를 확정해야 합니다.",
-                "가장 먼저 검증할 핵심 KPI를 하나 골라야 합니다.",
+                "데모에서 다룰 주요 사용자를 확정해주세요.",
+                "발표 헤드라인으로 삼을 KPI를 확정해주세요.",
             ],
             citations=citations,
             risks=[
                 RiskItem(
                     category="data",
                     severity="medium",
-                    description=(
-                        "필요 데이터의 존재 여부가 불명확하면 기획서의 "
-                        "실현 가능성이 낮아집니다."
-                    ),
-                    mitigation=(
-                        "현재 확보된 데이터와 추가 확인이 필요한 데이터를 "
-                        "분리해 표시합니다."
-                    ),
+                    description="핵심 데이터의 최신성이 추천 정확도를 제한할 수 있다.",
+                    mitigation="위험이 높은 구간부터 시작하고 신뢰도 메모를 함께 노출한다.",
                 )
             ],
             rollback_targets=list(stage_def.rollback_targets if stage_def else []),
@@ -121,43 +104,23 @@ class PlannerService:
     ) -> StageOutputBundle:
         scenario_def = get_scenario_definition(scenario)
         stage_def = get_stage_definition("stage_2")
+        profile = get_scenario_profile(scenario)
         users = scenario_def.primary_users if scenario_def else []
-        mvp_in_scope = [
-            "핵심 사용자 문제를 보여주는 검토 화면",
-            "추천 또는 경고 사유 설명",
-            "담당자 승인/보류 액션",
-            "결정 로그와 KPI 추적",
-        ]
-        summary = "아이디어를 MVP 범위와 구현 검토 단위로 좁혔습니다."
+        mvp_in_scope = list(profile["stage2_in_scope"])
+        summary = "서비스 구조를 운영자 승인 기반 추천형 MVP로 좁혔습니다."
         return StageOutputBundle(
             summary=summary,
             planner_view={
-                "feature_structure": {
-                    "input": "기획자 메모, 핵심 KPI, 사용 가능한 데이터",
-                    "decision": "MVP에 포함할 기능과 보류할 기능을 구분",
-                    "output": "기획자가 승인한 범위와 결정 로그",
-                },
+                "feature_structure": dict(profile["stage2_feature_structure"]),
                 "mvp_in_scope": mvp_in_scope,
-                "mvp_out_of_scope": [
-                    "처음부터 완전 자동화",
-                    "전사 확장용 고도화",
-                    "검증 전 고객 노출 기능",
-                ],
-                "open_questions": [
-                    "첫 파일럿 사용자는 누구인가?",
-                    "성공 여부를 어떤 KPI로 판단할 것인가?",
-                ],
+                "mvp_out_of_scope": list(profile["stage2_out_scope"]),
+                "open_questions": list(profile["stage2_open_questions"]),
             },
             engineer_view={
-                "service_blocks": [
-                    "아이디어 입력 정리",
-                    "KPI와 범위 구조화",
-                    "검토 화면 또는 정책 초안",
-                    "승인 이벤트 저장",
-                ],
+                "service_blocks": list(profile["stage2_service_blocks"]),
                 "primary_users": users,
                 "mvp_scope": mvp_in_scope,
-                "demo_note": user_input or "Use the selected planning brief.",
+                "demo_note": user_input or "기본 데모 입력을 사용합니다.",
             },
             prd_packet=build_demo_prd_packet(
                 stage_id="stage_2",
@@ -169,26 +132,24 @@ class PlannerService:
             prd_quality=ready_prd_quality(),
             decision_points=[
                 DecisionItem(
-                    item="첫 MVP는 담당자가 검토하고 승인할 수 있는 보조 흐름으로 제한합니다.",
+                    item="개입 액션은 운영자 승인이 필요한 추천 형태로 유지한다.",
                     status="proposed",
                     rationale=(
-                        "검증 전 자동화 범위를 키우면 데이터, 운영, 규제 "
-                        "리스크를 설명하기 어렵습니다."
+                        "이렇게 하면 3단계에서 규제나 신뢰 과잉 없이 실현 가능성을 검증할 수 있다."
                     ),
                 )
             ],
-            required_user_input=["파일럿 사용자와 핵심 KPI를 선택해야 합니다."],
+            required_user_input=["파일럿 대상 범위와 피크 시간대를 선택해주세요."],
             citations=citations,
             risks=[
                 RiskItem(
                     category="operational",
                     severity="medium",
                     description=(
-                        "처음부터 기능 범위를 넓히면 기획자가 설명해야 할 "
-                        "운영 변화가 과도해질 수 있습니다."
+                        "추천을 너무 많이 노출하면 운영자 과부하가 커질 수 있다."
                     ),
                     mitigation=(
-                        "회의에서 결정할 MVP 범위와 이후 고도화 범위를 명확히 분리합니다."
+                        "검토 큐를 위험이 가장 높은 항목으로 제한하고 보류 액션을 지원한다."
                     ),
                 )
             ],
