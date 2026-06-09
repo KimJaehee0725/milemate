@@ -1,5 +1,5 @@
 app:
-  name: last-mile-planning-agent
+  name: milemate-planning-assistant
   environment: local
   backend:
     host: 0.0.0.0
@@ -10,6 +10,10 @@ app:
     default_scenario: dispatch_recommendation
     citation_limit: 5
     allow_rollback: true
+
+report:
+  prepared_by: "기획팀"
+  version: "1.0"
 
 model:
   provider: openai

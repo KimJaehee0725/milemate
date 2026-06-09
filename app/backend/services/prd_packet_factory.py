@@ -52,171 +52,174 @@ def build_demo_prd_packet(
     return PrdPacket(
         stage_goal=stage_goal,
         one_page_summary=(
-            f"{label}는 피크타임 운영자가 위험 주문을 먼저 확인하고 승인/보류할 수 "
-            f"있는 추천형 MVP로 정리한다. {summary}{note}"
+            f"{label} 아이디어를 기획자가 설명 가능한 기술기획서와 MVP 초안으로 "
+            f"정리한다. {summary}{note}"
         ).strip(),
         problem=PrdProblem(
             customer_pain=(
-                "고객은 지연 사유보다 언제 해결되는지와 안내가 믿을 만한지를 먼저 본다."
+                "사용자는 해결하려는 문제가 무엇인지, 어떤 경험이 달라지는지 명확히 알고 싶다."
             ),
             business_impact=(
-                "지연 주문이 늦게 발견되면 CS 문의, 쿠폰/보상 비용, 매장 클레임이 함께 늘어난다."
+                "문제와 KPI가 분리되어 있으면 개발 범위가 흔들리고 재작업 비용이 커진다."
             ),
             current_workaround=(
-                "운영자가 주문 목록과 배송원 상태를 수동으로 번갈아 확인하며 우선순위를 판단한다."
+                "기획자가 자연어 메모와 회의 자료를 바탕으로 기능 요구사항을 수동 정리한다."
             ),
             success_criteria=[
-                "피크타임 위험 주문을 운영자가 1분 안에 식별한다.",
-                "추천 사유와 보류 사유가 모두 로그로 남는다.",
-                "고객 안내 기준이 과장 없이 운영 정책과 일치한다.",
+                "핵심 사용자 문제와 KPI가 한 화면에서 설명된다.",
+                "MVP 포함/제외 범위와 결정 사유가 로그로 남는다.",
+                "기술, 데이터, 규제 리스크가 보류 조건과 함께 정리된다.",
             ],
         ),
         personas=[
             PrdPersona(
-                name="피크타임 배차 운영자",
-                role=users[0] if users else "운영 담당자",
+                name="비개발 기획자",
+                role=users[0] if users else "서비스 기획자",
                 needs=[
-                    "위험 주문을 먼저 보고 싶다.",
-                    "추천을 믿을 수 있는 사유와 기준을 확인하고 싶다.",
+                    "아이디어를 개발팀과 논의할 수 있는 기획서로 바꾸고 싶다.",
+                    "기술 제약과 데이터 필요조건을 쉽게 확인하고 싶다.",
                 ],
             ),
             PrdPersona(
-                name="운영 리드",
-                role="서비스 운영 의사결정자",
+                name="개발 협업 담당자",
+                role="엔지니어 또는 기술 리드",
                 needs=[
-                    "지연률과 보상 비용을 같은 화면에서 보고 싶다.",
-                    "운영자 재량과 자동화 경계를 명확히 두고 싶다.",
+                    "모호한 아이디어가 아니라 범위, API, 데이터, 제약이 정리된 문서를 받고 싶다.",
+                    "왜 이 범위가 MVP인지 결정 근거를 확인하고 싶다.",
                 ],
             ),
         ],
         scope=PrdScope(
             in_scope=[
-                "위험 주문 목록",
-                "추천 사유 노출",
-                "운영자 승인/보류",
+                "아이디어 요약과 문제 정의",
+                "KPI와 MVP 범위",
+                "기술/데이터/규제 리스크 검토",
                 "결정 로그와 KPI 집계",
             ],
             out_of_scope=[
-                "완전 자동 재배차",
-                "전 권역 최적화",
-                "자동 보상 지급",
+                "검증 전 완전 자동화",
+                "전사 확장용 고도화",
+                "실서비스 배포 자동화",
             ],
         ),
         screens=[
             PrdScreenSpec(
-                name="피크타임 위험 주문 대시보드",
-                purpose="운영자가 지연 가능성이 높은 주문을 우선순위대로 확인한다.",
-                primary_user="피크타임 배차 운영자",
-                entry_point="운영 콘솔 > 배차 관리 > 위험 주문",
+                name="기획서 단계별 검토 화면",
+                purpose="기획자가 아이디어, KPI, MVP 범위, 리스크를 단계별로 확인한다.",
+                primary_user="비개발 기획자",
+                entry_point="Milemate > 적용 예시 > 기획서 작성 시작",
                 components=[
-                    "권역/시간대 필터",
-                    "위험 점수 컬럼",
-                    "추천 사유",
-                    "승인/보류 버튼",
-                    "예상 영향 KPI",
+                    "아이디어 메모",
+                    "문제 정의와 KPI 후보",
+                    "MVP 포함/제외 범위",
+                    "리스크와 보류 조건",
+                    "승인/롤백 버튼",
                 ],
-                primary_actions=["추천 승인", "추천 보류", "주문 상세 확인"],
-                empty_states=["현재 기준에 해당하는 위험 주문이 없음을 표시"],
-                error_states=["위치 데이터가 지연되면 추천 신뢰도 낮음 배지를 표시"],
+                primary_actions=["단계 생성", "검토 후 승인", "이전 단계로 롤백"],
+                empty_states=["아직 생성된 기획서 산출물이 없음을 표시"],
+                error_states=["필수 데이터가 부족하면 검증 경고와 롤백 대상을 표시"],
                 acceptance_criteria=[
-                    "위험 주문은 점수순으로 정렬된다.",
-                    "승인/보류 시 사유와 담당자가 이벤트 로그에 저장된다.",
-                    "데이터 freshness가 기준을 넘으면 운영자가 즉시 알 수 있다.",
+                    "각 단계 산출물은 기획자가 읽을 수 있는 업무 언어로 표시된다.",
+                    "승인/롤백 시 사유와 단계가 이벤트 로그에 저장된다.",
+                    "데이터나 규제 리스크는 숨기지 않고 보류 조건으로 노출한다.",
                 ],
             )
         ],
         policies=[
             PrdPolicyRule(
-                name="추천 노출 기준",
-                trigger="피크타임 권역에서 SLA 초과 가능성이 감지된 주문",
-                rule="위험 점수 상위 주문만 운영자 검토 큐에 노출한다.",
-                owner="서비스기획/운영",
-                exception_handling="배송원 위치가 오래되면 추천 대신 확인 필요 상태로 표시한다.",
+                name="MVP 범위 확정 기준",
+                trigger="기획서 단계별 산출물을 승인하기 전",
+                rule="기술, 데이터, 규제 리스크가 설명되지 않은 기능은 MVP에서 보류한다.",
+                owner="서비스기획",
+                exception_handling=(
+                    "필수 데이터가 없으면 이전 단계로 돌아가 범위 또는 KPI를 "
+                    "재조정한다."
+                ),
             )
         ],
         metrics=[
             PrdMetric(
                 name=kpis[0] if kpis else "지연률",
-                baseline="최근 2주 동일 권역/시간대 평균",
-                target="파일럿 기간 10% 이상 개선",
-                measurement="주문 완료 시각과 SLA 기준 시각 비교",
+                baseline="현재 기획 검토 과정에서 측정 중인 기준",
+                target="파일럿 기간 동안 개선 여부를 판단할 수 있는 수치 목표 확정",
+                measurement="업무 로그, 사용자 행동, 비용 또는 품질 지표를 함께 검토",
                 owner="운영기획",
             ),
             PrdMetric(
-                name=kpis[1] if len(kpis) > 1 else "보상/CS 비용",
-                baseline="최근 2주 지연 관련 문의 및 쿠폰 지급 건수",
-                target="파일럿 기간 5% 이상 감소",
-                measurement="CS 태그, 쿠폰 발급 로그, 주문 권역을 조인",
+                name=kpis[1] if len(kpis) > 1 else "기획 검토 리드타임",
+                baseline="기획서 초안 작성과 개발 검토에 걸리는 현재 시간",
+                target="반복 회의와 재작업을 줄일 수 있는 수준으로 단축",
+                measurement="초안 작성 시간, 수정 횟수, 승인 단계 로그를 조인",
                 owner="서비스기획",
             ),
         ],
         data_requirements=[
             PrdDataRequirement(
                 field_name=data_sources[0],
-                source="주문 운영 DB",
-                purpose="주문 상태와 SLA 잔여 시간을 계산",
-                freshness="30초 이내",
-                quality_rule="주문 ID와 상태 변경 시각은 필수",
+                source="현재 서비스 또는 운영 데이터",
+                purpose="기획서에서 정의한 문제와 KPI의 현재 기준을 확인",
+                freshness="검토 회의 전 최신 기준",
+                quality_rule="지표 산식과 데이터 출처를 함께 기록",
             ),
             PrdDataRequirement(
                 field_name=data_sources[1],
-                source="배송원 위치/상태 스트림",
-                purpose="배송원 공급과 이동 가능성을 판단",
-                freshness="60초 이내",
-                quality_rule="위치 수집 동의와 최신 수신 시각을 함께 저장",
+                source="사용자 행동 또는 업무 처리 로그",
+                purpose="MVP가 실제 사용자 행동을 바꿀 수 있는지 판단",
+                freshness="파일럿 분석에 사용할 수 있는 주기",
+                quality_rule="개인정보와 수집 동의 조건을 함께 확인",
             ),
             PrdDataRequirement(
                 field_name=data_sources[2],
-                source="권역/피크타임 운영 설정",
-                purpose="추천 노출 권역과 시간대를 제한",
-                freshness="일 단위",
-                quality_rule="운영 설정 변경 이력을 보관",
+                source="정책, 규제, 운영 제약 문서",
+                purpose="기능 범위와 고객 안내 문구의 보류 조건을 판단",
+                freshness="기획서 승인 전 재확인",
+                quality_rule="근거 링크와 검토 책임자를 함께 남김",
             ),
         ],
         event_logs=[
             PrdEventLog(
-                event_name="dispatch_recommendation_viewed",
-                trigger="운영자가 위험 주문 상세를 열람",
-                properties=["order_id", "zone_id", "risk_score", "reason_code", "operator_id"],
-                purpose="추천 노출과 운영자 확인 여부 분석",
+                event_name="planning_stage_generated",
+                trigger="기획자가 단계별 산출물을 생성",
+                properties=["session_id", "stage_id", "scenario_id", "created_at"],
+                purpose="아이디어가 어떤 단계에서 어떤 산출물로 바뀌었는지 추적",
             ),
             PrdEventLog(
-                event_name="dispatch_recommendation_decided",
-                trigger="운영자가 추천을 승인하거나 보류",
-                properties=["order_id", "decision", "decision_reason", "operator_id", "created_at"],
-                purpose="승인율, 보류 사유, 모델 신뢰도 분석",
+                event_name="planning_stage_decided",
+                trigger="기획자가 산출물을 승인하거나 롤백",
+                properties=["session_id", "stage_id", "decision", "reason", "created_at"],
+                purpose="결정 근거, 보류 사유, 재작업 지점을 분석",
             ),
         ],
         implementation_slices=[
             PrdImplementationSlice(
-                name="운영자 검토 큐 MVP",
-                scope=["위험 주문 API", "추천 사유 렌더링", "승인/보류 이벤트 저장"],
-                owner_hint="백엔드/프론트엔드/데이터",
+                name="기획서 검토 흐름 MVP",
+                scope=["아이디어 입력", "단계별 산출물 표시", "승인/롤백 이벤트 저장"],
+                owner_hint="기획/백엔드/프론트엔드",
                 acceptance_criteria=[
-                    "샘플 주문 데이터로 위험 주문 목록이 재현된다.",
-                    "승인/보류 로그가 리포트 KPI 계산에 사용된다.",
+                    "샘플 아이디어로 문제 정의, MVP 범위, 리스크 검토가 재현된다.",
+                    "승인/롤백 로그가 최종 보고서의 결정 이력에 사용된다.",
                 ],
             )
         ],
         decision_agenda=[
             PrdDecisionAgendaItem(
-                topic="파일럿 권역과 피크타임 기준",
-                decision_needed="강남/서초 등 첫 실험 권역과 시간대를 확정",
-                owner="운영 리드",
-                options=["강남/서초 저녁 피크", "주말 점심 피크", "클레임 상위 권역"],
+                topic="첫 MVP 범위와 성공 KPI",
+                decision_needed="파일럿에서 검증할 핵심 사용자 문제와 KPI를 확정",
+                owner="서비스 기획자",
+                options=["문제 정의 우선", "MVP 범위 우선", "리스크 검증 우선"],
             )
         ],
         open_questions=[
             PrdOpenQuestion(
-                question="추천 신뢰도가 낮을 때 고객 안내를 어느 수준까지 허용할 것인가?",
+                question="기술/데이터 리스크가 남아 있을 때 어떤 기능을 MVP에서 제외할 것인가?",
                 owner="서비스기획",
                 needed_by="개발 착수 전",
             )
         ],
         developer_handoff=[
-            "운영자 승인 없는 자동 재배차는 이번 범위에서 제외한다.",
-            "모든 추천은 사유 코드와 데이터 최신성 배지를 함께 노출한다.",
-            "승인/보류 이벤트는 파일럿 KPI 분석의 기준 로그로 사용한다.",
+            "비개발 기획자가 읽을 수 있는 요약과 개발팀 확인사항을 같은 산출물에 분리해 제공한다.",
+            "데이터 출처, 규제 리스크, 보류 조건은 승인 전에 반드시 표시한다.",
+            "승인/롤백 이벤트는 최종 보고서의 Decision Log 기준으로 사용한다.",
         ],
         evidence_links=list(citations or []),
     )
@@ -226,7 +229,7 @@ def _core_data(scenario_def: Any, evidence: dict[str, Any] | None) -> List[str]:
     evidence_sources = list((evidence or {}).get("data_sources") or [])
     configured = list(scenario_def.core_data if scenario_def else [])
     values = [*evidence_sources, *configured]
-    defaults = ["order_status_event", "courier_location_event", "zone_peak_calendar"]
+    defaults = ["baseline_metric", "user_or_operation_log", "policy_constraint"]
     merged: List[str] = []
     for value in [*values, *defaults]:
         if value and value not in merged:

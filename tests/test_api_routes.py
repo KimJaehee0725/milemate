@@ -1,3 +1,6 @@
+from io import BytesIO
+from zipfile import ZipFile
+
 from fastapi.testclient import TestClient
 
 from app.backend.core.agent_graph import MilemateAgentGraphRunner
@@ -18,6 +21,18 @@ def make_client():
         graph_runner=MilemateAgentGraphRunner(codex_client=LocalFakeCodexClient()),
     )
     return TestClient(create_app(stage_manager=manager, orchestrator=orchestrator))
+
+
+def run_session_to_final_approval(client):
+    session = client.post(
+        "/sessions",
+        json={"scenario": "dispatch_recommendation", "user_input": "demo planning"},
+    ).json()
+    session_id = session["session_id"]
+    for _stage_id in ["stage_1", "stage_2", "stage_3", "stage_4"]:
+        assert client.post("/stages/run", json={"session_id": session_id}).status_code == 200
+        assert client.post("/stages/approve", json={"session_id": session_id}).status_code == 200
+    return session_id
 
 
 def test_stage_run_maps_model_not_configured_to_503():
@@ -131,6 +146,60 @@ def test_dispatch_happy_path_runs_stage_1_to_report():
     assert report["decision_log"]
 
 
+def test_report_export_routes_return_business_file_formats():
+    client = make_client()
+    session_id = run_session_to_final_approval(client)
+
+    expectations = {
+        "docx": (
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            "milemate-final-planning-brief.docx",
+            "word/document.xml",
+        ),
+        "pdf": ("application/pdf", "milemate-final-planning-brief.pdf", None),
+        "pptx": (
+            "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+            "milemate-final-presentation-deck.pptx",
+            "ppt/presentation.xml",
+        ),
+    }
+    for export_format, (media_type, filename, package_member) in expectations.items():
+        response = client.get(f"/reports/{session_id}/exports/{export_format}")
+
+        assert response.status_code == 200
+        assert response.headers["content-type"].startswith(media_type)
+        assert filename in response.headers["content-disposition"]
+        if export_format == "pdf":
+            assert response.content.startswith(b"%PDF")
+        else:
+            assert response.content.startswith(b"PK")
+            with ZipFile(BytesIO(response.content)) as package:
+                assert package_member in package.namelist()
+
+
+def test_report_export_route_reuses_report_ready_gate():
+    client = make_client()
+    session = client.post(
+        "/sessions",
+        json={"scenario": "dispatch_recommendation"},
+    ).json()
+
+    response = client.get(f"/reports/{session['session_id']}/exports/docx")
+
+    assert response.status_code == 400
+    assert response.json()["detail"]["code"] == "report_not_ready"
+
+
+def test_report_export_route_rejects_unknown_format():
+    client = make_client()
+    session_id = run_session_to_final_approval(client)
+
+    response = client.get(f"/reports/{session_id}/exports/markdown")
+
+    assert response.status_code == 400
+    assert response.json()["detail"]["code"] == "unsupported_report_export"
+
+
 def test_dispatch_api_allows_configured_stage_3_to_stage_2_rollback():
     client = make_client()
     session = client.post(
@@ -234,3 +303,28 @@ def test_create_app_keeps_test_clients_isolated():
     response = second.get(f"/sessions/{session['session_id']}")
 
     assert response.status_code == 404
+
+
+def test_runtime_status_reports_local_demo_readiness(monkeypatch):
+    monkeypatch.setattr(
+        "app.backend.api.routes_runtime.shutil.which",
+        lambda binary: f"/usr/local/bin/{binary}",
+    )
+    client = make_client()
+
+    response = client.get("/runtime/status")
+
+    assert response.status_code == 200
+    status = response.json()
+    assert status == {
+        "app_name": "milemate-planning-assistant",
+        "api_mode": "responses",
+        "runtime_mode": "live_codex_cli",
+        "serving_engine": "codex_cli",
+        "model_id": "gpt-5.5",
+        "reasoning_effort": "medium",
+        "cli_binary": "codex",
+        "cli_available": True,
+        "cli_path": "/usr/local/bin/codex",
+        "timeout": 600,
+    }

@@ -28,13 +28,16 @@ from app.frontend.demo_backend import LocalDemoAPI  # noqa: E402
 from app.frontend.demo_data import (  # noqa: E402
     VERIFICATION_PRESETS,
     load_demo_inputs,
-    scenario_title,
+    scenario_brief,
+    scenario_display_title,
+    scenario_initial_input,
     verification_context_for_preset,
 )
 
 API_BASE_URL = os.getenv("MILEMATE_API_BASE", "http://127.0.0.1:8000").rstrip("/")
 API_MODE = os.getenv("MILEMATE_API_MODE", "http")
 API_TIMEOUT_SECONDS = float(os.getenv("MILEMATE_API_TIMEOUT_SECONDS", "620"))
+STATUS_TIMEOUT_SECONDS = float(os.getenv("MILEMATE_STATUS_TIMEOUT_SECONDS", "1.5"))
 LOADING_CAT_SPRITE_PATH = Path(__file__).resolve().parent / "assets" / "loading-cat-yarn-sprite.png"
 STAGE_IDS = ("stage_1", "stage_2", "stage_3", "stage_4")
 DECISION_STATUS_LABELS = {
@@ -56,6 +59,22 @@ SEVERITY_LABELS = {
     "medium": "중간",
     "high": "높음",
 }
+VERIFICATION_PRESET_LABELS = {
+    "Configured evidence": "기본 자료 충분",
+    "Missing data": "데이터 부족",
+    "Poor labels": "품질 낮은 데이터",
+}
+ROLLBACK_REASON_PLACEHOLDER = """발견한 문제:
+-
+
+잘못된 가정:
+-
+
+되돌아가 수정할 내용:
+-
+
+다음 단계에서 유지할 내용:
+-"""
 PDF_FONT_CANDIDATES = [
     (
         "MilemateNanum",
@@ -86,7 +105,7 @@ DEFAULT_DEMO_STAGE_REQUESTS: Dict[str, str] = {
         "과장되어 보이는 경우, 현장에서 보류해야 할 조건을 확인해주세요."
     ),
     "stage_4": (
-        "교수님께 시연할 때 서비스 기획안처럼 설명할 수 있게 정리해주세요. 어떤 "
+        "서비스 기획안처럼 설명할 수 있게 정리해주세요. 어떤 "
         "고객 문제를 먼저 풀고, 운영팀은 무엇을 바꾸고, 비용은 어디서 줄고, "
         "고객에게는 어떤 약속을 할 수 있는지 한 흐름으로 보여주면 좋겠습니다."
     ),
@@ -204,6 +223,21 @@ def api_request(method: str, path: str, payload: Dict[str, Any] | None = None) -
         raise RuntimeError(f"백엔드에 연결할 수 없습니다: {API_BASE_URL} ({exc.reason})") from exc
 
 
+def api_binary_request(method: str, path: str) -> bytes:
+    if API_MODE == "local":
+        return local_demo_api().binary_request(method=method, path=path)
+
+    req = request.Request(f"{API_BASE_URL}{path}", method=method)
+    try:
+        with request.urlopen(req, timeout=API_TIMEOUT_SECONDS) as response:
+            return response.read()
+    except error.HTTPError as exc:
+        detail = exc.read().decode("utf-8")
+        raise RuntimeError(f"{exc.code} {detail}") from exc
+    except error.URLError as exc:
+        raise RuntimeError(f"백엔드에 연결할 수 없습니다: {API_BASE_URL} ({exc.reason})") from exc
+
+
 @st.cache_data
 def load_scenarios() -> Dict[str, Dict[str, Any]]:
     with open(ROOT_DIR / "config" / "scenarios.yaml", "r", encoding="utf-8") as f:
@@ -213,6 +247,63 @@ def load_scenarios() -> Dict[str, Dict[str, Any]]:
 @st.cache_data
 def load_demo_input_map() -> Dict[str, Dict[str, Any]]:
     return load_demo_inputs(ROOT_DIR)
+
+
+@st.cache_data(ttl=5, show_spinner=False)
+def fetch_runtime_status() -> Dict[str, Any]:
+    if API_MODE == "local":
+        return {
+            "available": True,
+            "mode": "local",
+            "label": "로컬 리허설 모드",
+            "detail": "라이브 호출 없이 기획서 작성 흐름만 점검합니다.",
+            "runtime": "LocalDemoAPI",
+        }
+
+    status_url = f"{API_BASE_URL}/runtime/status"
+    req = request.Request(status_url, method="GET", headers={"Content-Type": "application/json"})
+    try:
+        with request.urlopen(req, timeout=STATUS_TIMEOUT_SECONDS) as response:
+            body = response.read().decode("utf-8")
+            payload = json.loads(body) if body else {}
+    except (error.HTTPError, error.URLError, TimeoutError, OSError) as exc:
+        return {
+            "available": False,
+            "mode": "http",
+            "label": "라이브 Codex 연결 확인 필요",
+            "detail": f"상태 확인 실패: {exc}",
+            "runtime": API_BASE_URL,
+        }
+
+    if not isinstance(payload, dict):
+        payload = {}
+    runtime_mode = str(payload.get("runtime_mode") or "live_codex_cli")
+    model_id = str(payload.get("model_id") or "")
+    reasoning_effort = str(payload.get("reasoning_effort") or "")
+    engine = str(payload.get("serving_engine") or "")
+    cli_binary = str(payload.get("cli_binary") or "codex")
+    cli_available = bool(payload.get("cli_available"))
+    timeout = payload.get("timeout")
+    label = "라이브 Codex 연결됨" if cli_available else "라이브 Codex 연결 확인 필요"
+    detail_parts = [
+        part
+        for part in [
+            model_id,
+            f"effort {reasoning_effort}" if reasoning_effort else "",
+            engine,
+            f"{timeout}s timeout" if timeout else "",
+        ]
+        if part
+    ]
+    detail = " / ".join(detail_parts) or "백엔드 runtime 상태를 확인했습니다."
+    return {
+        "available": True,
+        "mode": runtime_mode,
+        "label": label,
+        "detail": detail,
+        "runtime": f"{cli_binary}: {'ready' if cli_available else 'not found'}",
+        "raw": payload,
+    }
 
 
 def render_list(items: Iterable[Any]) -> None:
@@ -260,6 +351,88 @@ def render_key_values(data: Dict[str, Any]) -> None:
             render_value(value)
 
 
+def render_runtime_badge(status: Dict[str, Any]) -> None:
+    mode = str(status.get("mode") or API_MODE)
+    available = bool(status.get("available"))
+    label = str(status.get("label") or "runtime 상태")
+    detail = str(status.get("detail") or "")
+    runtime = str(status.get("runtime") or "")
+    raw = status.get("raw", {}) if isinstance(status.get("raw"), dict) else {}
+    cli_ready = bool(raw.get("cli_available", available))
+    tone = "local" if mode == "local" else "live" if available and cli_ready else "warning"
+    st.markdown(
+        f"""
+        <div class="runtime-badge runtime-{tone}">
+          <div class="runtime-kicker">실행 상태</div>
+          <div class="runtime-label">{escape(label)}</div>
+          <div class="runtime-detail">{escape(detail)}</div>
+          <div class="runtime-endpoint">{escape(runtime)}</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def render_product_intro() -> None:
+    st.markdown(
+        """
+        <div class="product-intro">
+          <div class="product-kicker">비개발 기획자를 위한 기술기획서 작성 보조</div>
+          <div class="product-copy">
+            자연어 아이디어를 문제 정의, KPI, MVP 범위, 기술·데이터·규제 리스크,
+            최종 기획서와 개발팀 확인사항으로 단계별 구조화합니다.
+          </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def render_demo_brief_block(brief: Dict[str, Any], compact: bool = False) -> None:
+    title = str(brief.get("title") or "예시 브리프")
+    subtitle = str(brief.get("subtitle") or "")
+    summary = str(brief.get("summary") or "")
+    presentation_goal = str(brief.get("presentation_goal") or "")
+    decision_focus = [str(item) for item in brief.get("decision_focus", [])]
+    demo_highlights = [str(item) for item in brief.get("demo_highlights", [])]
+    sidebar_note = str(brief.get("sidebar_note") or "")
+
+    if compact:
+        st.markdown("### 적용 예시 브리프")
+        st.markdown(f"**{title}**")
+        if subtitle:
+            st.caption(subtitle)
+        if sidebar_note:
+            st.write(sidebar_note)
+        elif summary:
+            st.write(summary)
+        if decision_focus:
+            st.markdown("**오늘 확인할 결정**")
+            render_list(decision_focus[:3])
+        return
+
+    st.markdown(
+        f"""
+        <div class="demo-brief">
+          <div class="demo-kicker">아이디어 → 기술 기획서 변환</div>
+          <h2>{escape(title)}</h2>
+          <p class="demo-subtitle">{escape(subtitle)}</p>
+          <p>{escape(summary)}</p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    if presentation_goal:
+        st.markdown(f"**검토 목표**  \n{presentation_goal}")
+    cols = st.columns(2)
+    with cols[0]:
+        st.markdown("**오늘 확인할 결정**")
+        render_list(decision_focus)
+    with cols[1]:
+        st.markdown("**핵심 포인트**")
+        render_list(demo_highlights)
+
+
 def format_label(value: str) -> str:
     labels = {
         "Current stage": "현재 단계",
@@ -287,14 +460,14 @@ def format_label(value: str) -> str:
         "rollback_recommendation": "롤백 권고",
         "service_blocks": "서비스 블록",
         "primary_users": "주요 사용자",
-        "demo_note": "데모 메모",
+        "demo_note": "작업 메모",
         "checked_items": "검증 항목",
         "implementation_guardrails": "운영 가드레일",
         "data_readiness_question": "데이터 확인 질문",
         "initial_service_boundary": "초기 서비스 경계",
-        "prd_packet": "PRD 패킷",
-        "prd_quality": "PRD 품질",
-        "prd_report": "PRD 보고서",
+        "prd_packet": "기획서 패킷",
+        "prd_quality": "기획서 품질",
+        "prd_report": "기획서 보고서",
         "stage_goal": "단계 목표",
         "one_page_summary": "한 장 요약",
         "problem": "문제 정의",
@@ -333,13 +506,13 @@ def format_label(value: str) -> str:
         "event_logs": "이벤트 로그",
         "event_name": "이벤트명",
         "properties": "속성",
-        "implementation_slices": "구현 단위",
+        "implementation_slices": "구현 검토 단위",
         "owner_hint": "담당 힌트",
         "decision_agenda": "회의 안건",
         "topic": "안건",
         "decision_needed": "결정 필요사항",
         "options": "선택지",
-        "developer_handoff": "개발 전달사항",
+        "developer_handoff": "개발팀 확인사항",
         "evidence_links": "근거 링크",
         "findings": "점검 결과",
         "repair_attempted": "자동 보강 여부",
@@ -393,7 +566,7 @@ def stage_response_for(session: Dict[str, Any], stage_id: str) -> Dict[str, Any]
     return {
         "session_id": session["session_id"],
         "stage_id": stage_id,
-        "status": "completed",
+        "status": stage_history_entry(session, stage_id).get("status", "completed"),
         "output": output,
     }
 
@@ -442,6 +615,134 @@ def rows_for_citations(citations: list[Dict[str, Any]]) -> list[Dict[str, str]]:
     ]
 
 
+def safe_count(value: Any, fallback: Any = 0) -> int:
+    if isinstance(value, list):
+        return len(value)
+    if isinstance(value, dict):
+        return len(value)
+    if value is None:
+        value = fallback
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return 0
+
+
+def as_string_list(value: Any) -> list[str]:
+    if isinstance(value, list):
+        return [str(item) for item in value if str(item)]
+    if value:
+        return [str(value)]
+    return []
+
+
+def stage_history_entry(session: Dict[str, Any], stage_id: str) -> Dict[str, Any]:
+    entries = [
+        item
+        for item in session.get("stage_history", [])
+        if isinstance(item, dict) and item.get("stage_id") == stage_id
+    ]
+    return entries[-1] if entries else {}
+
+
+def stage_review_state(
+    session: Dict[str, Any],
+    stage_id: str,
+    output: Dict[str, Any] | None = None,
+) -> Dict[str, Any]:
+    output = output or session.get("stage_outputs", {}).get(stage_id, {}) or {}
+    if not output:
+        return {
+            "status": "pending",
+            "summary": "",
+            "prd_quality_score": 0,
+            "required_user_input_count": 0,
+            "risk_count": 0,
+            "rollback_targets": [],
+        }
+    history = stage_history_entry(session, stage_id)
+    quality = output.get("prd_quality", {}) if isinstance(output.get("prd_quality"), dict) else {}
+    rollback_targets = as_string_list(output.get("rollback_targets"))
+    if not rollback_targets:
+        rollback_targets = as_string_list(history.get("rollback_targets"))
+    status = history.get("status")
+    if not status:
+        status = "completed" if output else "pending"
+    return {
+        "status": str(status),
+        "summary": str(history.get("summary") or output.get("summary") or ""),
+        "prd_quality_score": safe_count(
+            quality.get("score"),
+            history.get("prd_quality_score"),
+        ),
+        "required_user_input_count": safe_count(
+            output.get("required_user_input"),
+            history.get("required_user_input_count"),
+        ),
+        "risk_count": safe_count(output.get("risks"), history.get("risk_count")),
+        "rollback_targets": rollback_targets,
+    }
+
+
+def rows_for_stage_history(session: Dict[str, Any]) -> list[Dict[str, Any]]:
+    rows: list[Dict[str, Any]] = []
+    for item in session.get("stage_history", []):
+        if not isinstance(item, dict):
+            continue
+        stage_id = str(item.get("stage_id") or "")
+        review = stage_review_state(session, stage_id)
+        rows.append(
+            {
+                "단계": stage_title(stage_id),
+                "상태": str(item.get("status") or review.get("status") or ""),
+                "완료": "예" if item.get("completed") else "아니오",
+                "승인": "예" if item.get("approved") else "아니오",
+                "추가 입력": review.get("required_user_input_count", 0),
+                "리스크": review.get("risk_count", 0),
+                "기획서 품질": review.get("prd_quality_score", 0),
+                "롤백 대상": ", ".join(review.get("rollback_targets", [])),
+                "요약": str(item.get("summary") or review.get("summary") or ""),
+            }
+        )
+    return rows
+
+
+def reason_preview(reason: str, limit: int = 90) -> str:
+    compact = " ".join(str(reason or "").split())
+    if len(compact) <= limit:
+        return compact
+    return f"{compact[:limit].rstrip()}..."
+
+
+def rows_for_rollback_events(events: list[Dict[str, Any]]) -> list[Dict[str, Any]]:
+    rows: list[Dict[str, Any]] = []
+    for item in events:
+        if not isinstance(item, dict):
+            continue
+        rows.append(
+            {
+                "발생 시각": str(item.get("created_at") or ""),
+                "현재 단계": stage_title(str(item.get("from_stage") or "")),
+                "되돌린 단계": stage_title(str(item.get("target_stage") or "")),
+                "무효화된 단계": ", ".join(
+                    stage_title(str(stage_id)) for stage_id in item.get("invalidated_stages", [])
+                ),
+                "사유 요약": reason_preview(str(item.get("reason") or "")),
+            }
+        )
+    return rows
+
+
+def approval_button_label(review: Dict[str, Any]) -> str:
+    has_warning = (
+        review.get("status") == "warning"
+        or review.get("required_user_input_count", 0) > 0
+        or review.get("risk_count", 0) > 0
+        or bool(review.get("rollback_targets"))
+    )
+    return "경고 확인 후 승인" if has_warning else "검토 후 승인"
+
+
 def has_prd_packet(packet: Dict[str, Any]) -> bool:
     return bool(
         packet
@@ -459,7 +760,7 @@ def render_prd_quality(quality: Dict[str, Any]) -> None:
     status = str(quality.get("status", "needs_review"))
     score = quality.get("score", 0)
     attempted = "예" if quality.get("repair_attempted") else "아니오"
-    message = f"PRD 품질 점수 {score}점 · 자동 보강 {attempted}"
+    message = f"기획서 품질 점수 {score}점 · 자동 보강 {attempted}"
     if status == "ready":
         st.success(message)
         return
@@ -479,7 +780,7 @@ def render_prd_table(title: str, rows: list[Dict[str, Any]]) -> None:
 
 def render_prd_packet(packet: Dict[str, Any], quality: Dict[str, Any] | None = None) -> None:
     if not has_prd_packet(packet):
-        st.info("PRD 패킷이 없는 이전 산출물입니다. 원본 구조화 출력을 확인하세요.")
+        st.info("기획서 패킷이 없는 이전 산출물입니다. 원본 구조화 출력을 확인하세요.")
         return
 
     render_prd_quality(quality or {})
@@ -509,10 +810,10 @@ def render_prd_handoff(packet: Dict[str, Any]) -> None:
     render_prd_table("구현 단위", packet.get("implementation_slices", []))
     handoff = packet.get("developer_handoff", [])
     if handoff:
-        st.markdown("**개발 전달사항**")
+        st.markdown("**개발팀 확인사항**")
         st.dataframe([{"전달사항": item} for item in handoff], width="stretch", hide_index=True)
     else:
-        st.info("개발 전달사항이 아직 없습니다.")
+        st.info("개발팀 확인사항이 아직 없습니다.")
     render_prd_table("회의 안건", packet.get("decision_agenda", []))
     render_prd_table("미확정 질문", packet.get("open_questions", []))
 
@@ -563,7 +864,7 @@ def business_heading_for_stage(stage_id: str) -> str:
 
 def prd_packet_markdown(packet: Dict[str, Any]) -> list[str]:
     lines = [
-        "## 2. PRD 핵심 요약",
+        "## 2. 기획서 핵심 요약",
         packet.get("one_page_summary", ""),
         "",
         "## 3. 문제 정의",
@@ -580,7 +881,7 @@ def prd_packet_markdown(packet: Dict[str, Any]) -> list[str]:
     lines.extend(["", "## 7. 데이터 및 이벤트 로그"])
     lines.extend(markdown_value({"data_requirements": packet.get("data_requirements", [])}))
     lines.extend(markdown_value({"event_logs": packet.get("event_logs", [])}))
-    lines.extend(["", "## 8. 개발 전달사항"])
+    lines.extend(["", "## 8. 개발팀 확인사항"])
     lines.extend(markdown_value({"implementation_slices": packet.get("implementation_slices", [])}))
     lines.extend(markdown_value({"developer_handoff": packet.get("developer_handoff", [])}))
     lines.extend(["", "## 9. 회의 안건 및 미확정 질문"])
@@ -596,7 +897,7 @@ def stage_output_markdown(stage_id: str, output: Dict[str, Any]) -> str:
             "# 업무보고",
             "",
             f"- 문서명: {business_heading_for_stage(stage_id)}",
-            "- 보고 목적: 서비스 PRD 검토 및 개발 회의 안건 정리",
+            "- 보고 목적: 서비스 기획서 검토 및 개발 회의 안건 정리",
             "- 보고 대상: 사업/운영 의사결정권자 및 개발 리드",
             "",
             "## 1. 검토 배경",
@@ -650,8 +951,8 @@ def report_markdown(report: Dict[str, Any]) -> str:
         lines = [
             "# 최종 업무보고서",
             "",
-            "- 문서명: 서비스 PRD 및 개발 착수 검토안",
-            "- 보고 목적: 시연 결과 기반 추진 범위와 개발 회의 안건 확정",
+            "- 문서명: 서비스 기획서 및 개발 착수 검토안",
+            "- 보고 목적: 검토 결과 기반 추진 범위와 개발 회의 안건 확정",
             "- 보고 대상: 사업/운영 의사결정권자 및 개발 리드",
             "",
             "## 1. 종합 의견",
@@ -799,45 +1100,451 @@ def render_downloads(stage_id: str, output: Dict[str, Any], key_prefix: str) -> 
     )
 
 
-def render_stage_output(stage_response: Dict[str, Any]) -> None:
+REPORT_EXPORTS = {
+    "docx": {
+        "label": "Word 문서",
+        "description": "회의 공유용 편집 문서",
+        "file_name": "milemate-final-planning-brief.docx",
+        "mime": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "tone": "decision",
+    },
+    "pdf": {
+        "label": "PDF 보고서",
+        "description": "인쇄/제출용 고정 문서",
+        "file_name": "milemate-final-planning-brief.pdf",
+        "mime": "application/pdf",
+        "tone": "ready",
+    },
+    "pptx": {
+        "label": "요약 슬라이드",
+        "description": "보고·검토용 요약 슬라이드",
+        "file_name": "milemate-final-presentation-deck.pptx",
+        "mime": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        "tone": "technical",
+    },
+}
+
+
+def report_export_bytes(session_id: str, export_format: str) -> bytes:
+    return api_binary_request("GET", f"/reports/{session_id}/exports/{export_format}")
+
+
+def html_list(items: Iterable[Any], limit: int = 4) -> str:
+    values = [escape(str(item)) for item in list(items)[:limit] if str(item)]
+    if not values:
+        return "<p>아직 표시할 항목이 없습니다.</p>"
+    return "<ul>" + "".join(f"<li>{item}</li>" for item in values) + "</ul>"
+
+
+def first_text(value: Any, fallback: str = "확인 필요") -> str:
+    if isinstance(value, list):
+        return str(value[0]) if value else fallback
+    if value:
+        return str(value)
+    return fallback
+
+
+def report_card_items(report: Dict[str, Any]) -> list[Dict[str, str]]:
+    packet = report.get("prd_report", {}) if isinstance(report, dict) else {}
+    scope = packet.get("scope", {}) if isinstance(packet.get("scope"), dict) else {}
+    risks = report.get("risks", []) if isinstance(report.get("risks"), list) else []
+    decisions = (
+        report.get("decision_log", [])
+        if isinstance(report.get("decision_log"), list)
+        else []
+    )
+    high_risks = [
+        item for item in risks if isinstance(item, dict) and item.get("severity") == "high"
+    ]
+    first_high_risk = high_risks[0].get("description") if high_risks else ""
+    return [
+        {
+            "title": "종합 의견",
+            "value": "기획서 초안 준비",
+            "detail": str(packet.get("one_page_summary") or "최종 보고서를 생성했습니다.")[:120],
+            "tone": "decision",
+        },
+        {
+            "title": "추진 여부",
+            "value": "MVP 검토 가능",
+            "detail": f"이번 범위 {len(scope.get('in_scope', []))}개 항목을 기준으로 설명합니다.",
+            "tone": "ready",
+        },
+        {
+            "title": "핵심 리스크",
+            "value": f"{len(risks)}건",
+            "detail": (
+                first_text(first_high_risk, "회의 전 확인 필요")
+                if risks
+                else "기록된 리스크가 없습니다."
+            ),
+            "tone": "risk" if high_risks else "warning",
+        },
+        {
+            "title": "다음 회의 안건",
+            "value": f"{len(decisions)}건",
+            "detail": first_text(
+                decisions[0].get("item") if decisions and isinstance(decisions[0], dict) else "",
+                "범위와 데이터 소유자를 확정합니다.",
+            ),
+            "tone": "technical",
+        },
+    ]
+
+
+def render_report_hero(report: Dict[str, Any]) -> None:
+    cards = "\n".join(
+        f"""
+        <div class="report-card report-{escape(card["tone"])}">
+          <div class="report-card-title">{escape(card["title"])}</div>
+          <div class="report-card-value">{escape(card["value"])}</div>
+          <div class="report-card-detail">{escape(card["detail"])}</div>
+        </div>
+        """
+        for card in report_card_items(report)
+    )
+    st.markdown(
+        f"""
+        <div class="report-hero">
+          <div class="report-kicker">최종 보고서</div>
+          <h2>아이디어를 회사 문서 형태로 정리했습니다</h2>
+          <p>
+            아래 내용은 기획서 본문, 리스크, 개발팀 확인사항, 보고용 산출물로
+            바로 나누어 확인할 수 있습니다.
+          </p>
+          <div class="report-card-grid">{cards}</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def render_prd_overview_boxes(packet: Dict[str, Any]) -> None:
+    problem = packet.get("problem", {}) if isinstance(packet.get("problem"), dict) else {}
+    scope = packet.get("scope", {}) if isinstance(packet.get("scope"), dict) else {}
+    personas = packet.get("personas", []) if isinstance(packet.get("personas"), list) else []
+    developer_handoff = packet.get("developer_handoff", [])
+    persona_names = [
+        item.get("name", item) if isinstance(item, dict) else item
+        for item in personas
+    ]
+    st.markdown(
+        f"""
+        <div class="report-section-grid">
+          <div class="report-section report-decision">
+            <div class="report-section-title">문제 정의</div>
+            <p>{escape(str(problem.get("customer_pain") or "문제 정의가 필요합니다."))}</p>
+          </div>
+          <div class="report-section report-ready">
+            <div class="report-section-title">대상 사용자</div>
+            {html_list(persona_names)}
+          </div>
+          <div class="report-section report-warning">
+            <div class="report-section-title">MVP 범위</div>
+            {html_list(scope.get("in_scope", []))}
+          </div>
+          <div class="report-section report-technical">
+            <div class="report-section-title">개발팀 확인사항</div>
+            {html_list(developer_handoff)}
+          </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def render_report_export_panel(
+    session_id: str,
+    report: Dict[str, Any],
+    key_prefix: str,
+    boxed: bool = True,
+    show_json: bool = True,
+) -> None:
+    st.markdown("### 문서 패키지")
+    st.caption("회사에서 실제로 공유하는 형식에 맞춰 편집 문서, 제출 문서, 보고 자료로 나눕니다.")
+    cols = st.columns(3)
+    for col, export_format in zip(cols, REPORT_EXPORTS):
+        config = REPORT_EXPORTS[export_format]
+        with col:
+            if boxed:
+                st.markdown(
+                    f"""
+                    <div class="export-card export-{escape(config["tone"])}">
+                      <div class="export-label">{escape(config["label"])}</div>
+                      <div class="export-desc">{escape(config["description"])}</div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+            else:
+                st.markdown(f"**{config['label']}**")
+                st.caption(config["description"])
+            try:
+                data = report_export_bytes(session_id, export_format)
+                st.download_button(
+                    f"{config['label']} 다운로드",
+                    data=data,
+                    file_name=config["file_name"],
+                    mime=config["mime"],
+                    key=f"{key_prefix}-{export_format}-{session_id}",
+                    width="stretch",
+                )
+            except RuntimeError as exc:
+                st.error(f"{config['label']} 생성 실패: {exc}")
+
+    if show_json:
+        with st.expander("원본 데이터", expanded=False):
+            st.caption("구조화 결과를 확인하거나 디버깅할 때 사용합니다.")
+            st.download_button(
+                "JSON 원본 저장",
+                data=json.dumps(report, ensure_ascii=False, indent=2),
+                file_name="milemate-final-report.json",
+                mime="application/json",
+                key=f"{key_prefix}-json-{session_id}",
+                width="stretch",
+            )
+
+
+def rollback_recommendation_text(output: Dict[str, Any], review: Dict[str, Any]) -> str:
+    planner_view = output.get("planner_view", {})
+    recommendation = ""
+    if isinstance(planner_view, dict):
+        recommendation = str(planner_view.get("rollback_recommendation") or "")
+    if recommendation and recommendation != "None":
+        return stage_title(recommendation) if recommendation in STAGE_IDS else recommendation
+    targets = review.get("rollback_targets") or []
+    if targets:
+        return ", ".join(
+            stage_title(stage_id) if stage_id in STAGE_IDS else stage_id
+            for stage_id in targets
+        )
+    return "롤백 권고 없음"
+
+
+def render_review_summary(
+    stage_id: str,
+    output: Dict[str, Any],
+    review: Dict[str, Any],
+    bordered: bool = True,
+) -> None:
+    required = as_string_list(output.get("required_user_input"))
+    risks = output.get("risks", []) if isinstance(output.get("risks"), list) else []
+    decisions = (
+        output.get("decision_points", [])
+        if isinstance(output.get("decision_points"), list)
+        else []
+    )
+    rollback_text = rollback_recommendation_text(output, review)
+
+    def render_content() -> None:
+        st.markdown(f"### 검토/결정 요약 · {stage_title(stage_id)}")
+        if review.get("summary"):
+            st.write(review["summary"])
+
+        metric_cols = st.columns(4)
+        metric_cols[0].metric("추가 입력", review.get("required_user_input_count", 0))
+        metric_cols[1].metric("리스크", review.get("risk_count", 0))
+        metric_cols[2].metric("기획서 품질", review.get("prd_quality_score", 0))
+        metric_cols[3].metric("롤백 권고", rollback_text)
+
+        if required:
+            st.warning("추가 입력 확인 필요")
+            st.dataframe(
+                [{"확인할 내용": item} for item in required],
+                width="stretch",
+                hide_index=True,
+            )
+        if risks:
+            st.warning("리스크 확인 필요")
+            st.dataframe(rows_for_risks(risks), width="stretch", hide_index=True)
+        if decisions:
+            st.markdown("**승인 전 결정 항목**")
+            st.dataframe(rows_for_decisions(decisions), width="stretch", hide_index=True)
+
+    if bordered:
+        with st.container(border=True):
+            render_content()
+    else:
+        render_content()
+
+
+def approve_current_stage(session: Dict[str, Any]) -> None:
+    previous_stage = session["current_stage"]
+    st.session_state["session"] = api_request(
+        "POST",
+        "/stages/approve",
+        {"session_id": session["session_id"]},
+    )
+    st.session_state["stage_response"] = None
+    st.session_state["selected_stage_id"] = st.session_state["session"]["current_stage"]
+    if previous_stage == "stage_4":
+        st.session_state["report"] = api_request(
+            "GET",
+            f"/reports/{session['session_id']}",
+        )
+
+
+def rollback_current_stage(session: Dict[str, Any], target_stage: str, reason: str) -> None:
+    st.session_state["session"] = api_request(
+        "POST",
+        "/stages/rollback",
+        {
+            "session_id": session["session_id"],
+            "target_stage": target_stage,
+            "reason": reason,
+        },
+    )
+    st.session_state["stage_response"] = None
+    st.session_state["report"] = None
+    st.session_state["selected_stage_id"] = st.session_state["session"]["current_stage"]
+
+
+@st.dialog("이전 단계로 되돌리기")
+def render_rollback_dialog(
+    session: Dict[str, Any],
+    rollback_targets: list[str],
+    is_generating: bool,
+) -> None:
+    stage_id = session["current_stage"]
+    key_prefix = f"rollback:{session['session_id']}:{stage_id}"
+    st.write(
+        "현재 단계에서 발견한 문제를 바탕으로 이전 단계의 기획 가정을 다시 수정합니다. "
+        "사유에는 단순 키워드보다 잘못된 가정, 수정 지시, 유지할 결정을 함께 적어주세요."
+    )
+    target = st.selectbox(
+        "되돌릴 단계",
+        rollback_targets,
+        key=f"{key_prefix}:target",
+        format_func=stage_title,
+        disabled=is_generating,
+    )
+    reason = st.text_area(
+        "롤백 사유 및 수정 지시",
+        height=240,
+        key=f"{key_prefix}:reason",
+        placeholder=ROLLBACK_REASON_PLACEHOLDER,
+        disabled=is_generating,
+    )
+    st.caption(
+        "이 내용은 진행 로그와 최종 의사결정 이력에 남습니다. "
+        "다음 생성 단계에서 Codex가 반영해야 할 지시까지 자세히 남기는 것이 좋습니다."
+    )
+    submit_col, cancel_col = st.columns([1.2, 1])
+    with submit_col:
+        if st.button(
+            "이 사유로 되돌리기",
+            type="primary",
+            width="stretch",
+            disabled=is_generating or not reason.strip(),
+        ):
+            try:
+                clear_error()
+                st.session_state.pop("rollback_dialog_context", None)
+                rollback_current_stage(session, target, reason.strip())
+                st.rerun()
+            except RuntimeError as exc:
+                set_error(str(exc))
+    with cancel_col:
+        if st.button("취소", width="stretch", disabled=is_generating):
+            st.session_state.pop("rollback_dialog_context", None)
+            st.rerun()
+
+
+def render_current_decision_panel(
+    session: Dict[str, Any],
+    current_response: Dict[str, Any] | None,
+    is_generating: bool,
+) -> None:
+    stage_id = session["current_stage"]
+    output = current_response.get("output", {}) if current_response else {}
+    review = stage_review_state(session, stage_id, output)
+    if not current_response:
+        review = {
+            **review,
+            "status": "pending",
+            "required_user_input_count": 0,
+            "risk_count": 0,
+            "rollback_targets": [],
+        }
+
+    with st.container(border=True):
+        st.markdown(f"### 기획서 검토 · {stage_title(stage_id)}")
+        if not current_response:
+            st.caption("아직 생성된 결과가 없습니다. 위 생성 영역에서 현재 단계를 먼저 만듭니다.")
+        else:
+            render_review_summary(stage_id, output, review, bordered=False)
+
+        action_cols = st.columns([1.4, 1, 2.8])
+        with action_cols[0]:
+            can_approve = stage_id in session.get("stage_outputs", {})
+            if st.button(
+                approval_button_label(review),
+                type="primary",
+                width="stretch",
+                disabled=not can_approve or is_generating,
+            ):
+                try:
+                    clear_error()
+                    approve_current_stage(session)
+                    st.rerun()
+                except RuntimeError as exc:
+                    set_error(str(exc))
+
+        with action_cols[1]:
+            if st.button("새로고침", width="stretch", disabled=is_generating):
+                try:
+                    clear_error()
+                    refresh_session(session["session_id"])
+                    st.session_state["stage_response"] = None
+                    st.rerun()
+                except RuntimeError as exc:
+                    set_error(str(exc))
+
+        rollback_targets = review.get("rollback_targets", [])
+        if rollback_targets:
+            with action_cols[2]:
+                target_labels = ", ".join(stage_title(target) for target in rollback_targets)
+                st.caption(f"되돌릴 수 있는 단계: {target_labels}")
+                if st.button(
+                    "이전 단계로 되돌리기",
+                    width="stretch",
+                    disabled=is_generating,
+                    key=f"rollback-open-{session['session_id']}-{stage_id}",
+                ):
+                    st.session_state["rollback_dialog_context"] = {
+                        "session_id": session["session_id"],
+                        "stage_id": stage_id,
+                    }
+        dialog_context = st.session_state.get("rollback_dialog_context")
+        if (
+            rollback_targets
+            and isinstance(dialog_context, dict)
+            and dialog_context.get("session_id") == session["session_id"]
+            and dialog_context.get("stage_id") == stage_id
+        ):
+            render_rollback_dialog(session, rollback_targets, is_generating)
+
+
+def render_stage_output(
+    stage_response: Dict[str, Any],
+    session: Dict[str, Any] | None = None,
+) -> None:
     output = stage_response.get("output", {})
     stage_id = stage_response.get("stage_id", "")
     packet = output.get("prd_packet", {})
     quality = output.get("prd_quality", {})
-    st.subheader(f"{stage_title(stage_id)} 산출물")
-    st.markdown(f"**핵심 요약**\n\n{output.get('summary', '')}")
-
-    metric_cols = st.columns(5)
-    metric_cols[0].metric("결정 항목", len(output.get("decision_points", [])))
-    metric_cols[1].metric("추가 요청", len(output.get("required_user_input", [])))
-    metric_cols[2].metric("리스크", len(output.get("risks", [])))
-    metric_cols[3].metric("근거 자료", len(output.get("citations", [])))
-    metric_cols[4].metric("PRD 품질", str(quality.get("score", 0)))
+    review = stage_review_state(session or {"stage_outputs": {stage_id: output}}, stage_id, output)
+    if not session or stage_id != session.get("current_stage"):
+        render_review_summary(stage_id, output, review)
+    st.subheader(f"{stage_title(stage_id)} 상세 산출물")
 
     tab_labels = [
-        "PRD 요약",
-        "화면/정책",
-        "데이터/로그",
         "결정/리스크",
-        "개발 전달",
-        "근거/파일",
-        "원본 출력",
+        "기획서 초안",
+        "구현 검토",
+        "내보내기",
     ]
-    prd_tab, execution_tab, data_tab, decisions_tab, handoff_tab, evidence_tab, raw_tab = (
-        st.tabs(tab_labels)
-    )
-    with prd_tab:
-        render_prd_packet(packet, quality)
-    with execution_tab:
-        if has_prd_packet(packet):
-            render_prd_execution(packet)
-        else:
-            render_key_values(output.get("planner_view", {}))
-    with data_tab:
-        if has_prd_packet(packet):
-            render_prd_data(packet)
-        else:
-            render_key_values(output.get("engineer_view", {}))
+    decisions_tab, prd_tab, handoff_tab, raw_tab = st.tabs(tab_labels)
     with decisions_tab:
         decisions = output.get("decision_points", [])
         if decisions:
@@ -854,12 +1561,19 @@ def render_stage_output(stage_response: Dict[str, Any]) -> None:
             st.dataframe(rows_for_risks(risks), width="stretch", hide_index=True)
         else:
             st.info("등록된 리스크가 없습니다.")
+    with prd_tab:
+        render_prd_packet(packet, quality)
+        if has_prd_packet(packet):
+            render_prd_execution(packet)
+        else:
+            render_key_values(output.get("planner_view", {}))
     with handoff_tab:
         if has_prd_packet(packet):
+            render_prd_data(packet)
             render_prd_handoff(packet)
         else:
             render_key_values(output.get("engineer_view", {}))
-    with evidence_tab:
+    with raw_tab:
         citations = output.get("citations", [])
         if citations:
             st.markdown("**근거 자료**")
@@ -867,7 +1581,6 @@ def render_stage_output(stage_response: Dict[str, Any]) -> None:
         else:
             st.info("이 산출물에 연결된 근거 자료가 없습니다.")
         render_downloads(stage_id, output, key_prefix="stage-detail")
-    with raw_tab:
         st.markdown("**기획 브리프 원본**")
         render_key_values(output.get("planner_view", {}))
         st.markdown("**실행 전환본 원본**")
@@ -887,10 +1600,19 @@ def render_session(session: Dict[str, Any]) -> None:
         with st.expander("진행 로그", expanded=False):
             if history:
                 st.markdown("**스테이지 이력**")
-                st.dataframe(history, width="stretch", hide_index=True)
+                st.dataframe(rows_for_stage_history(session), width="stretch", hide_index=True)
             if rollback_events:
-                st.markdown("**롤백 기록**")
-                st.dataframe(rollback_events, width="stretch", hide_index=True)
+                st.markdown("**되돌림 기록**")
+                st.dataframe(
+                    rows_for_rollback_events(rollback_events),
+                    width="stretch",
+                    hide_index=True,
+                )
+                for idx, event in enumerate(rollback_events, start=1):
+                    target_stage = stage_title(str(event.get("target_stage") or ""))
+                    with st.expander(f"되돌림 상세 사유 {idx} · {target_stage}", expanded=False):
+                        st.markdown("**롤백 사유 및 수정 지시**")
+                        st.write(str(event.get("reason") or "사유가 기록되지 않았습니다."))
 
 
 def render_stage_navigator(session: Dict[str, Any]) -> str:
@@ -919,8 +1641,8 @@ def render_stage_placeholder(session: Dict[str, Any], stage_id: str) -> None:
         st.subheader(f"{stage_title(stage_id)} 산출물")
         if stage_id == session["current_stage"]:
             st.info(
-                "이 단계의 산출물이 아직 없습니다. 하단 대화창의 전송 및 생성 "
-                "버튼으로 생성할 수 있습니다."
+                "이 단계의 산출물이 아직 없습니다. "
+                "상단의 Codex 생성 영역에서 바로 생성할 수 있습니다."
             )
         else:
             st.info("아직 생성되지 않은 단계입니다. 앞 단계 승인 후 확인할 수 있습니다.")
@@ -949,47 +1671,62 @@ def render_artifact_library(session: Dict[str, Any], report: Dict[str, Any] | No
     if report:
         with st.container(border=True):
             st.markdown("**최종 보고서**")
-            st.caption("승인된 스테이지 결과를 묶은 발표용 보고서입니다.")
-            cols = st.columns(2)
-            cols[0].download_button(
-                "PDF 저장",
-                data=report_pdf_bytes(report),
-                file_name="milemate-final-report.pdf",
-                mime="application/pdf",
-                key=f"report-pdf-{session['session_id']}",
-                width="stretch",
-            )
-            cols[1].download_button(
-                "JSON 저장",
-                data=json.dumps(report, ensure_ascii=False, indent=2),
-                file_name="milemate-final-report.json",
-                mime="application/json",
-                key=f"report-json-{session['session_id']}",
-                width="stretch",
+            st.caption("승인된 스테이지 결과를 묶은 문서 패키지입니다.")
+            render_report_export_panel(
+                session_id=session["session_id"],
+                report=report,
+                key_prefix="artifact-report",
+                boxed=False,
+                show_json=False,
             )
 
 
-def render_report(report: Dict[str, Any]) -> None:
-    st.subheader("최종 보고서")
-    prd_tab, planner_tab, engineer_tab, log_tab = st.tabs(
-        ["PRD 보고서", "업무보고 요약", "실행 계획", "결정 이력"]
+def render_report(report: Dict[str, Any], session_id: str | None = None) -> None:
+    render_report_hero(report)
+    if session_id:
+        render_report_export_panel(
+            session_id=session_id,
+            report=report,
+            key_prefix="main-report",
+            boxed=True,
+            show_json=True,
+        )
+    prd_tab, risk_tab, engineer_tab, log_tab = st.tabs(
+        ["기획서 본문", "리스크/결정", "개발팀 전달", "원본 구조"]
     )
     with prd_tab:
-        render_prd_packet(report.get("prd_report", {}), report.get("prd_quality", {}))
-        if has_prd_packet(report.get("prd_report", {})):
-            render_prd_execution(report.get("prd_report", {}))
-            render_prd_data(report.get("prd_report", {}))
-            render_prd_handoff(report.get("prd_report", {}))
-    with planner_tab:
-        render_key_values(report.get("planner_report", {}))
-    with engineer_tab:
-        render_key_values(report.get("engineer_report", {}))
-    with log_tab:
+        packet = report.get("prd_report", {})
+        if has_prd_packet(packet):
+            render_prd_overview_boxes(packet)
+            render_prd_packet(packet, report.get("prd_quality", {}))
+            render_prd_execution(packet)
+        else:
+            render_key_values(report.get("planner_report", {}))
+    with risk_tab:
+        risks = report.get("risks", [])
+        if risks:
+            st.markdown("**핵심 리스크**")
+            st.dataframe(rows_for_risks(risks), width="stretch", hide_index=True)
+        else:
+            st.success("등록된 리스크가 없습니다.")
+        st.markdown("**의사결정 이력**")
         st.dataframe(
             rows_for_decisions(report.get("decision_log", [])),
             width="stretch",
             hide_index=True,
         )
+    with engineer_tab:
+        packet = report.get("prd_report", {})
+        if has_prd_packet(packet):
+            render_prd_data(packet)
+            render_prd_handoff(packet)
+        render_key_values(report.get("engineer_report", {}))
+    with log_tab:
+        render_key_values(report.get("planner_report", {}))
+        citations = report.get("citations", [])
+        if citations:
+            st.markdown("**참고자료**")
+            st.dataframe(rows_for_citations(citations), width="stretch", hide_index=True)
 
 
 def set_error(message: str) -> None:
@@ -1002,7 +1739,10 @@ def clear_error() -> None:
 
 def sync_input_to_scenario() -> None:
     scenario_id = st.session_state["scenario_id"]
-    st.session_state["user_input"] = scenario_title(st.session_state["demo_inputs"], scenario_id)
+    st.session_state["user_input"] = scenario_initial_input(
+        st.session_state["demo_inputs"],
+        scenario_id,
+    )
     st.session_state["session"] = None
     st.session_state["stage_response"] = None
     st.session_state["report"] = None
@@ -1063,43 +1803,47 @@ def render_stage_chat(
     elif draft_key not in st.session_state:
         st.session_state[draft_key] = demo_stage_request(scenario_id, stage_id)
 
-    st.divider()
-    st.subheader("현재 단계 대화")
-    st.caption("전송된 요청은 다음 단계 생성에 반영됩니다.")
     messages = stage_chat_messages(session_id, stage_id)
-    with st.container(height=360, border=True):
-        if not messages:
-            st.info("데모용 요청 문장이 아래 입력창에 준비되어 있습니다.")
-        for message in messages:
-            role = "assistant" if message["role"] == "assistant" else "user"
-            with st.chat_message(role):
-                st.markdown(message["content"])
-
-    input_col, send_col = st.columns([5, 1], gap="small", vertical_alignment="bottom")
-    with input_col:
-        st.text_area(
-            "대화 입력",
-            height=122,
-            key=draft_key,
-            label_visibility="collapsed",
-            placeholder=f"{stage_title(stage_id)}에 반영할 내용을 입력하세요",
-            disabled=st.session_state.get("is_generating", False),
+    with st.container(border=True):
+        st.markdown(f"### 기획서 초안 작성 · {stage_title(stage_id)}")
+        st.caption(
+            "이 단계 산출물이 아직 없거나 다시 생성하려는 경우 "
+                "아래 요청으로 바로 작성합니다."
         )
-    with send_col:
-        if st.button(
-            "전송 및 생성",
-            type="primary",
-            width="stretch",
-            disabled=st.session_state.get("is_generating", False),
-        ):
-            prompt = str(st.session_state.get(draft_key, "")).strip()
-            if not prompt:
-                set_error("전송할 요청을 입력하세요.")
-                return
-            clear_error()
-            messages.append({"role": "user", "content": prompt})
-            st.session_state["clear_stage_chat_draft"] = draft_key
-            start_stage_generation(session, base_input, context)
+        if context:
+            st.info(f"검증 조건: {display_value(context)}")
+
+        input_col, send_col = st.columns([5, 1.25], gap="small", vertical_alignment="bottom")
+        with input_col:
+            st.text_area(
+                "기획자 추가 요청",
+                height=122,
+                key=draft_key,
+                placeholder=f"{stage_title(stage_id)} 기획서에 반영할 내용을 입력하세요",
+                disabled=st.session_state.get("is_generating", False),
+            )
+        with send_col:
+            if st.button(
+                "Codex로 기획서 생성",
+                type="primary",
+                width="stretch",
+                disabled=st.session_state.get("is_generating", False),
+            ):
+                prompt = str(st.session_state.get(draft_key, "")).strip()
+                if not prompt:
+                    set_error("전송할 요청을 입력하세요.")
+                    return
+                clear_error()
+                messages.append({"role": "user", "content": prompt})
+                st.session_state["clear_stage_chat_draft"] = draft_key
+                start_stage_generation(session, base_input, context)
+
+        if messages:
+            with st.expander("이 단계 대화 로그", expanded=False):
+                for message in messages:
+                    role = "assistant" if message["role"] == "assistant" else "user"
+                    with st.chat_message(role):
+                        st.markdown(message["content"])
 
 
 def build_stage_user_input(session: Dict[str, Any], base_input: str) -> str:
@@ -1155,6 +1899,15 @@ def generation_visual_markup() -> str:
     )
 
 
+def generation_runtime_copy() -> str:
+    status = fetch_runtime_status()
+    if status.get("mode") == "local":
+        return "로컬 리허설 모드에서 기획서 작성 흐름을 재현합니다."
+    if status.get("available"):
+        return "라이브 Codex가 아이디어를 단계별 기획서 초안으로 구조화합니다."
+    return "라이브 연결 상태를 확인하지 못했습니다. 생성 실패 시 실행 상태를 확인하세요."
+
+
 def start_stage_generation(
     session: Dict[str, Any],
     base_input: str,
@@ -1181,11 +1934,11 @@ def run_pending_stage_generation() -> None:
     st.markdown(
         f"""
         <div class="generation-panel">
-          {generation_visual_markup()}
+            {generation_visual_markup()}
           <div>
-            <strong>Codex가 현재 단계를 생성 중입니다</strong>
+            <strong>Codex가 기획서 초안을 작성 중입니다</strong>
             <div class="generation-copy">
-              웹 검색으로 외부 자료를 확인하고, 근거 링크를 포함한 한국어 결과를 구성하고 있습니다.
+              {escape(generation_runtime_copy())}
             </div>
             <div class="generation-dots"><span></span><span></span><span></span></div>
           </div>
@@ -1194,9 +1947,9 @@ def run_pending_stage_generation() -> None:
         unsafe_allow_html=True,
     )
     with st.status(f"{stage_title(stage_id)} 생성 중", expanded=True) as status:
-        st.write("Codex CLI 호출 준비")
-        st.write("외부 자료 웹 검색")
-        st.write("Structured output schema 검증")
+        st.write("아이디어 맥락 정리")
+        st.write("유사 사례와 리스크 확인")
+        st.write("기획서 형식 점검")
         st.write(f"경과 시간: {time.time() - started_at:.1f}초")
         try:
             response = api_request(
@@ -1231,7 +1984,168 @@ st.set_page_config(page_title="milemate", layout="wide")
 st.markdown(
     """
     <style>
-    .block-container { max-width: 1180px; padding-top: 1.25rem; }
+        .block-container { max-width: 1180px; padding-top: 1.25rem; }
+        .product-intro {
+          border-top: 1px solid #d8dee4;
+          border-bottom: 1px solid #d8dee4;
+          padding: 14px 0 16px;
+          margin: 0 0 16px;
+        }
+        .product-kicker {
+          color: #0969da;
+          font-size: 0.78rem;
+          font-weight: 800;
+          letter-spacing: 0;
+          margin-bottom: 4px;
+        }
+        .product-copy {
+          color: #24292f;
+          font-size: 1.02rem;
+          line-height: 1.55;
+          max-width: 860px;
+        }
+        .runtime-badge {
+          border: 1px solid #d0d7de;
+          padding: 12px 14px;
+      margin: 4px 0 18px;
+      background: #f6f8fa;
+    }
+    .runtime-local {
+      border-left: 5px solid #57606a;
+      background: #f6f8fa;
+    }
+    .runtime-live {
+      border-left: 5px solid #1a7f37;
+      background: #eefbea;
+    }
+    .runtime-warning {
+      border-left: 5px solid #bf8700;
+      background: #fff8c5;
+    }
+    .runtime-kicker {
+      color: #57606a;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0;
+    }
+    .runtime-label {
+      color: #24292f;
+      font-size: 1rem;
+      font-weight: 700;
+      margin-top: 2px;
+    }
+    .runtime-detail,
+    .runtime-endpoint {
+      color: #57606a;
+      font-size: 0.86rem;
+      margin-top: 2px;
+    }
+    .demo-brief {
+      border: 1px solid #d8dee4;
+      background: #ffffff;
+      padding: 22px 24px;
+      margin: 8px 0 18px;
+    }
+    .demo-brief h2 {
+      color: #24292f;
+      font-size: 1.55rem;
+      line-height: 1.25;
+      margin: 3px 0 8px;
+      letter-spacing: 0;
+    }
+    .demo-kicker {
+      color: #0969da;
+      font-size: 0.76rem;
+      font-weight: 800;
+      letter-spacing: 0;
+    }
+    .demo-subtitle {
+      color: #57606a;
+      font-weight: 650;
+    }
+    .report-hero {
+      border: 1px solid #d8dee4;
+      background: #ffffff;
+      padding: 20px 22px;
+      margin: 8px 0 18px;
+      border-radius: 8px;
+    }
+    .report-kicker {
+      color: #0969da;
+      font-size: 0.76rem;
+      font-weight: 800;
+      letter-spacing: 0;
+      margin-bottom: 3px;
+    }
+    .report-hero h2 {
+      color: #24292f;
+      font-size: 1.45rem;
+      line-height: 1.3;
+      margin: 0 0 6px;
+      letter-spacing: 0;
+    }
+    .report-hero p {
+      color: #57606a;
+      margin: 0 0 14px;
+      line-height: 1.55;
+    }
+    .report-card-grid,
+    .report-section-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .report-card,
+    .report-section,
+    .export-card {
+      border: 1px solid #d8dee4;
+      border-left-width: 5px;
+      background: #ffffff;
+      padding: 12px 13px;
+      border-radius: 8px;
+      min-height: 112px;
+    }
+    .report-card-title,
+    .report-section-title,
+    .export-label {
+      color: #24292f;
+      font-size: 0.84rem;
+      font-weight: 800;
+      letter-spacing: 0;
+      margin-bottom: 5px;
+    }
+    .report-card-value {
+      color: #24292f;
+      font-size: 1.05rem;
+      font-weight: 800;
+      margin-bottom: 5px;
+    }
+    .report-card-detail,
+    .export-desc,
+    .report-section p,
+    .report-section li {
+      color: #57606a;
+      font-size: 0.88rem;
+      line-height: 1.45;
+    }
+    .report-section ul {
+      margin: 0;
+      padding-left: 1.05rem;
+    }
+    .report-decision,
+    .export-decision { border-left-color: #0969da; background: #f6fbff; }
+    .report-ready,
+    .export-ready { border-left-color: #1a7f37; background: #f3fbf1; }
+    .report-warning,
+    .export-warning { border-left-color: #bf8700; background: #fffbea; }
+    .report-risk,
+    .export-risk { border-left-color: #cf222e; background: #fff5f5; }
+    .report-technical,
+    .export-technical { border-left-color: #57606a; background: #f6f8fa; }
+    .export-card {
+      min-height: 82px;
+      margin-bottom: 8px;
+    }
     div[data-testid="stMetric"] {
       border: 1px solid #d8dee4;
       background: #f6f8fa;
@@ -1306,12 +2220,25 @@ st.markdown(
       0%, 80%, 100% { opacity: 0.25; transform: translateY(0); }
       40% { opacity: 1; transform: translateY(-3px); }
     }
+    @media (max-width: 900px) {
+      .report-card-grid,
+      .report-section-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+    @media (max-width: 640px) {
+      .report-card-grid,
+      .report-section-grid {
+        grid-template-columns: 1fr;
+      }
+    }
     </style>
     """,
     unsafe_allow_html=True,
 )
 
-st.title("milemate")
+st.title("Milemate")
+render_product_intro()
 
 scenarios = load_scenarios()
 demo_inputs = load_demo_input_map()
@@ -1326,7 +2253,7 @@ if "demo_inputs" not in st.session_state:
 if "scenario_id" not in st.session_state:
     st.session_state["scenario_id"] = default_scenario
 if "user_input" not in st.session_state:
-    st.session_state["user_input"] = scenario_title(demo_inputs, default_scenario)
+    st.session_state["user_input"] = scenario_initial_input(demo_inputs, default_scenario)
 if "session" not in st.session_state:
     st.session_state["session"] = None
 if "stage_response" not in st.session_state:
@@ -1348,23 +2275,30 @@ if "selected_stage_id" not in st.session_state:
 
 with st.sidebar:
     scenario_id = st.selectbox(
-        "시나리오",
+        "적용 예시",
         options=list(scenarios),
-        format_func=lambda key: scenarios[key]["label"],
+        format_func=lambda key: (
+            scenario_display_title(demo_inputs, key)
+            if key in demo_inputs
+            else scenarios[key]["label"]
+        ),
         key="scenario_id",
         on_change=sync_input_to_scenario,
     )
     user_input = st.text_area(
-        "초기 설명",
+        "기획자의 아이디어 메모",
         height=92,
         key="user_input",
     )
+    render_demo_brief_block(scenario_brief(demo_inputs, scenario_id), compact=True)
+    st.divider()
     verification_preset = st.selectbox(
-        "3단계 검증 조건",
+        "검증에서 드러낼 리스크",
         options=list(VERIFICATION_PRESETS),
+        format_func=lambda key: VERIFICATION_PRESET_LABELS.get(key, key),
         key="verification_preset",
     )
-    if st.button("세션 시작", type="primary", width="stretch"):
+    if st.button("기획서 작성 시작", type="primary", width="stretch"):
         try:
             clear_error()
             st.session_state["session"] = api_request(
@@ -1383,14 +2317,17 @@ with st.sidebar:
             set_error(str(exc))
 
     st.divider()
-    st.caption("로컬 데모 백엔드" if API_MODE == "local" else f"백엔드 {API_BASE_URL}")
+    with st.expander("실행 상태", expanded=False):
+        render_runtime_badge(fetch_runtime_status())
+    st.caption("로컬 리허설 모드" if API_MODE == "local" else f"백엔드 {API_BASE_URL}")
 
 if st.session_state["error"]:
     st.error(st.session_state["error"])
 
 session = st.session_state["session"]
 if not session:
-    st.info("왼쪽 사이드바에서 세션을 시작하세요.")
+    render_demo_brief_block(scenario_brief(demo_inputs, scenario_id))
+    st.info("왼쪽 사이드바에서 적용 예시와 아이디어 메모를 확인한 뒤 기획서 작성을 시작하세요.")
     st.stop()
 
 if (
@@ -1405,8 +2342,6 @@ if st.session_state.get("pending_stage_run"):
     run_pending_stage_generation()
     st.stop()
 
-selected_stage_id = render_stage_navigator(session)
-
 is_generating = st.session_state.get("is_generating", False)
 generation_context = build_generation_context(
     session=session,
@@ -1414,99 +2349,22 @@ generation_context = build_generation_context(
     demo_inputs=demo_inputs,
     scenario_id=scenario_id,
 )
-action_cols = st.columns([1, 1, 3])
-
-with action_cols[0]:
-    can_approve = session["current_stage"] in session.get("stage_outputs", {})
-    if st.button(
-        "승인 / 다음",
-        width="stretch",
-        disabled=not can_approve or is_generating,
-    ):
-        try:
-            clear_error()
-            previous_stage = session["current_stage"]
-            st.session_state["session"] = api_request(
-                "POST",
-                "/stages/approve",
-                {"session_id": session["session_id"]},
-            )
-            st.session_state["stage_response"] = None
-            st.session_state["selected_stage_id"] = st.session_state["session"][
-                "current_stage"
-            ]
-            if previous_stage == "stage_4":
-                st.session_state["report"] = api_request(
-                    "GET",
-                    f"/reports/{session['session_id']}",
-                )
-            st.rerun()
-        except RuntimeError as exc:
-            set_error(str(exc))
-
-with action_cols[1]:
-    if st.button("새로고침", width="stretch", disabled=is_generating):
-        try:
-            clear_error()
-            refresh_session(session["session_id"])
-            st.session_state["stage_response"] = None
-            st.rerun()
-        except RuntimeError as exc:
-            set_error(str(exc))
-
+render_stage_chat(session, scenario_id, user_input, generation_context)
 current_response = current_stage_response(session)
-rollback_targets = []
-if current_response:
-    rollback_targets = current_response.get("output", {}).get("rollback_targets", [])
+render_current_decision_panel(session, current_response, is_generating)
 
-if rollback_targets:
-    with action_cols[2]:
-        rollback_cols = st.columns([1, 2, 1])
-        target = rollback_cols[0].selectbox(
-            "롤백 대상",
-            rollback_targets,
-            label_visibility="collapsed",
-            disabled=is_generating,
-        )
-        reason = rollback_cols[1].text_input(
-            "롤백 사유",
-            "범위/데이터 리스크",
-            label_visibility="collapsed",
-            disabled=is_generating,
-        )
-        if rollback_cols[2].button("롤백", width="stretch", disabled=is_generating):
-            try:
-                clear_error()
-                st.session_state["session"] = api_request(
-                    "POST",
-                    "/stages/rollback",
-                    {
-                        "session_id": session["session_id"],
-                        "target_stage": target,
-                        "reason": reason,
-                    },
-                )
-                st.session_state["stage_response"] = None
-                st.session_state["report"] = None
-                st.session_state["selected_stage_id"] = st.session_state["session"][
-                    "current_stage"
-                ]
-                st.rerun()
-            except RuntimeError as exc:
-                set_error(str(exc))
+selected_stage_id = render_stage_navigator(session)
 
 selected_stage_response = stage_response_for(session, selected_stage_id)
 workspace_cols = st.columns([2.2, 1], gap="large")
 with workspace_cols[0]:
     if selected_stage_response:
-        render_stage_output(selected_stage_response)
+        render_stage_output(selected_stage_response, session)
     else:
         render_stage_placeholder(session, selected_stage_id)
 
     if st.session_state["report"]:
-        render_report(st.session_state["report"])
+        render_report(st.session_state["report"], session_id=session["session_id"])
 
 with workspace_cols[1]:
     render_artifact_library(session, st.session_state["report"])
-
-render_stage_chat(session, scenario_id, user_input, generation_context)

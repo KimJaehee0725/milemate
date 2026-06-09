@@ -3,6 +3,7 @@ import pytest
 from app.backend.core.agent_graph import AgentGraphInput, MilemateAgentGraphRunner
 from app.backend.core.orchestrator import Orchestrator
 from app.backend.core.stage_manager import StageManager, StageTransitionError
+from app.backend.schemas.common import StageRunStatus
 from app.frontend.demo_backend import LocalFakeCodexClient
 
 REQUIRED_STAGE_OUTPUT_KEYS = {
@@ -55,6 +56,25 @@ def test_orchestrator_runs_dispatch_stage_1_to_stage_4_without_fastapi():
     assert report.prd_quality.status == "ready"
     assert report.decision_log
     assert report.citations
+
+
+def test_orchestrator_marks_verifier_warning_stage_as_warning_status():
+    manager, orchestrator = make_orchestrator()
+    session = manager.create_session(scenario="dispatch_recommendation")
+
+    for _ in ["stage_1", "stage_2"]:
+        orchestrator.run_current_stage(session.session_id)
+        session = orchestrator.approve_current_stage(session.session_id)
+
+    response = orchestrator.run_current_stage(
+        session.session_id,
+        context={"data_sources": []},
+    )
+    reloaded = manager.get_session(session.session_id)
+
+    assert response.stage_id == "stage_3"
+    assert response.status == StageRunStatus.WARNING
+    assert reloaded.stage_history[-1].status == StageRunStatus.WARNING
 
 
 def test_orchestrator_stage_outputs_keep_common_rendering_contract():

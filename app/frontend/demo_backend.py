@@ -8,6 +8,7 @@ from app.backend.core.agent_graph import MilemateAgentGraphRunner
 from app.backend.core.orchestrator import Orchestrator
 from app.backend.core.stage_manager import StageManager, StageTransitionError
 from app.backend.services.planner_service import PlannerService
+from app.backend.services.report_export_service import ReportExportService
 from app.backend.services.report_service import ReportService
 from app.backend.services.verifier_service import VerifierService
 
@@ -67,6 +68,7 @@ class LocalDemoAPI:
             stage_manager=self.stage_manager,
             graph_runner=MilemateAgentGraphRunner(codex_client=LocalFakeCodexClient()),
         )
+        self.report_exporter = ReportExportService()
 
     def request(
         self,
@@ -108,3 +110,14 @@ class LocalDemoAPI:
         except StageTransitionError as exc:
             raise RuntimeError(str(exc)) from exc
         raise RuntimeError(f"unsupported local demo request: {method} {path}")
+
+    def binary_request(self, method: str, path: str) -> bytes:
+        try:
+            if method == "GET" and "/reports/" in path and "/exports/" in path:
+                report_path, export_format = path.rsplit("/exports/", 1)
+                session_id = report_path.rsplit("/", 1)[-1]
+                report = self.orchestrator.build_final_report(session_id)
+                return self.report_exporter.export(report, export_format).content
+        except StageTransitionError as exc:
+            raise RuntimeError(str(exc)) from exc
+        raise RuntimeError(f"unsupported local demo binary request: {method} {path}")

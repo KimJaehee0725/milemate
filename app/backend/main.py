@@ -5,6 +5,7 @@ from __future__ import annotations
 from fastapi import FastAPI
 
 from app.backend.api.routes_report import router as report_router
+from app.backend.api.routes_runtime import router as runtime_router
 from app.backend.api.routes_session import router as session_router
 from app.backend.api.routes_stage import router as stage_router
 from app.backend.core.config_loader import RootConfig, load_app_config
@@ -29,6 +30,7 @@ def create_app(
     app.include_router(session_router)
     app.include_router(stage_router)
     app.include_router(report_router)
+    app.include_router(runtime_router)
 
     @app.get("/health")
     def health_check():

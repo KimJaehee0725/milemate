@@ -8,7 +8,7 @@ from uuid import uuid4
 from app.backend.core.config_loader import RootConfig, load_app_config
 from app.backend.core.rollback_manager import RollbackManager
 from app.backend.core.session_store import InMemorySessionStore, SessionStore
-from app.backend.schemas.common import ErrorCode
+from app.backend.schemas.common import ErrorCode, StageRunStatus
 from app.backend.schemas.session import SessionState, StageStatus
 from app.backend.schemas.stage import StageResponse
 
@@ -160,6 +160,12 @@ class StageManager:
             session,
             response.stage_id,
             completed=True,
+            status=response.status,
+            prd_quality_status=response.output.prd_quality.status,
+            prd_quality_score=response.output.prd_quality.score,
+            required_user_input_count=len(response.output.required_user_input),
+            risk_count=len(response.output.risks),
+            rollback_targets=response.output.rollback_targets,
             summary=response.output.summary,
         )
         session.unresolved_questions = list(response.output.required_user_input)
@@ -182,6 +188,12 @@ class StageManager:
         stage_id: str,
         approved: Optional[bool] = None,
         completed: Optional[bool] = None,
+        status: Optional[StageRunStatus] = None,
+        prd_quality_status: Optional[str] = None,
+        prd_quality_score: Optional[int] = None,
+        required_user_input_count: Optional[int] = None,
+        risk_count: Optional[int] = None,
+        rollback_targets: Optional[list[str]] = None,
         summary: Optional[str] = None,
     ) -> None:
         for item in session.stage_history:
@@ -190,6 +202,18 @@ class StageManager:
                     item.approved = approved
                 if completed is not None:
                     item.completed = completed
+                if status is not None:
+                    item.status = status
+                if prd_quality_status is not None:
+                    item.prd_quality_status = prd_quality_status
+                if prd_quality_score is not None:
+                    item.prd_quality_score = prd_quality_score
+                if required_user_input_count is not None:
+                    item.required_user_input_count = required_user_input_count
+                if risk_count is not None:
+                    item.risk_count = risk_count
+                if rollback_targets is not None:
+                    item.rollback_targets = list(rollback_targets)
                 if summary is not None:
                     item.summary = summary
                 return
@@ -199,6 +223,12 @@ class StageManager:
                 stage_id=stage_id,
                 approved=bool(approved) if approved is not None else False,
                 completed=bool(completed) if completed is not None else False,
+                status=status,
+                prd_quality_status=prd_quality_status,
+                prd_quality_score=prd_quality_score,
+                required_user_input_count=required_user_input_count or 0,
+                risk_count=risk_count or 0,
+                rollback_targets=list(rollback_targets or []),
                 summary=summary,
             )
         )

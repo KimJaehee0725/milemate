@@ -24,16 +24,16 @@ class VerifierService:
 
         data_sources = evidence.get("data_sources")
         if data_sources == []:
-            risks.append("Missing operational data sources for verification.")
+            risks.append("기획서 검증에 필요한 운영/사용자 data 출처가 비어 있습니다.")
             rollback_recommendation = "stage_1"
 
         if evidence.get("label_quality") == "poor":
-            risks.append("Poor label quality makes the proposed model scope unreliable.")
+            risks.append("데이터 품질이 낮아 제안한 MVP 범위를 그대로 신뢰하기 어렵습니다.")
             rollback_recommendation = "stage_2"
 
         mvp_scope = proposal.get("mvp_scope", [])
         if any("root_cause" in item or "prediction" in item for item in mvp_scope):
-            risks.append("Scope may be too broad for a first MVP without baseline rules.")
+            risks.append("현재 기준선 없이 첫 MVP 범위가 과도하게 넓어질 수 있습니다.")
             rollback_recommendation = rollback_recommendation or "stage_2"
 
         if risks and any("Missing" in risk or "Poor" in risk for risk in risks):
@@ -81,9 +81,9 @@ class VerifierService:
                     category="operational",
                     severity="low",
                     description=(
-                        "Operational feasibility is acceptable for a rule-first dispatch MVP."
+                        "기획서 수준의 첫 MVP 검토에는 운영 실현 가능성이 수용 가능합니다."
                     ),
-                    mitigation="Keep the first pilot limited to high-delay zones.",
+                    mitigation="첫 파일럿은 설명 가능한 범위와 명확한 KPI로 제한합니다.",
                 )
             )
 
@@ -113,9 +113,9 @@ class VerifierService:
                 "checked_items": result["checked_items"],
                 "required_data": evidence.get("data_sources", []),
                 "implementation_guardrails": [
-                    "start with rules and ranked recommendations",
-                    "log dispatcher overrides",
-                    "monitor delay and workload balance daily",
+                    "기획자 승인 가능한 범위부터 시작",
+                    "승인/보류/롤백 사유를 기록",
+                    "KPI와 데이터 품질을 단계별로 확인",
                 ],
             },
             prd_packet=build_demo_prd_packet(
@@ -128,17 +128,18 @@ class VerifierService:
             prd_quality=ready_prd_quality(),
             decision_points=[
                 DecisionItem(
-                    item="Lock MVP to dispatch recommendations before full route optimization.",
+                    item="첫 MVP는 설명 가능한 기획서 범위와 리스크 검토 흐름으로 제한합니다.",
                     status="proposed",
                     rationale=(
-                        "This keeps the first pilot verifiable with available operations data."
+                        "비개발 기획자가 개발팀에 전달할 수 있는 근거와 "
+                        "보류 조건을 먼저 확보합니다."
                     ),
                 )
             ],
             required_user_input=(
                 []
                 if result["status"] == "pass"
-                else ["Confirm missing data owner and pilot zone."]
+                else ["부족한 데이터의 담당자와 첫 파일럿 KPI를 확인해야 합니다."]
             ),
             citations=citations or [],
             risks=risks,

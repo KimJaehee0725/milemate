@@ -105,6 +105,9 @@ class CodexClient:
             "--sandbox",
             "read-only",
         ]
+        reasoning_effort = str(self.runtime_config.get("reasoning_effort") or "").strip()
+        if reasoning_effort:
+            command.extend(["-c", f"model_reasoning_effort={json.dumps(reasoning_effort)}"])
         if schema_path is not None:
             command.extend(["--output-schema", schema_path])
         command.extend(["--output-last-message", output_path])

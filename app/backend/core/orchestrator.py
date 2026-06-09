@@ -68,11 +68,7 @@ class Orchestrator:
         response = StageResponse(
             session_id=session.session_id,
             stage_id=stage_id,
-            status=(
-                StageRunStatus.COMPLETED
-                if output.prd_quality.status == "ready"
-                else StageRunStatus.WARNING
-            ),
+            status=self._stage_status(output),
             output=output,
         )
         self.stage_manager.store_stage_response(session, response)
@@ -143,6 +139,17 @@ class Orchestrator:
                 citations.append(citation)
                 seen.add(key)
         return [item.model_dump(mode="json") for item in citations]
+
+    @staticmethod
+    def _stage_status(output) -> StageRunStatus:
+        if output.prd_quality.status != "ready":
+            return StageRunStatus.WARNING
+        verifier_status = ""
+        if isinstance(output.planner_view, dict):
+            verifier_status = str(output.planner_view.get("verifier_status", ""))
+        if verifier_status.lower() == "warning":
+            return StageRunStatus.WARNING
+        return StageRunStatus.COMPLETED
 
     @staticmethod
     def _stage_output(session, stage_id: str) -> Dict[str, Any]:

@@ -1,7 +1,8 @@
 import pytest
 
 from app.backend.core.stage_manager import StageManager, StageTransitionError
-from app.backend.schemas.stage import StageOutputBundle, StageResponse
+from app.backend.schemas.common import RiskItem, StageRunStatus
+from app.backend.schemas.stage import PrdQualityReport, StageOutputBundle, StageResponse
 
 
 def make_response(session, stage_id=None, summary="stage done"):
@@ -156,3 +157,39 @@ def test_stage_manager_uses_in_memory_store_for_demo_state():
     )
     with pytest.raises(StageTransitionError, match="session not found"):
         reloaded_manager.get_session(session.session_id)
+
+
+def test_stage_manager_preserves_warning_status_and_counts_in_history():
+    manager = StageManager()
+    session = manager.create_session(scenario="dispatch_recommendation")
+    response = StageResponse(
+        session_id=session.session_id,
+        stage_id=session.current_stage,
+        status=StageRunStatus.WARNING,
+        output=StageOutputBundle(
+            summary="needs review before approval",
+            prd_quality=PrdQualityReport(status="needs_review", score=64),
+            required_user_input=["Confirm the SLA threshold."],
+            risks=[
+                RiskItem(
+                    category="scope",
+                    severity="high",
+                    description="Demo scope may exceed the live data available.",
+                )
+            ],
+            rollback_targets=["stage_1"],
+        ),
+    )
+
+    manager.store_stage_response(session, response)
+    reloaded = manager.get_session(session.session_id)
+
+    history = reloaded.stage_history[0]
+    assert history.completed is True
+    assert history.status == StageRunStatus.WARNING
+    assert history.prd_quality_status == "needs_review"
+    assert history.prd_quality_score == 64
+    assert history.required_user_input_count == 1
+    assert history.risk_count == 1
+    assert history.rollback_targets == ["stage_1"]
+    assert reloaded.model_dump(mode="json")["stage_history"][0]["status"] == "warning"

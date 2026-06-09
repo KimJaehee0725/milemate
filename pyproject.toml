@@ -12,6 +12,8 @@ dependencies = [
   "openai>=2.38.0",
   "agent-framework-core>=1.7.0",
   "reportlab>=4.2",
+  "python-docx>=1.1",
+  "python-pptx>=1.0",
 ]
 
 [project.optional-dependencies]

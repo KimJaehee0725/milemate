@@ -4,11 +4,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from .common import StageRunStatus
+
 
 class StageStatus(BaseModel):
     stage_id: str
     approved: bool = False
     completed: bool = False
+    status: Optional[StageRunStatus] = None
+    prd_quality_status: Optional[str] = None
+    prd_quality_score: Optional[int] = None
+    required_user_input_count: int = 0
+    risk_count: int = 0
+    rollback_targets: List[str] = Field(default_factory=list)
     summary: Optional[str] = None
 
 
@@ -37,3 +45,16 @@ class SessionState(BaseModel):
     unresolved_questions: List[str] = Field(default_factory=list)
     rollback_events: List[RollbackEvent] = Field(default_factory=list)
     metadata: Dict[str, Any] = Field(default_factory=dict)
+
+
+class RuntimeStatusResponse(BaseModel):
+    app_name: str
+    api_mode: str
+    runtime_mode: str
+    serving_engine: str
+    model_id: str
+    reasoning_effort: str
+    cli_binary: str
+    cli_available: bool
+    cli_path: Optional[str] = None
+    timeout: int

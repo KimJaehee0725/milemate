@@ -94,6 +94,7 @@ def test_codex_client_builds_cli_command_without_calling_network():
             "api_style": "responses",
             "engine": "codex_cli",
             "cli_binary": "codex",
+            "reasoning_effort": "medium",
             "timeout": 5,
         }
     )
@@ -107,6 +108,7 @@ def test_codex_client_builds_cli_command_without_calling_network():
     assert "--ephemeral" in command
     assert "--json" in command
     assert "--search" in command
+    assert 'model_reasoning_effort="medium"' in command
     assert command[command.index("--output-schema") + 1] == "/tmp/schema.json"
     assert command[command.index("--output-last-message") + 1] == "/tmp/out.json"
 
@@ -228,6 +230,7 @@ def test_codex_client_calls_codex_exec_with_stage_schema():
     )
 
     assert fake_runner.command[:5] == ["codex", "--search", "exec", "-m", "gpt-5.5"]
+    assert 'model_reasoning_effort="medium"' in fake_runner.command
     assert fake_runner.schema["title"] == CodexStageDraft.__name__
     assert "prd_packet" in fake_runner.schema["properties"]
     assert fake_runner.schema["$defs"]["Citation"]["properties"]["metadata"][

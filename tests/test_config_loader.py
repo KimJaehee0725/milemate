@@ -9,7 +9,7 @@ from app.backend.core.config_loader import (
 
 def test_config_loader_loads_root_config():
     cfg = load_app_config()
-    assert cfg.app.name == "last-mile-planning-agent"
+    assert cfg.app.name == "milemate-planning-assistant"
     assert cfg.model.model_id == "gpt-5.5"
     assert cfg.model.reasoning_effort == "medium"
     assert cfg.serving.engine == "codex_cli"

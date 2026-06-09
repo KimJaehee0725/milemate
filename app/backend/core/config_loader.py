@@ -95,6 +95,13 @@ class FeatureSettings(BaseModel):
     allow_deterministic_fallback: bool = False
 
 
+class ReportSettings(BaseModel):
+    """Document metadata defaults for exported planning briefs."""
+
+    prepared_by: str = "기획팀"
+    version: str = "1.0"
+
+
 class StageDefinition(BaseModel):
     id: str
     name: str
@@ -184,6 +191,7 @@ class RootConfig(BaseModel):
     serving: ServingSettings
     storage: StorageSettings
     features: FeatureSettings
+    report: ReportSettings = Field(default_factory=ReportSettings)
     stages: StagesConfig
     scenarios: ScenariosConfig
     sources: SourcesConfig
@@ -221,6 +229,7 @@ def load_app_config() -> RootConfig:
         "serving": merged["serving"],
         "storage": merged["storage"],
         "features": merged["features"],
+        "report": merged.get("report", {}),
         "stages": {"stages": merged["stages"]},
         "scenarios": {"scenarios": merged["scenarios"]},
         "sources": merged["sources"],

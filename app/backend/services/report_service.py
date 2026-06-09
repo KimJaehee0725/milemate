@@ -29,11 +29,14 @@ class ReportService:
 
         problem_summary = approved_state.get(
             "problem_summary",
-            f"{label} needs an operator-facing MVP with measurable dispatch outcomes.",
+            (
+                f"{label} 아이디어는 기획자가 설명 가능한 MVP 범위와 "
+                "측정 가능한 KPI로 정리되어야 합니다."
+            ),
         )
         mvp_scope = approved_state.get(
             "mvp_scope",
-            ["risk order queue", "dispatcher recommendation view", "override logging"],
+            ["기획서 초안", "MVP 범위", "결정 로그"],
         )
 
         planner_report = PlannerReport(
@@ -42,35 +45,35 @@ class ReportService:
             prioritized_kpis=kpis,
             mvp_scope=mvp_scope,
             expected_value=[
-                "reduce manual triage during peak periods",
-                "make delay risk visible before SLA breach",
-                "preserve dispatcher control through approval and override flow",
+                "기획서 초안 작성 시간을 줄인다",
+                "개발팀이 확인할 기술/데이터 리스크를 먼저 드러낸다",
+                "기획자의 승인과 롤백 근거를 결정 로그로 남긴다",
             ],
         )
         engineer_report = EngineerReport(
             required_data=core_data,
             required_tech_blocks=[
-                "order and courier state ingestion",
-                "delay-risk scoring rule/template",
-                "recommendation API",
-                "operator dashboard",
-                "decision and override event log",
+                "idea intake and stage context",
+                "KPI and MVP scope formatter",
+                "risk verification boundary",
+                "planner review UI",
+                "decision and rollback event log",
             ],
             constraints=[
-                "MVP recommendations must be explainable to dispatchers.",
-                "Location data should be minimized to dispatch-critical use.",
-                "Pilot should avoid fully automated assignment changes.",
+                "기획자가 읽을 수 있는 업무 언어와 개발팀 확인사항을 분리한다.",
+                "데이터와 규제 리스크는 근거와 함께 표시한다.",
+                "검증 전 완전 자동화 또는 실서비스 배포를 전제하지 않는다.",
             ],
             implementation_order=[
-                "load historical order/courier samples",
-                "rank high-risk active orders",
-                "show recommendation and reason codes",
-                "collect dispatcher feedback",
+                "기획자 아이디어와 적용 예시를 입력한다",
+                "문제 정의와 KPI 후보를 정리한다",
+                "MVP 범위와 보류 기능을 나눈다",
+                "승인/롤백 피드백을 수집한다",
             ],
             verification_plan=[
-                "compare delay_rate before and after pilot",
-                "track SLA compliance by zone and time window",
-                "audit override reasons for false positives",
+                "KPI별 현재 기준과 목표 기준이 모두 있는지 확인한다",
+                "필수 데이터 출처와 품질 기준을 확인한다",
+                "보류 조건과 결정 로그가 최종 보고서에 남는지 점검한다",
             ],
         )
         bundle = FinalReportBundle(
@@ -88,14 +91,20 @@ class ReportService:
             prd_quality=ready_prd_quality(),
             decision_log=[
                 DecisionItem(
-                    item="Use a human-approved dispatch recommendation MVP.",
+                    item="비개발 기획자가 승인할 수 있는 단계별 기획서 작성 흐름을 사용합니다.",
                     status="approved",
-                    rationale="The mock workflow prioritizes feasibility and presentation clarity.",
+                    rationale=(
+                        "이 단계에서는 실제 서비스 배포보다 기획서 구조화와 "
+                        "의사결정 근거 정리가 핵심입니다."
+                    ),
                 ),
                 DecisionItem(
-                    item="Defer full autonomous route optimization.",
+                    item="검증 전 완전 자동화와 실서비스 배포 범위는 보류합니다.",
                     status="deferred",
-                    rationale="The first slice should validate data quality and operator trust.",
+                    rationale=(
+                        "먼저 KPI, 데이터, 규제 리스크를 확인해야 개발 착수 "
+                        "범위를 설명할 수 있습니다."
+                    ),
                 ),
             ],
             citations=[
@@ -123,7 +132,7 @@ class ReportService:
             citations=citations or [],
             risks=risks or [],
         )
-        summary = "Final planner and engineer reports are ready for presentation."
+        summary = "Final planner and engineer reports are ready for review."
         return StageOutputBundle(
             summary=summary,
             planner_view=report["planner_report"],

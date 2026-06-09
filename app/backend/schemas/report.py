@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List
+from typing import Dict, List, Literal
 
 from pydantic import BaseModel, Field
 
@@ -32,3 +32,41 @@ class FinalReportBundle(BaseModel):
     decision_log: List[DecisionItem] = Field(default_factory=list)
     citations: List[Citation] = Field(default_factory=list)
     risks: List[RiskItem] = Field(default_factory=list)
+
+
+ReportExportFormat = Literal["docx", "pdf", "pptx"]
+ReportSectionTone = Literal["neutral", "decision", "ready", "warning", "risk", "technical"]
+
+
+class ReportSummaryCard(BaseModel):
+    title: str
+    value: str
+    detail: str = ""
+    tone: ReportSectionTone = "neutral"
+
+
+class ReportSection(BaseModel):
+    title: str
+    body: str = ""
+    items: List[str] = Field(default_factory=list)
+    rows: List[Dict[str, str]] = Field(default_factory=list)
+    tone: ReportSectionTone = "neutral"
+
+
+class ReportDocumentModel(BaseModel):
+    title: str
+    subtitle: str
+    audience: str
+    summary: str
+    document_id: str = ""
+    version: str = ""
+    created_on: str = ""
+    prepared_by: str = ""
+    review_status: str = ""
+    review_score: int = 0
+    review_findings: List[str] = Field(default_factory=list)
+    cards: List[ReportSummaryCard] = Field(default_factory=list)
+    sections: List[ReportSection] = Field(default_factory=list)
+    risks: List[RiskItem] = Field(default_factory=list)
+    decisions: List[DecisionItem] = Field(default_factory=list)
+    citations: List[Citation] = Field(default_factory=list)
