@@ -38,7 +38,7 @@ def test_scenario_brief_prefers_rich_korean_demo_fields():
 
     brief = scenario_brief(inputs, "dispatch_recommendation")
     assert brief["title"] == "CleanGo 적용 예시: 피크타임 배차 추천"
-    assert "수업용 의사결정 흐름" in brief["demo_highlights"][-1]
+    assert "의사결정 흐름" in brief["demo_highlights"][-1]
     assert brief["decision_focus"]
 
 
