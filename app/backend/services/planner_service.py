@@ -77,12 +77,12 @@ class PlannerService:
                 DecisionItem(
                     item="자동화 이전에 운영자 의사결정 지원부터 최적화한다.",
                     status="proposed",
-                    rationale="시연 가능한 MVP를 만들면서 운영 리스크를 제한할 수 있다.",
+                    rationale="검증 가능한 MVP를 만들면서 운영 리스크를 제한할 수 있다.",
                 )
             ],
             required_user_input=[
-                "데모에서 다룰 주요 사용자를 확정해주세요.",
-                "발표 헤드라인으로 삼을 KPI를 확정해주세요.",
+                "주요 사용자를 확정해주세요.",
+                "핵심 지표로 삼을 KPI를 확정해주세요.",
             ],
             citations=citations,
             risks=[
