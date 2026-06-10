@@ -53,11 +53,13 @@ def test_document_scores_total_subtracts_penalty():
     assert scores["total"] == 4.0
 
 
-def test_swapped_order_agreement():
-    assert pipeline.agreed_verdict("B", "B") == "B"
-    assert pipeline.agreed_verdict("A", "A") == "A"
-    assert pipeline.agreed_verdict("B", "A") == "tie"
-    assert pipeline.agreed_verdict("B", "tie") == "tie"
+def test_combine_verdicts():
+    assert pipeline.combine_verdicts(["B"]) == "B"  # single judgment stands
+    assert pipeline.combine_verdicts(["tie"]) == "tie"
+    assert pipeline.combine_verdicts(["B", "B"]) == "B"
+    assert pipeline.combine_verdicts(["A", "A"]) == "A"
+    assert pipeline.combine_verdicts(["B", "A"]) == "tie"
+    assert pipeline.combine_verdicts(["B", "tie"]) == "tie"
 
 
 def test_doc_verdict_condition_mapping():
@@ -152,3 +154,39 @@ def test_render_report_text_walks_bundle():
     assert "one_page_summary: 요약" in text
     assert "description: 위험" in text
     assert "prd_quality" not in text
+
+
+def test_render_deduplicates_repeated_long_sentences_across_sections():
+    guardrail = "운영자 승인 없는 자동 재배차는 이번 범위에서 제외한다."
+    bundle = {
+        "prd_report": {"developer_handoff": [guardrail, "다른 짧은 항목"]},
+        "risks": [{"description": guardrail}],
+    }
+    text = pipeline.render_report_text(bundle)
+    assert text.count(guardrail) == 1
+
+
+def test_render_drops_overlapping_views_keeps_engineer_extras():
+    guardrail = "운영자 승인 없는 자동 재배차는 이번 범위에서 제외한다."
+    bundle = {
+        "prd_report": {"developer_handoff": [guardrail]},
+        "planner_report": {"mvp_scope": ["기획 뷰가 PRD를 다시 말하는 문장"]},
+        "engineer_report": {
+            "constraints": ["PRD와 겹치는 제약 문장입니다"],
+            "implementation_order": ["1차: 위험 큐 API"],
+            "verification_plan": ["샘플 데이터 재현 검증"],
+        },
+    }
+    text = pipeline.render_report_text(bundle)
+    assert "기획 뷰가 PRD를 다시 말하는 문장" not in text
+    assert "PRD와 겹치는 제약 문장입니다" not in text
+    assert "1차: 위험 큐 API" in text
+    assert "샘플 데이터 재현 검증" in text
+
+
+def test_render_keeps_short_repeated_values():
+    bundle = {
+        "prd_report": {"metrics": [{"owner": "운영기획"}, {"owner": "운영기획"}]},
+    }
+    text = pipeline.render_report_text(bundle)
+    assert text.count("owner: 운영기획") == 2

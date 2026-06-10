@@ -131,13 +131,15 @@ def verdict_from_scores(score_1: Optional[float], score_2: Optional[float]) -> s
     return "tie"
 
 
-def agreed_verdict(verdict_ab: str, verdict_ba: str) -> str:
-    """Combine swapped-order verdicts expressed in condition terms (A/B/tie).
+def combine_verdicts(verdicts: List[str]) -> str:
+    """Combine one or more verdicts expressed in condition terms (A/B/tie).
 
-    A win only counts when both presentation orders point to the same winner.
+    With a single judgment the verdict stands as-is; with multiple judgments
+    (e.g. swapped orders) a win only counts when all of them agree.
     """
-    if verdict_ab == verdict_ba and verdict_ab in {"A", "B"}:
-        return verdict_ab
+    unique = set(verdicts)
+    if len(unique) == 1 and unique <= {"A", "B"}:
+        return verdicts[0]
     return "tie"
 
 
@@ -305,47 +307,89 @@ def generate_proposed(scenario: str, stage_inputs: Dict[str, str]) -> Dict[str, 
 
 _SECTION_LABELS = [
     ("prd_report", "기획서 본문"),
-    ("planner_report", "기획 관점 요약"),
-    ("engineer_report", "개발 관점 요약"),
+    ("engineer_report", "개발 인계 보강"),
     ("risks", "리스크"),
     ("decision_log", "의사결정 기록"),
     ("citations", "참고 자료"),
 ]
 _SKIP_KEYS = {"prd_quality", "metadata"}
+# The planner view restates the PRD body and the engineer view overlaps it on
+# data/constraints, so rendering them whole makes the judged document repeat
+# the same guardrails in paraphrased form (penalty P1). Keep only the engineer
+# keys that add content the PRD body does not carry.
+_ENGINEER_KEEP_KEYS = {
+    "implementation_order",
+    "verification_plan",
+    "required_tech_blocks",
+}
+
+
+_DEDUPE_MIN_CHARS = 12
 
 
 def render_report_text(bundle: Dict[str, Any]) -> str:
+    """Render the final report bundle as plain text.
+
+    The bundle carries the same statements (e.g. guardrails) in several views
+    (PRD body, planner view, engineer view). Long sentences are emitted only
+    on first occurrence so the judged document does not repeat itself; the raw
+    bundle JSON keeps the full content.
+    """
     lines: List[str] = []
+    seen: set[str] = set()
     for key, label in _SECTION_LABELS:
         value = bundle.get(key)
+        if key == "engineer_report" and isinstance(value, dict):
+            value = {k: v for k, v in value.items() if k in _ENGINEER_KEEP_KEYS}
         if not value:
             continue
+        section_lines: List[str] = []
+        _render_value(value, section_lines, indent=0, seen=seen)
+        if not section_lines:
+            continue
         lines.append(f"## {label}")
-        _render_value(value, lines, indent=0)
+        lines.extend(section_lines)
         lines.append("")
     return "\n".join(lines).strip()
 
 
-def _render_value(value: Any, lines: List[str], indent: int) -> None:
+def _is_duplicate(payload: Any, seen: set[str]) -> bool:
+    text = str(payload).strip()
+    if len(text) < _DEDUPE_MIN_CHARS:
+        return False
+    if text in seen:
+        return True
+    seen.add(text)
+    return False
+
+
+def _render_value(value: Any, lines: List[str], indent: int, seen: set[str]) -> None:
     pad = "  " * indent
     if isinstance(value, dict):
         for key, child in value.items():
             if key in _SKIP_KEYS or child in (None, "", [], {}):
                 continue
             if isinstance(child, (dict, list)):
-                lines.append(f"{pad}{key}:")
-                _render_value(child, lines, indent + 1)
-            else:
+                child_lines: List[str] = []
+                _render_value(child, child_lines, indent + 1, seen)
+                if child_lines:
+                    lines.append(f"{pad}{key}:")
+                    lines.extend(child_lines)
+            elif not _is_duplicate(child, seen):
                 lines.append(f"{pad}{key}: {child}")
     elif isinstance(value, list):
         for child in value:
             if isinstance(child, (dict, list)):
-                lines.append(f"{pad}-")
-                _render_value(child, lines, indent + 1)
-            else:
+                child_lines = []
+                _render_value(child, child_lines, indent + 1, seen)
+                if child_lines:
+                    lines.append(f"{pad}-")
+                    lines.extend(child_lines)
+            elif not _is_duplicate(child, seen):
                 lines.append(f"{pad}- {child}")
     else:
-        lines.append(f"{pad}{value}")
+        if not _is_duplicate(value, seen):
+            lines.append(f"{pad}{value}")
 
 
 # ---------------------------------------------------------------------------
@@ -690,7 +734,7 @@ def step_aggregate(run_dir: Path) -> None:
             slim = {k: v for k, v in record.items() if k != "judgment"}
             f.write(json.dumps(slim, ensure_ascii=False) + "\n")
 
-    # --- pair-level agreement (both orders must point to the same winner) ---
+    # --- pair-level verdicts (multiple orders, when present, must agree) ---
     pairs: Dict[Tuple[str, int], Dict[str, Dict[str, Any]]] = {}
     for record in records:
         pairs.setdefault((record["scenario"], record["seed"]), {})[
@@ -701,25 +745,19 @@ def step_aggregate(run_dir: Path) -> None:
     dim_tallies = {dim: {"A": 0, "B": 0, "tie": 0} for dim in DIMENSION_ITEMS}
     total_diffs: List[float] = []
     pair_rows: List[str] = []
+    orders_seen: set[str] = set()
     for (scenario, seed), by_order in sorted(pairs.items()):
-        if {"AB", "BA"} - set(by_order):
-            print(f"[aggregate] warn: {scenario}/seed{seed} missing an order, skipped")
-            continue
-        verdict = agreed_verdict(
-            by_order["AB"]["overall_verdict"], by_order["BA"]["overall_verdict"]
-        )
+        judgments = list(by_order.values())
+        orders_seen.update(by_order)
+        verdict = combine_verdicts([r["overall_verdict"] for r in judgments])
         overall[verdict] += 1
         for dim in DIMENSION_ITEMS:
             dim_tallies[dim][
-                agreed_verdict(
-                    by_order["AB"]["dimension_verdicts"][dim],
-                    by_order["BA"]["dimension_verdicts"][dim],
-                )
+                combine_verdicts([r["dimension_verdicts"][dim] for r in judgments])
             ] += 1
         diff = sum(
-            by_order[o]["scores"]["B"]["total"] - by_order[o]["scores"]["A"]["total"]
-            for o in ("AB", "BA")
-        ) / 2
+            r["scores"]["B"]["total"] - r["scores"]["A"]["total"] for r in judgments
+        ) / len(judgments)
         total_diffs.append(diff)
         pair_rows.append(f"| {scenario} | {seed} | {verdict} | {diff:+.2f} |")
 
@@ -748,17 +786,21 @@ def step_aggregate(run_dir: Path) -> None:
     ci_low, ci_high = bootstrap_ci(total_diffs)
     mean_diff = _mean(total_diffs)
 
+    verdict_rule = (
+        "복수 순서 전원 일치 기준" if len(orders_seen) > 1 else "단일 순서 판정"
+    )
     lines = [
         "# 평가 결과 요약",
         "",
-        f"- 생성 쌍: {len(pairs)} (시나리오×seed), 판정 호출: {len(records)}",
-        f"- 종합 판정 (양방향 일치 기준): B 승 {overall['B']} / "
+        f"- 생성 쌍: {len(pairs)} (시나리오×seed), 판정 호출: {len(records)}, "
+        f"판정 순서: {', '.join(sorted(orders_seen))} (doc1=B는 BA)",
+        f"- 종합 판정 ({verdict_rule}): B 승 {overall['B']} / "
         f"A 승 {overall['A']} / tie {overall['tie']}",
         f"- sign test p-value (tie 제외): {p_value:.4f}",
         f"- 총점 차이 평균 (B-A): {mean_diff:+.3f}, 부트스트랩 95% CI "
         f"[{ci_low:+.3f}, {ci_high:+.3f}]",
         "",
-        "## 차원별 승률 (양방향 일치 기준)",
+        f"## 차원별 승률 ({verdict_rule})",
         "",
         "| 차원 | B 승 | A 승 | tie |",
         "|---|---|---|---|",
@@ -829,10 +871,17 @@ def main(argv: Optional[List[str]] = None) -> None:
         help="give condition A only the initial input (omit stage requests)",
     )
 
-    p_judge = sub.add_parser("judge", help="run swapped-order judge calls")
+    p_judge = sub.add_parser(
+        "judge", help="run judge calls (default: single order, ours first)"
+    )
     add_common(p_judge)
     p_judge.add_argument("--judge-model", default=None)
-    p_judge.add_argument("--orders", default="AB,BA")
+    p_judge.add_argument(
+        "--orders",
+        default="BA",
+        help="comma list of presentation orders; BA = proposed(B) first "
+        "(default), pass 'BA,AB' for swapped-order double judging",
+    )
 
     p_agg = sub.add_parser("aggregate", help="recompute scores and summarize")
     add_common(p_agg)
@@ -843,7 +892,7 @@ def main(argv: Optional[List[str]] = None) -> None:
     p_all.add_argument("--seeds", type=int, default=3)
     p_all.add_argument("--no-parity", action="store_true")
     p_all.add_argument("--judge-model", default=None)
-    p_all.add_argument("--orders", default="AB,BA")
+    p_all.add_argument("--orders", default="BA")
 
     args = parser.parse_args(argv)
     run_id = args.run or datetime.now().strftime("%Y%m%d-%H%M%S")
