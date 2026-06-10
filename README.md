@@ -68,9 +68,18 @@ app/backend/      FastAPI routes, stage manager, orchestrator, Codex boundary
 app/frontend/     Streamlit presentation UI and local demo backend
 config/           YAML stage, scenario, runtime, prompt, and source settings
 data/demo_inputs/ Scenario prompts for the classroom demo
-docs/             Planning docs and live demo runbook
+docs/             Planning docs, live demo runbook, evaluation checklist
+eval/             LLM-as-a-judge methodology evaluation pipeline
 tests/            Contract tests for backend, frontend, and integrations
 ```
+
+## Methodology Evaluation
+
+The staged-workflow methodology can be evaluated against a one-shot baseline
+with an LLM-as-a-judge pipeline. The evaluation design and 32-item rubric live
+in [docs/llm-judge-evaluation-checklist.md](docs/llm-judge-evaluation-checklist.md);
+the full execution runbook (prerequisites, commands, resume rules, expected
+runtime) is in [eval/README.md](eval/README.md).
 
 ## Report Outputs
 
