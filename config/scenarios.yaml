@@ -71,3 +71,123 @@ scenarios:
       - order_attributes
       - customer_response_history
       - intervention_logs
+  rider_onboarding_dropout:
+    label: Rider Onboarding and Early Dropout Prevention
+    label_ko: 신규 라이더 온보딩·초기 이탈 방지
+    description: 어렵게 모집한 신규 라이더가 첫 2주 안에 첫 콜도 못 잡고 조용히 이탈하기 전에, 막히는 신규 라이더를 미리 알아채 운영팀이 먼저 손을 내밀 수 있게 돕는 서비스
+    pain_points:
+      - 신규 라이더 10명 중 6명이 첫 14일 내 이탈 (첫 2주 잔존율 40%)
+      - 신규 1명 모집 광고비 평균 9만원이 첫 콜 완료 전 이탈로 회수되지 않음
+      - 첫 콜 완료까지 평균 5.2일 소요, 이 구간에서 이탈자의 70%가 발생하나 위험 가시성 0%
+    primary_users:
+      - rider_success_manager
+      - supply_operations_lead
+    primary_kpis:
+      - two_week_retention
+      - time_to_first_completed_call
+      - onboarding_outreach_coverage
+    kpi_targets:
+      two_week_retention: "65% 이상 (현재 40%)"
+      time_to_first_completed_call: "평균 5.2일 → 2.5일 이내"
+      onboarding_outreach_coverage: "위험 신규 라이더 선제 연락 도달률 80% 이상 (현재 0%)"
+    core_data:
+      - rider_onboarding_funnel
+      - first_call_activity
+      - settlement_visibility
+      - support_outreach_logs
+  return_pickup_flow:
+    label: Return Pickup Scheduling and Tracking
+    label_ko: 반품·교환 회수 예약·추적
+    description: 고객이 반품·교환 회수 시간대를 직접 예약하고 진행 상태를 추적하며, 부재 시 스스로 재예약하는 역배송 흐름을 처음부터 새로 만드는 서비스
+    pain_points:
+      - 회수 1차 방문 성공률 58% (부재·미준비로 기사 헛걸음 빈발)
+      - 반품 회수 관련 CS 문의 하루 평균 200건 ("언제 가져가나요" 유형이 다수)
+      - 반품 신청부터 회수 완료까지 평균 5.2일, 그 기간만큼 재판매 재고가 묶임
+    primary_users:
+      - returning_customer
+      - reverse_logistics_operator
+    primary_kpis:
+      - first_attempt_pickup_success
+      - return_cs_inquiries
+      - pickup_lead_time
+    kpi_targets:
+      first_attempt_pickup_success: "85% 이상 (현재 58%)"
+      return_cs_inquiries: "반품 회수 관련 CS 문의 30% 감소 (현재 일 200건)"
+      pickup_lead_time: "신청~회수 완료 평균 2.5일 (현재 5.2일)"
+    core_data:
+      - return_requests
+      - pickup_slot_capacity
+      - pickup_attempt_logs
+      - reverse_status_timeline
+  checkout_fee_transparency:
+    label: Pre-Checkout Shipping Fee Transparency
+    label_ko: 결제 전 배송비·수수료 투명 안내
+    description: 결제 마지막에 배송비·수수료가 불투명하게 더해져 생기는 장바구니 이탈을 줄이기 위해, 주문 전부터 주소·조건 기준 배송비 산정 사유를 분해해 미리 보여주는 신규 안내 서비스
+    pain_points:
+      - 결제 직전 배송비·수수료 합산으로 장바구니 이탈률 최근 4주 평균 상승
+      - 예상가-실제가 불일치 등 배송비 관련 CS 문의 하루 평균 다수 발생
+      - 주문 전 배송비를 설명하는 화면이 통째로 없어 운영팀이 매 문의마다 수기 설명
+    primary_users:
+      - commerce_checkout_planner
+      - cs_operations_lead
+    primary_kpis:
+      - checkout_abandonment_rate
+      - shipping_fee_inquiry_reduction
+      - estimate_actual_match_rate
+    kpi_targets:
+      checkout_abandonment_rate: "결제 단계 이탈률 25% 감소 (현재 기준 대비)"
+      shipping_fee_inquiry_reduction: "배송비 관련 CS 문의 35% 감소 (현재 기준 대비)"
+      estimate_actual_match_rate: "예상가-실제가 허용 범위 내 일치율 95% 이상"
+    core_data:
+      - fee_rule_table
+      - address_distance
+      - cart_contents
+      - estimate_actual_reconciliation_log
+  merchant_prep_visibility:
+    label: Merchant Prep-Time Delay Visibility
+    label_ko: 매장 준비시간 지연 가시화
+    description: 기사 도착 전 매장 준비 지연을 신호로 드러내고 사장님이 알린 예상 준비시간을 배차 타이밍에 반영해, 기사 헛대기와 매장 기인 배송 지연을 줄이는 매장 운영 화면 개선 서비스
+    pain_points:
+      - 기사 매장 평균 대기시간 7.5분, 이 중 매장 준비 지연 기인이 60%
+      - 매장 기인 배송 지연이 전체 지연 주문의 38%인데 사후 컴플레인으로만 파악
+      - 상습 지연 매장 식별까지 평균 3주, 운영팀이 수동 집계로 확인
+    primary_users:
+      - merchant_owner
+      - merchant_operations_manager
+    primary_kpis:
+      - rider_wait_time
+      - merchant_caused_delay_rate
+      - prep_time_accuracy
+    kpi_targets:
+      rider_wait_time: "매장 평균 대기 3분 이하 (현재 7.5분)"
+      merchant_caused_delay_rate: "매장 기인 지연 비율 20% 이하 (현재 38%)"
+      prep_time_accuracy: "사장님 표시 준비시간 오차 ±3분 이내 70% (현재 미측정)"
+    core_data:
+      - order_status
+      - merchant_prep_time
+      - rider_arrival_event
+      - store_baseline_profile
+  cs_repeat_inquiry_triage:
+    label: Repeat Delivery Inquiry Triage and First-line Response
+    label_ko: 반복 배송 문의 자동 분류·1차 응대
+    description: 지금 채팅 채널이 모든 문의를 상담사에게 그대로 넘기는 구조를, 흔한 배송 조회·연락처 문의는 자동으로 분류해 1차 응대하거나 넘겨주고 진짜 사람이 필요한 건만 상담사 큐로 보내도록 고치는 서비스
+    pain_points:
+      - 전체 상담 채널 문의의 70%가 배송 위치·기사 연락처 같은 반복 단순 문의
+      - 상담사 1건당 평균 주문 조회·수기 응답에 3분 40초 소요
+      - 환불·분쟁 등 고난도 클레임 1차 응대까지 평균 18분 대기
+    primary_users:
+      - cs_operations_manager
+      - cs_agent
+    primary_kpis:
+      - repeat_inquiry_auto_handling_rate
+      - urgent_claim_first_response_time
+      - misrouting_rate
+    kpi_targets:
+      repeat_inquiry_auto_handling_rate: "반복 문의 자동 분류·1차 처리율 60% 이상 (현재 0%)"
+      urgent_claim_first_response_time: "긴급 클레임 1차 응대 시간 18분 → 6분 이내"
+      misrouting_rate: "오분류로 상담사 재배정되는 비율 5% 이하"
+    core_data:
+      - chat_inquiry_message
+      - order_status_lookup
+      - intent_classification_label
+      - agent_handoff_log

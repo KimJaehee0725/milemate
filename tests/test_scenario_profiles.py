@@ -5,7 +5,16 @@ from app.backend.services.scenario_profiles import (
     scenario_keys,
 )
 
-SCENARIOS = ["dispatch_recommendation", "eta_prediction", "failed_delivery_risk"]
+SCENARIOS = [
+    "dispatch_recommendation",
+    "eta_prediction",
+    "failed_delivery_risk",
+    "rider_onboarding_dropout",
+    "return_pickup_flow",
+    "checkout_fee_transparency",
+    "merchant_prep_visibility",
+    "cs_repeat_inquiry_triage",
+]
 
 
 def test_every_profile_exposes_the_same_keys():

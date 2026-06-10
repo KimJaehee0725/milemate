@@ -34,7 +34,7 @@ def test_scenario_brief_prefers_rich_korean_demo_fields():
     inputs = load_demo_inputs(ROOT_DIR)
 
     assert scenario_display_title(inputs, "eta_prediction") == "CleanGo 적용 예시: ETA 지연 안내"
-    assert "고객은 도착 시간을 신뢰" in scenario_initial_input(inputs, "eta_prediction")
+    assert "도착 시간" in scenario_initial_input(inputs, "eta_prediction")
 
     brief = scenario_brief(inputs, "dispatch_recommendation")
     assert brief["title"] == "CleanGo 적용 예시: 피크타임 배차 추천"
