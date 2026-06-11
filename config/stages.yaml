@@ -44,3 +44,13 @@ stages:
     rollback_targets:
       - stage_2
       - stage_3
+  - id: output_layer
+    name: output_layer
+    title: Final PRD Synthesis (Ablation Output Layer)
+    required_approval: true
+    outputs:
+      - planner_report
+      - engineer_report
+      - decision_log
+      - next_actions
+    rollback_targets: []

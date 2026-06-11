@@ -447,7 +447,7 @@ class CodexClient:
 
     @staticmethod
     def _list_section_keys(stage_id: str, view_name: str) -> set[str]:
-        if stage_id != "stage_4":
+        if stage_id not in ("stage_4", "output_layer"):
             return set()
         if view_name == "planner":
             return {"target_users", "prioritized_kpis", "mvp_scope", "expected_value"}
@@ -504,13 +504,24 @@ class CodexClient:
                 "inside planner_sections and engineer_sections when needed. Do not output "
                 "rollback_targets; the application injects allowed rollback targets."
             )
-        elif stage_id == "stage_4":
+        elif stage_id in ("stage_4", "output_layer"):
             stage_specific = (
                 "For stage_4, planner_sections must include problem_redefinition, "
                 "target_users, prioritized_kpis, mvp_scope, and expected_value. "
                 "engineer_sections must include required_data, required_tech_blocks, "
                 "constraints, implementation_order, and verification_plan."
             )
+            if stage_id == "output_layer":
+                stage_specific = (
+                    "This is the output_layer synthesis stage. "
+                    "You receive approved outputs from 1-3 prior planning stages — "
+                    "use ALL available approved context and fill any gaps with your own analysis. "
+                    "Synthesize everything into one complete final PRD as if all planning stages were done. "
+                    "planner_sections must include problem_redefinition, target_users, "
+                    "prioritized_kpis, mvp_scope, and expected_value. "
+                    "engineer_sections must include required_data, required_tech_blocks, "
+                    "constraints, implementation_order, and verification_plan."
+                )
 
         return "\n".join(
             [

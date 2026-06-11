@@ -61,6 +61,7 @@ class MilemateAgentGraphRunner:
             "stage_2": self._codex_node,
             "stage_3": self._codex_node,
             "stage_4": self._codex_node,
+            "output_layer": self._codex_node,
         }
 
     def run(self, graph_input: AgentGraphInput) -> StageOutputBundle:
