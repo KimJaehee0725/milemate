@@ -40,6 +40,32 @@ CHECKLIST_PATH = ROOT_DIR / "docs" / "llm-judge-evaluation-checklist.md"
 RESULTS_DIR = ROOT_DIR / "eval" / "results"
 STAGE_IDS = ["stage_1", "stage_2", "stage_3", "stage_4"]
 
+# Ablation conditions: each entry is the set of prior stages before output_layer.
+# stages_4 runs all STAGE_IDS with no output_layer (identical to existing B).
+ABLATION_STAGE_SETS: Dict[str, List[str]] = {
+    "stages_1": ["stage_1"],
+    "stages_2": ["stage_1", "stage_2"],
+    "stages_3": ["stage_1", "stage_2", "stage_3"],
+    "stages_4": ["stage_1", "stage_2", "stage_3", "stage_4"],
+}
+
+# ---------------------------------------------------------------------------
+# Runtime config override — set by --model / --reasoning-effort CLI args
+# ---------------------------------------------------------------------------
+
+_RUNTIME_OVERRIDE: Dict[str, Any] = {}
+
+
+def _make_runtime_config() -> Optional[Dict[str, Any]]:
+    if not _RUNTIME_OVERRIDE:
+        return None
+    from app.backend.core.config_loader import get_model_runtime_config
+
+    base = get_model_runtime_config()
+    base.update(_RUNTIME_OVERRIDE)
+    return base
+
+
 # ---------------------------------------------------------------------------
 # Checklist structure (must mirror docs/llm-judge-evaluation-checklist.md)
 # ---------------------------------------------------------------------------
@@ -273,7 +299,7 @@ def generate_baseline(
     if extra_requests:
         blocks.append("[기획자의 추가 요청사항]")
         blocks.extend(f"- {request}" for request in extra_requests)
-    client = CodexClient(cwd=ROOT_DIR)
+    client = CodexClient(runtime_config=_make_runtime_config(), cwd=ROOT_DIR)
     return client.generate_text(
         instructions=BASELINE_INSTRUCTIONS,
         input_text="\n".join(blocks),
@@ -285,7 +311,15 @@ def generate_proposed(scenario: str, stage_inputs: Dict[str, str]) -> Dict[str, 
     from app.backend.core.stage_manager import StageManager
 
     manager = StageManager()
-    orchestrator = Orchestrator(stage_manager=manager)
+    rt = _make_runtime_config()
+    if rt is not None:
+        from app.backend.core.agent_graph import MilemateAgentGraphRunner
+        from app.backend.integrations.codex_client import CodexClient
+
+        runner = MilemateAgentGraphRunner(codex_client=CodexClient(runtime_config=rt))
+        orchestrator = Orchestrator(stage_manager=manager, graph_runner=runner)
+    else:
+        orchestrator = Orchestrator(stage_manager=manager)
     session = manager.create_session(
         scenario=scenario,
         user_input=stage_inputs["stage_1"],
@@ -302,6 +336,78 @@ def generate_proposed(scenario: str, stage_inputs: Dict[str, str]) -> Dict[str, 
             )
         orchestrator.approve_current_stage(session.session_id)
     bundle = orchestrator.build_final_report(session.session_id)
+    return bundle.model_dump(mode="json")
+
+
+def generate_proposed_ablation(
+    scenario: str,
+    stage_inputs: Dict[str, str],
+    prior_stages: List[str],
+) -> Dict[str, Any]:
+    """Run prior_stages then output_layer (or build_final_report for stages_4)."""
+    from app.backend.core.agent_graph import AgentGraphInput, MilemateAgentGraphRunner
+    from app.backend.core.orchestrator import Orchestrator
+    from app.backend.core.stage_manager import StageManager
+    from app.backend.integrations.codex_client import CodexClient
+    from app.backend.schemas.report import FinalReportBundle
+
+    manager = StageManager()
+    rt = _make_runtime_config()
+    if rt is not None:
+        runner = MilemateAgentGraphRunner(codex_client=CodexClient(runtime_config=rt))
+        orchestrator = Orchestrator(stage_manager=manager, graph_runner=runner)
+    else:
+        orchestrator = Orchestrator(stage_manager=manager)
+
+    session = manager.create_session(
+        scenario=scenario,
+        user_input=stage_inputs["stage_1"],
+    )
+    for stage_id in prior_stages:
+        response = orchestrator.run_current_stage(
+            session.session_id,
+            user_input=stage_inputs[stage_id],
+            context={},
+        )
+        if response.stage_id != stage_id:
+            raise RuntimeError(
+                f"stage drift: expected {stage_id}, got {response.stage_id}"
+            )
+        orchestrator.approve_current_stage(session.session_id)
+
+    # stages_4 already ends with stage_4 — use the normal final report path
+    if prior_stages == STAGE_IDS:
+        bundle = orchestrator.build_final_report(session.session_id)
+        return bundle.model_dump(mode="json")
+
+    # For stages_1/2/3: run output_layer directly via graph_runner (bypasses
+    # session advancement — the session pointer still points to the next
+    # unrun stage, but output_layer is an eval-only synthesis step)
+    session_state = manager.get_session(session.session_id)
+    output = orchestrator.graph_runner.run(
+        AgentGraphInput(
+            session=session_state,
+            stage_id="output_layer",
+            user_input=stage_inputs["stage_1"],
+            context={},
+            citations=orchestrator._citations(scenario, "output_layer"),
+            approved_state=orchestrator._approved_state(session_state),
+            proposal_state=orchestrator._proposal_state(session_state),
+            evidence_state=orchestrator._evidence_state(session_state, {}),
+            collected_risks=orchestrator._collected_risks(session_state),
+        )
+    )
+    bundle = FinalReportBundle.model_validate(
+        {
+            "planner_report": output.planner_view,
+            "engineer_report": output.engineer_view,
+            "prd_report": output.prd_packet,
+            "prd_quality": output.prd_quality,
+            "decision_log": output.decision_points,
+            "citations": [c.model_dump(mode="json") for c in output.citations],
+            "risks": [r.model_dump(mode="json") for r in output.risks],
+        }
+    )
     return bundle.model_dump(mode="json")
 
 
@@ -502,7 +608,7 @@ def run_judge(
 ) -> Dict[str, Any]:
     from app.backend.integrations.codex_client import CodexClient
 
-    client = CodexClient(cwd=ROOT_DIR)
+    client = CodexClient(runtime_config=_make_runtime_config(), cwd=ROOT_DIR)
     prompt = build_judge_prompt(initial_input, doc1, doc2)
     with tempfile.TemporaryDirectory(prefix="milemate-judge-") as tmp_dir:
         schema_path = Path(tmp_dir) / "judge_schema.json"
@@ -609,7 +715,19 @@ def _write_json(path: Path, payload: Any) -> None:
     )
 
 
-def step_generate(run_dir: Path, scenarios: List[str], seeds: int, parity: bool) -> None:
+def step_generate(
+    run_dir: Path,
+    scenarios: List[str],
+    seeds: int,
+    parity: bool,
+    ablation_prior_stages: Optional[List[str]] = None,
+) -> None:
+    """Generate A/B pairs.
+
+    ablation_prior_stages: if set, B is generated with generate_proposed_ablation
+    using those stages + output_layer (or all stages for stages_4). If None,
+    B uses the standard 4-stage generate_proposed.
+    """
     initial_inputs = load_initial_inputs()
     stage_requests = load_stage_requests()
     for scenario in scenarios:
@@ -635,8 +753,16 @@ def step_generate(run_dir: Path, scenarios: List[str], seeds: int, parity: bool)
                     generate_baseline(initial_input, extra), encoding="utf-8"
                 )
             if not b_path.exists():
-                print(f"[generate] {scenario}/seed{seed} condition B (4 stages) ...")
-                bundle = generate_proposed(scenario, stage_inputs)
+                if ablation_prior_stages is not None:
+                    n = len(ablation_prior_stages)
+                    label = f"{n} stage(s) + output_layer" if n < 4 else "4 stages"
+                    print(f"[generate] {scenario}/seed{seed} condition B ({label}) ...")
+                    bundle = generate_proposed_ablation(
+                        scenario, stage_inputs, ablation_prior_stages
+                    )
+                else:
+                    print(f"[generate] {scenario}/seed{seed} condition B (4 stages) ...")
+                    bundle = generate_proposed(scenario, stage_inputs)
                 _write_json(pair_dir / "B_bundle.json", bundle)
                 b_path.write_text(render_report_text(bundle), encoding="utf-8")
             _write_json(
@@ -648,6 +774,9 @@ def step_generate(run_dir: Path, scenarios: List[str], seeds: int, parity: bool)
                     "initial_input": initial_input,
                     "generated_at": datetime.now(timezone.utc).isoformat(),
                     "elapsed_seconds": round(time.time() - started, 1),
+                    "model_id": _RUNTIME_OVERRIDE.get("model_id", ""),
+                    "reasoning_effort": _RUNTIME_OVERRIDE.get("reasoning_effort", ""),
+                    "ablation_prior_stages": ablation_prior_stages,
                 },
             )
 
@@ -860,6 +989,13 @@ def main(argv: Optional[List[str]] = None) -> None:
 
     def add_common(p: argparse.ArgumentParser) -> None:
         p.add_argument("--run", default=None, help="run id (default: timestamp)")
+        p.add_argument("--model", default=None, help="override model_id (e.g. gpt-5.5)")
+        p.add_argument(
+            "--reasoning-effort",
+            default=None,
+            dest="reasoning_effort",
+            help="override reasoning_effort for all codex calls (low/medium/high/xhigh)",
+        )
 
     p_gen = sub.add_parser("generate", help="generate A/B report pairs")
     add_common(p_gen)
@@ -869,6 +1005,15 @@ def main(argv: Optional[List[str]] = None) -> None:
         "--no-parity",
         action="store_true",
         help="give condition A only the initial input (omit stage requests)",
+    )
+    p_gen.add_argument(
+        "--ablation-stages",
+        default=None,
+        dest="ablation_stages",
+        help=(
+            "ablation condition key (stages_1/stages_2/stages_3/stages_4). "
+            "B is generated with N prior stages + output_layer synthesis."
+        ),
     )
 
     p_judge = sub.add_parser(
@@ -900,13 +1045,43 @@ def main(argv: Optional[List[str]] = None) -> None:
     run_dir.mkdir(parents=True, exist_ok=True)
     print(f"[run] {run_dir}")
 
+    global _RUNTIME_OVERRIDE
+    _RUNTIME_OVERRIDE = {}
+    if getattr(args, "model", None):
+        _RUNTIME_OVERRIDE["model_id"] = args.model
+    if getattr(args, "reasoning_effort", None):
+        _RUNTIME_OVERRIDE["reasoning_effort"] = args.reasoning_effort
+    if _RUNTIME_OVERRIDE:
+        _write_json(
+            run_dir / "run_config.json",
+            {
+                "run_id": run_id,
+                **_RUNTIME_OVERRIDE,
+                "created_at": datetime.now(timezone.utc).isoformat(),
+            },
+        )
+        print(f"[run] model_override={_RUNTIME_OVERRIDE}")
+
     if args.command in {"generate", "all"}:
         scenarios = (
             list_scenarios()
             if args.scenarios == "all"
             else [s.strip() for s in args.scenarios.split(",") if s.strip()]
         )
-        step_generate(run_dir, scenarios, args.seeds, parity=not args.no_parity)
+        ablation_key = getattr(args, "ablation_stages", None)
+        ablation_prior: Optional[List[str]] = None
+        if ablation_key:
+            if ablation_key not in ABLATION_STAGE_SETS:
+                raise SystemExit(
+                    f"unknown ablation key {ablation_key!r}; "
+                    f"choose from {list(ABLATION_STAGE_SETS)}"
+                )
+            ablation_prior = ABLATION_STAGE_SETS[ablation_key]
+        step_generate(
+            run_dir, scenarios, args.seeds,
+            parity=not args.no_parity,
+            ablation_prior_stages=ablation_prior,
+        )
     if args.command in {"judge", "all"}:
         orders = [o.strip().upper() for o in args.orders.split(",") if o.strip()]
         invalid = [o for o in orders if o not in {"AB", "BA"}]
