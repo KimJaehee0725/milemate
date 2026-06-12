@@ -431,20 +431,26 @@ def _item_mean_scores(
     buckets: Dict[str, Dict[str, List[float]]] = {
         iid: {"A": [], "B": []} for iid in all_item_ids
     }
-    with open(scored_path, encoding="utf-8") as fh:
-        for line in fh:
-            record = json.loads(line)
-            order = record["order"]
-            for item in record.get("judgment", {}).get("items", []):
-                iid = item["item_id"]
-                for doc_key, cond in (
-                    ("doc1", "A" if order == "AB" else "B"),
-                    ("doc2", "B" if order == "AB" else "A"),
-                ):
-                    grade = item[doc_key]["grade"]
-                    if grade == "na" and iid in na_allowed:
-                        continue
-                    buckets[iid][cond].append(grade_points.get(grade, 0.0))
+    # raw judgment files live next to the scored file in a sibling judgments/ dir
+    judgments_dir = scored_path.parent / "judgments"
+    raw_files = sorted(judgments_dir.glob("*.json")) if judgments_dir.exists() else []
+    for jf in raw_files:
+        record = json.loads(jf.read_text(encoding="utf-8"))
+        order = record.get("order", "BA")
+        for item in record.get("judgment", {}).get("items", []):
+            iid = item.get("item_id")
+            if iid not in buckets:
+                continue
+            for doc_key, cond in (
+                ("doc1", "A" if order == "AB" else "B"),
+                ("doc2", "B" if order == "AB" else "A"),
+            ):
+                grade = item.get(doc_key, {}).get("grade")
+                if grade is None:
+                    continue
+                if grade == "na" and iid in na_allowed:
+                    continue
+                buckets[iid][cond].append(grade_points.get(grade, 0.0))
 
     def _m(vals: List[float]) -> float:
         return round(sum(vals) / len(vals), 2) if vals else 0.0
