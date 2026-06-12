@@ -1,0 +1,501 @@
+{
+  "scenarios": [
+    {
+      "scenario": "dispatch_recommendation",
+      "baseline_weakness": "stages_1 (문제정의 + output_layer만) already produces a strong PRD skeleton: problem narrative, scope, 3 screens with empty/error states, 6–8 policies with trigger/owner/exception, 7 KPI each with baseline/target/measurement/owner, 8 data fields with freshness and quality_rule, 8 event logs with properties, a decision_agenda with 6 topics and multiple options, and 6 open questions with needed_by. Every checklist dimension except D8-2 (ungrounded precision numerics) scores pass across all 3 seeds. The structural completeness comes almost entirely from the output_layer synthesis, not the stage count. The one persistent weakness is D8-2: numerics like \"30초 이내 노출\", \"15% 편차 완화\", \"5% 악화율\", \"70% 탐지율\" are presented without sourcing or stated assumptions, earning fail on all 3 seeds.",
+      "marginal_analysis": [
+        {
+          "transition": "stages_1 → stages_2 (서비스설계 추가)",
+          "what_was_added": "서비스설계 단계는 두 가지 구체적인 내용을 PRD에 추가했다. 첫째, 운영 정책 문구 관리 화면(배송원 안내/매장 확인/CS 메모 문구 버전 관리, 금지 표현 검수, 외부 발송 전 승인 차단)이 신설됐다. stages_1에는 이 화면이 없었으나 stages_2에는 독립 화면과 acceptance_criteria까지 포함된다. 둘째, 배송원 부하 시각화 화면이 지도+목록+부하 편차 차트+데이터 품질 배지를 갖춘 독립 화면으로 분리됐다. 셋째, 승인 결과를 '실제 배차 변경 API 즉시 호출'과 '후속 처리 요청 생성(기능 플래그)'으로 분리하는 '승인 결과 분리 정책'이 명시됐다. 넷째, 파일럿 운영 설정(기능 플래그, 수동 운영 모드 전환, 추천 노출 즉시 중단 스위치)이 별도 implementation_slice로 추가됐다. D8-2에서 한 seed가 pass를 받은 것은 보상 비용 산식 예시(1,000×8%×20%×3,000원)가 '예측치가 아닌 산식 검증용'이라고 명시했기 때문이다.",
+          "what_was_lost_or_degraded": "penalties 수가 5→3으로 약간 줄었다. 내용 측면에서 stages_1보다 퇴보한 항목은 없었다. 일부 seed에서 D8-2가 여전히 fail 또는 불안정하며, 추가된 내용의 볼륨이 늘었으나 '참고자료' 섹션은 여전히 title/locator 없이 source_type 반복이라는 형식 약점이 유지됐다.",
+          "checklist_items_improved": [
+            "D8-2 (seed1에서 fail→pass: 보상 비용 산식에 '예측치 아님, 산식 검증용' 명시로 수치 가정 표시 충족)"
+          ],
+          "checklist_items_degraded": [],
+          "net_judgment": "improvement"
+        },
+        {
+          "transition": "stages_2 → stages_3 (타당성검증 추가)",
+          "what_was_added": "타당성검증 단계는 두 가지 주요 신규 구조를 PRD에 기여했다. 첫째, 수요·공급 스트레스 관제 화면이 추가됐다. 예측 주문 수 vs 실제 주문 수, 가용 배송원 vs 필요 배송원, 비용 시나리오(보상/인센티브/CS문의 비용 분리), 공급 부족 경보 임계값(예측 대비 +20%, 가용 배송원 -15% 부족)이 화면 컴포넌트와 acceptance_criteria로 명세됐다. 이는 stages_2까지는 없던 '공급 부족 운영 전환 정책'과 '고객 약속 보호 정책', '비용 판단 보류 정책'을 낳았다. 둘째, 추천 신뢰 등급(신뢰 게이트) 개념이 도입됐다. 데이터 최신성 실패 유형별 신뢰 등급 표시, 추천 만료(expiry) 이벤트, 승인 직전 재검증 이벤트(event_name: 승인 전 재검증됨)가 이벤트 로그에 추가됐다. 셋째, 성공 기준이 '90% 이상 1분 이내 노출', '추천 사유 3개 이상', '주문 상태 30초/위치 15초/ETA 30초' 등 더 구체적이고 검증 가능한 형태로 갱신됐다. D6-2(내부 일관성)가 3 seeds 모두 pass로 개선됐다(이전에는 기준 불일치 지적이 있었던 seed에서도 pass).",
+          "what_was_lost_or_degraded": "추가된 내용 볼륨으로 인해 '자동 배차 제외' 주장 반복이 증가해 P1(repetition penalty)이 2건 추가됐다. D8-2는 여전히 불안정(fail/partial/pass 혼재). 지도 경로 API 사례에 비해 '85% 위치 수신률', '2초 내 갱신' 같은 새 수치가 근거 없이 등장해 P3(미근거 수치) penalty가 발생했다. 전체 평균 점수는 stages_2(30.67)보다 stages_3(30.50)이 소폭 낮다.",
+          "checklist_items_improved": [
+            "D6-2 (내부 일관성: 기준값 불일치 없이 3 seeds 모두 pass)",
+            "D1-4 (success_criteria에 판정 가능한 수치 기준 추가)"
+          ],
+          "checklist_items_degraded": [
+            "D8-2 (P3 penalty 발생: 85% 수신률, 2초 갱신 등 미근거 수치 추가)"
+          ],
+          "net_judgment": "mixed"
+        },
+        {
+          "transition": "stages_3 → stages_4 (최종화 추가)",
+          "what_was_added": "최종화 단계는 두 가지를 추가했다. 첫째, 매장·CS 클레임 타임라인 화면이 독립 화면으로 분리됐다. 주문별 위험 감지→보류→승인→고객 안내 이력이 시간순으로 조회되고, 매장 준비 지연과 배송원 배차 지연이 별도 사유로 구분되며, 보상 비용(compensation_cost_record)과 클레임(store_claim_record)이 order_id 기준으로 명시적으로 연결됐다. 둘째, 데이터 계약 필드가 영문 field_name(order_id, order_status_version, promised_time_window, courier_location_timestamp 등)으로 표준화되어 개발 핸드오프 명확성이 높아졌고, 추천 API가 반환해야 할 필드(reason_codes, reason_text_version, data_freshness_status, eta_delta_minutes, load_delta, cost_risk_estimate)가 개발자 인계 섹션에 명시됐다. 셋째, 운영 규칙·정책 문구 설정 화면(임계값 수정, 시뮬레이션, 문구 승인, 금지 표현 검사)이 추가됐고 '자동화 확대 보류 정책'(2주 이상 목표 충족 후 별도 결정)이 명시됐다.",
+          "what_was_lost_or_degraded": "D4-3(KPI 담당자 지정)이 stages_3의 full-pass에서 stages_4에서 partial/partial/pass로 하락했다. '고객 안내 선제율' 등 일부 신규 KPI에 owner가 빠졌기 때문이다. D8-2는 여전히 불안정(일부 seed에서 fail: 시나리오 예시 수치 '위험도 87점', '반경 1.1km', '7분 단축'이 근거 없이 도입). 전체 평균 점수는 stages_4(29.67)가 stages_3(30.50)보다 낮으며, penalties도 여전히 5건으로 stages_3과 동일하다.",
+          "checklist_items_improved": [
+            "D7-3 (개발 핸드오프: API 필드명과 승인 직전 재검증 파라미터까지 명시)",
+            "D6-1 (핵심 지표 연결: 매장 클레임률, 고객 안내 선제율이 in_scope와 이벤트 로그까지 연결)"
+          ],
+          "checklist_items_degraded": [
+            "D4-3 (일부 신규 KPI에 owner 누락으로 partial 하락)",
+            "D8-2 (P3: 시나리오 예시 수치에 근거 표시 없이 도입)"
+          ],
+          "net_judgment": "mixed"
+        }
+      ],
+      "key_insight": "stages_1 단독으로 이미 체크리스트 31/32개 항목을 pass 수준으로 달성하는 강력한 기준선을 형성한다. 이는 output_layer 합성 프롬프트가 구조를 대부분 결정한다는 것을 의미한다. 이후 단계들의 기여는 점진적 콘텐츠 심화에 국한된다: 서비스설계(stages_2)는 정책 문구 관리 화면, 기능 플래그, 보상 산식 설명을 추가하고; 타당성검증(stages_3)은 수요·공급 스트레스 관제와 추천 신뢰 게이트(만료 이벤트, 재검증 이벤트)를 추가하며; 최종화(stages_4)는 클레임 타임라인 화면과 영문 API 계약을 추가한다. 그러나 단계 추가가 순수한 개선을 보장하지는 않는다. stages_3과 stages_4는 새 수치(미근거)와 반복 서술 증가로 penalty가 생겨 평균 점수가 stages_2(30.67)보다 낮다. 전 구간에 걸쳐 D8-2(수치 근거 표시)는 유일하게 안정적으로 개선되지 않는 항목으로, 추가 단계를 늘려도 이 약점은 해결되지 않는다."
+    },
+    {
+      "scenario": "eta_prediction",
+      "marginal_analysis": [
+        {
+          "transition": "stages_1 → stages_2",
+          "what_was_added": "서비스설계(stage_2)는 구체적인 UX 운영 흐름을 추가했다. stages_1 B.md는 이미 완성도 높은 PRD 구조(운영 대시보드, 정책, 데이터 요구사항, 이벤트 로그 포함)를 갖추고 있었다. stages_2가 추가한 것은: (1) 고객 안내 후보 큐에 '운영자 처리 한도 게이트(업무량 카운터, SLA 추적, 용량 상한)'를 명시적으로 추가해 큐 과부하 시나리오를 다룸. (2) '교대조 보기 필터', '운영자 클레임 및 잠금', '낮은 신뢰도 후보 일괄 보류' 같은 운영팀 용량 관리 액션. (3) 법무 승인 상태를 알림 추천 카드 컴포넌트로 명시. 그러나 stages_2 B.md 자체에는 P1 반복 패널티(알림 1회 원칙이 3곳에 중복)가 새로 발생했고 D8-2(수치 출처 미표시)가 3개 시드 모두에서 fail로 고착화되었다. 이는 stages_1에서 이미 1개 시드 D8-2 fail이었던 것이 서비스설계 단계의 정밀 운영 수치(주문당 35~50건 처리량, 150~250건/일 제한 등) 추가로 악화된 것이다.",
+          "what_was_lost_or_degraded": "D8-2 수치 출처 표시 점수가 stages_1의 0.33(1/3 pass)에서 stages_2의 0.00(전 시드 fail)으로 하락했다. 서비스설계 단계가 운영 처리량, 큐 상한 등 구체적인 정밀 수치를 추가하면서 출처 표시 없이 제시해 P3 패널티와 D8-2 fail을 유발했다. D4-3(KPI owner 지정) 역시 stages_1의 0.67에서 stages_2의 0.83으로 일부 시드에서 개선되었지만 불안정했다.",
+          "checklist_items_improved": [
+            "D6-2(자동 발송 vs 수동 승인 일관성): stages_1에서 0.83이던 것이 stages_2에서 1.00으로 상승 - 서비스설계에서 첫 2주 운영자 승인형/자동 발송 조건을 명확히 분리"
+          ],
+          "checklist_items_degraded": [
+            "D8-2(수치 출처/가정 표시): 0.33 → 0.00 - 서비스설계가 추가한 운영 용량 수치들(시간당 처리건수, 일일 노출량 상한)에 출처가 없어 전 시드 fail"
+          ],
+          "net_judgment": "mixed"
+        },
+        {
+          "transition": "stages_2 → stages_3",
+          "what_was_added": "타당성검증(stage_3)은 PRD 내용의 구조적 품질을 높였다. 구체적으로: (1) 위험 판정 정책을 trigger/rule/owner/exception_handling 4요소 구조로 완비함(stages_2 B.md의 policies는 동일 4요소가 있었지만 stages_3에서 데이터 freshness 조건이 위험 점수 계산 정책 exception_handling에 명시적으로 통합됨). (2) 타당성 검증 단계가 '마케팅 배송 약속과 고객 알림 템플릿의 근거 검증'을 in_scope로 추가하고, 개인정보·법무 담당자를 페르소나로 추가. (3) shadow mode 개념을 공식 도입해 자동 발송 전 검증 절차를 in_scope에 포함. (4) 데이터 계약 명세가 field_name/source/purpose/freshness/quality_rule의 완전한 형태로 정교화됨. stages_3에서 D8-2 패널티가 일부 회복(1개 시드 pass)되었고 전체 평균 점수가 0.9583 → 0.9635로 소폭 상승. P2(보일러플레이트 참고자료) 패널티가 사라졌고 P3 패널티도 4개 → 1개로 감소.",
+          "what_was_lost_or_degraded": "D4-1(KPI baseline 명시) 점수가 stages_2의 0.83에서 stages_3의 0.83으로 유지되었으나 일부 시드에서 partial이 지속됨. D6-2가 stages_2의 1.00에서 0.83으로 소폭 하락(1개 시드에서 일관성 부분 약화). 타당성 검증 단계가 '6개 이상의 페르소나'를 추가하면서 문서가 길어졌지만 D3 계열(화면 정의) 점수는 그대로였음.",
+          "checklist_items_improved": [
+            "D4-1(KPI baseline/target 명시): 일부 시드에서 개선 - 타당성 검증이 미측정 항목의 기준선 측정 계획을 명시하도록 강제",
+            "D8-2(수치 출처): 0.00 → 0.33으로 회복 - 검증 단계에서 shadow mode 기간에 기준선 확정 방식을 문서화"
+          ],
+          "checklist_items_degraded": [
+            "D6-2(자동 발송 일관성): 1.00 → 0.83 - stages_3의 일부 시드에서 shadow mode/제한 실험 조건이 MVP 수동 승인 원칙과 미묘한 긴장 관계를 만듦"
+          ],
+          "net_judgment": "improvement"
+        },
+        {
+          "transition": "stages_3 → stages_4",
+          "what_was_added": "최종화(stage_4)는 PRD를 개발팀 인계 문서로 완성했다. 구체적으로: (1) prediction_result_id라는 단일 예측 결과 식별자 개념을 도입해 운영 화면·고객센터·고객 앱·알림이 동일한 수정 도착 범위를 참조하도록 명시(in_scope와 success_criteria 모두에 기재). (2) 성공 기준에 '고객에게 발송된 마지막 수정 도착 범위 안에 실제 배송 완료 시각이 들어오는 비율 75% 이상'과 '승인되지 않은 보장형 문구 발송 0건' 같은 운영 보장 기준을 추가. (3) 고객센터 상담사를 독립 페르소나로 추가하고 '도착 문의 태그 수집'과 상담사용 읽기 전용 패널을 in_scope에 포함. (4) stage_goal을 가장 간결하게 요약: '늦기 전에 고객에게 정확하고 절제된 지연 안내를 보내'. 하지만 D4-3(KPI owner) 점수가 stages_3의 0.83에서 stages_4의 0.50으로 하락했고, D8-2는 여전히 fail 우세(0.17)였다.",
+          "what_was_lost_or_degraded": "D4-3(KPI owner 지정)이 stages_3의 0.83에서 stages_4의 0.50으로 하락. stages_4 B.md에서 '알림 피로 방어 지표' KPI에 owner가 누락되어 3개 시드 모두 partial로 고착. D8-2는 최종화 단계에서도 정밀 임계치(신뢰도 70%, 위치 5분 이내, 주문 상태 30초 이내 등)에 출처가 붙지 않아 계속 fail 우세. P1 반복 패널티(알림 한도 설명이 3곳에 중복)가 stages_3의 2개에서 stages_4의 3개로 증가했다.",
+          "checklist_items_improved": [
+            "D4-1(KPI baseline): 0.83 → 1.00 - 최종화에서 미측정 항목의 파일럿 전 7일 기준선 확정 방식이 모든 시드에 일관되게 표현됨",
+            "D6-2(자동 발송 일관성): 0.83 → 1.00 - 최종화에서 'MVP에서는 고객 지연 알림을 자동 발송하지 않는다'는 원칙이 out_of_scope, 정책, 화면 액션에 삼중으로 일관되게 표현됨"
+          ],
+          "checklist_items_degraded": [
+            "D4-3(KPI owner): 0.83 → 0.50 - 최종화 과정에서 일부 KPI의 owner가 누락되는 퇴행",
+            "D8-2(수치 출처): 0.33 → 0.17 - 최종화에서 추가된 구체적 임계치(위치 정확도 50m, 예상 검토량 120% 등)에 출처 표시 없음"
+          ],
+          "net_judgment": "mixed"
+        }
+      ],
+      "key_insight": "eta_prediction 시나리오의 B 문서는 stages_1(문제정의만)에서 이미 0.958의 높은 평균 점수를 달성했다. 이는 stages_1 output_layer가 문제 정의로부터 거의 완전한 PRD 구조(7개 화면, 7개 정책, 10개 데이터 요건, 10개 이벤트 로그, decision_agenda, open_questions)를 직접 생성하는 능력을 갖추고 있음을 의미한다. 단계를 추가해도 총점 변화는 ±0.005 수준으로 매우 미미하다. 각 단계가 기여한 것은 점수보다는 PRD 내용의 초점 변화였다: 서비스설계(stage_2)는 운영 용량 관리와 처리 한도 게이트를 추가했지만 출처 없는 정밀 운영 수치도 함께 도입해 D8-2 패널티를 악화시켰다. 타당성검증(stage_3)은 shadow mode, 개인정보·법무 페르소나, 마케팅 약속 근거 검증을 추가해 P3 패널티를 가장 크게 줄인 단계였으며 이 시나리오에서 실질적 품질 개선이 가장 많이 일어난 전환점이었다. 최종화(stage_4)는 prediction_result_id 단일 식별자와 운영 보장 기준을 추가했지만 D4-3 KPI owner 퇴행과 P1 반복 패널티 증가로 실질적 순 개선이 없었다. 이 시나리오에서는 baseline 자체가 너무 강해 단계 추가의 한계 이득이 체크리스트 기준으로는 거의 감지되지 않는다.",
+      "baseline_weakness": "stages_1 B.md는 D4-3(KPI owner 일부 누락)과 D8-2(수치 출처 미표시)에서 만성적 약점을 보인다. D8-2는 4개 조건 전체에서 fail 우세이며 어떤 단계도 이를 완전히 해결하지 못했다. 이는 output_layer가 성공 지표와 임계값(예: 오경보율 15%, 알림 간격 20분, 신뢰도 0.65)을 설정할 때 내부 가정과 측정 계획을 명시하지 않고 숫자만 제시하는 구조적 패턴을 가짐을 시사한다. D7-2(open questions owner/needed_by 구조)는 stages_1 B.md에서 일관되게 pass였으나 비교 대상인 A 문서에서는 전 조건 전 시드에서 fail이었다 — 이는 B 문서의 상대적 강점이지 절대적 완성도의 증거가 아니다."
+    },
+    {
+      "scenario": "failed_delivery_risk",
+      "baseline_weakness": "The one-shot baseline (A) consistently fails four structural checklist items across all ablation conditions: D3-2 (no empty/error state handling for screens), D4-3 (no KPI owners), D7-1 (no decision agenda with 2+ options and a named decision-owner), and D7-2 (no open questions with owner and deadline). These are not omissions that any amount of rephrasing fixes — they reflect categories of information that the one-shot prompt simply does not elicit. In every seed across all 4 stage counts, A scores fail on D7-1 and D7-2, and the judge finds no evidence of KPI ownership. A also consistently earns a P3 penalty (unsourced precision numbers) in later seeds, matching the same weakness that afflicts B but without B's compensating structural gains.",
+      "key_insight": "Each pipeline stage adds a distinct layer of PRD specificity, but the gains are not symmetric: stages_1 (문제정의) alone already produces a structurally complete document that beats A on governance items (D7-1, D7-2) and operational policy detail (D3-2, D3-3). Stages_2 (서비스설계) expands the design surface — adding screens, prohibition policies, and an event-log taxonomy — but also introduces internal consistency risk in A. Stages_3 (타당성검증) introduces conceptual novelty (개입 등급 separated from 위험 점수, shadow-mode pilot structure) but causes quality regressions: redundancy penalties (P1) appear for the first time and some KPI baselines drop to partial. Stages_4 (최종화) resolves the consistency problems and operationalizes the 타당성검증 concepts into concrete UI parameters (순개입가치 임계값, 개입 상태 판정 as in-scope scope items, policy simulation before-preview in the settings screen), but the P1 redundancy penalty persists and D8-2 (unsourced numbers) never resolves across any stage. The structural ceiling of B over A is established by stage_1; subsequent stages refine depth and operationalizability, not the fundamental win margin.",
+      "marginal_analysis": [
+        {
+          "transition": "stages_1 → stages_2 (adding 서비스설계)",
+          "what_was_added": "stages_2 expanded the design surface substantially. The B.md grew from ~770 to ~885 lines. Key additions: (1) Two new screens — a dedicated 사전 확인 액션 패널 and a 업무량 및 문구 관리 화면 — increasing the screen count from 4 to 5+. (2) Two new policies with full 4-element structure: 출고 보류 금지 정책 (explicit prohibition on auto-hold) and 민감 속성 및 차별 신호 배제 정책 (fairness/bias exclusion). (3) Four additional metrics including 큐 처리 가능 범위 준수율, 마감 전 사전 확인 완료율, 고객 문구 준수율, and 위험 큐 생성 적시성, raising total KPI count to 10. (4) Four additional event logs tracking privacy unmasking (privacy_unmask_requested), template previewing (contact_template_previewed), queue capacity changes (queue_capacity_changed), and threshold changes (score_threshold_changed). (5) Explicit data fields for team_capacity and contact_template_version, linking operational capacity directly to the data model.",
+          "what_was_lost_or_degraded": "The richer scope introduced an internal consistency risk for A (one-shot): the judge in seed1 found that A's out-of-scope section said 'no auto-hold' but A's action panel included 출고 보류/해제 buttons (D6-2 fail for doc2/A). B did not have this issue, but B's seed1 judgment flagged D8-2 as fail due to unsourced numbers (180일, 20%, 0.3%, 95%, 80점). The stages_2 B.md's higher complexity means more numeric claims, making D8-2 harder to pass.",
+          "checklist_items_improved": [
+            "D3-1 (richer screen specs with 5 screens vs 4, clearer primary_user and entry_point definitions)",
+            "D3-3 (two additional policies with explicit trigger/rule/owner/exception_handling)",
+            "D5-4 (explicit team_capacity and template_version fields strengthens privacy data model)",
+            "D3-5 (four additional event logs for capacity, template, and privacy tracking)"
+          ],
+          "checklist_items_degraded": [
+            "D6-2 for doc2/A (internal contradiction introduced: out-of-scope prohibits auto-hold but action panel has 출고 보류 button)",
+            "D8-2 for doc1/B (more numeric claims increases unsourced number violations)"
+          ],
+          "net_judgment": "improvement"
+        },
+        {
+          "transition": "stages_2 → stages_3 (adding 타당성검증)",
+          "what_was_added": "stages_3 introduced conceptually new material absent from stages_1 and stages_2. The key concept was 개입 등급 (intervention grade) as a dimension explicitly separated from 위험 점수 (risk score): the grade incorporates 위험 점수, 신뢰도, 예상 예방 금액, 고객 연락 피로도, 상담 슬롯, 개인정보 제한 — a multi-factor decision rather than a single probability score. A shadow-mode pilot structure emerged: 2주 백테스트 → 2주 섀도 모드 → 4주 실제 적용, giving the rollout plan a formal staged sequence. 순운영효과 (net operational effect) appeared as an explicit success criterion combining cost savings and operational load. External factor annotation in weekly reports was specified. D2-1 scope evidence in seed3 shows 개입 등급 listed explicitly in in_scope, showing the concept was promoted to a first-class feature.",
+          "what_was_lost_or_degraded": "stages_3 introduced quality regressions not present in stages_1 or stages_2. (1) P1 redundancy penalty appeared for the first time in seeds 2 and 3 — the 개인정보 차단 조건 statement appears 3+ times redundantly. (2) P3 penalty (unsourced precision numbers) also appeared in seeds 2 and 3. (3) D4-1 dropped from pass to partial in seed1 — some KPI baselines went missing despite the overall richer content. (4) D6-2 earned partial in seed2 because mock/simulated evidence was mixed with real evidence in the pilot design section. (5) D6-3 failed for doc2/A in seed1 due to a new contradiction: P0 처리 logic conflicted with the capacity-based queue concept that stages_3 introduced.",
+          "checklist_items_improved": [
+            "D2-1 (개입 등급 as a distinct in-scope concept, not just 위험 점수)",
+            "D8-1 (stronger operational insight: risk score is probability, intervention grade is the actual recommendation — clearer separation aids developer handoff)",
+            "D5-2 (shadow mode pilot structure gives a formal go/no-go condition with measurable gates)"
+          ],
+          "checklist_items_degraded": [
+            "D4-1 partial in seed1 (some KPI baselines missing)",
+            "D6-2 partial in seed2 (mock evidence mixed with real evidence)",
+            "P1 penalty appears (redundancy of privacy/auto-contact prohibition)",
+            "P3 penalty appears (unsourced precision numbers in pilot thresholds)"
+          ],
+          "net_judgment": "mixed"
+        },
+        {
+          "transition": "stages_3 → stages_4 (adding 최종화)",
+          "what_was_added": "stages_4 operationalized the conceptual contributions of stages_3 into concrete, implementation-ready artifacts. (1) 개입 등급 became a formal in-scope item expressed as 개입 상태 판정 with five explicit states: 즉시 개입, 보류, 억제, 수동 검토, 처리 완료 — moving from a concept to an enumerated state machine. (2) 순운영효과 from stages_3 was implemented as 순개입가치 임계값, a configurable UI parameter in the new 정책, 처리량, 임계값 설정 screen, complete with a before/after simulation preview (예상 포착률, 예상 과개입률, 예상 과소개입 실패비용). (3) Screen count increased to 6 (adding 정책, 처리량, 임계값 설정 and 예방 성과 및 신뢰 리포트 as distinct named screens), each with full primary_user, entry_point, empty_states, error_states, and acceptance_criteria. (4) D4-3 reached full pass in seed2 with all KPIs having named owners including 개인정보 보호 담당자 owning the personal data compliance KPI. (5) D6-2 internal consistency issues from stages_2/stages_3 were absent in all three stages_4 seeds — the 최종화 synthesis pass appears to have resolved the contradictions. (6) Developer handoff artifacts were fully specified: API contracts for risk_scoring_service (returning risk_score, risk_tier, top_reasons, data_quality_flags, model_version, rule_version) and queue API (taking team_id, ship_date, capacity_limit, policy_version, returning visible_orders, deferred_orders, suppressed_orders, manual_review_orders).",
+          "what_was_lost_or_degraded": "The P1 redundancy penalty persisted in all three stages_4 seeds — the auto-contact prohibition appears in out_of_scope, in acceptance_criteria, in policy section, and in developer_handoff, constituting 4+ repetitions. P3 (unsourced precision numbers) also persisted in seeds 2 and 3 (e.g., 30초, 2초, 99%, 0.3%, 8%). D8-2 (unsourced numbers) remained a fail for doc1/B in all three seeds — the 최종화 stage did not address the underlying issue of numbers lacking explicit sourcing or assumptions. D4-3 remained partial in seeds 1 and 3 (some KPI owners still missing despite improvement in seed2).",
+          "checklist_items_improved": [
+            "D3-1 (screens fully specified with entry_point, primary_user, empty_states, error_states, acceptance_criteria across 6 screens)",
+            "D3-2 (pass in all 3 seeds — empty and error states explicitly defined for every screen)",
+            "D3-3 (pass in all 3 seeds — all policies have trigger/rule/owner/exception_handling)",
+            "D4-3 (full pass in seed2 with all KPI owners named, improvement over stages_3)",
+            "D6-2 (internal consistency issues resolved — no contradictions detected in any stages_4 seed)",
+            "D7-3 (developer handoff API contracts fully specified)"
+          ],
+          "checklist_items_degraded": [
+            "P1 penalty persists (redundancy of auto-contact prohibition across 4+ sections)",
+            "P3 penalty persists in seeds 2 and 3 (unsourced precision thresholds)",
+            "D8-2 still fails in all seeds (no sourcing or assumptions added to numeric claims)",
+            "D4-3 still partial in seeds 1 and 3 (not all KPIs have owners)"
+          ],
+          "net_judgment": "improvement"
+        }
+      ]
+    },
+    {
+      "scenario": "rider_onboarding_dropout",
+      "baseline_weakness": "stages_1 (문제정의 only) B already scores very high (avg 0.969/32 items) because the output_layer synthesizes a complete PRD from problem framing alone. The one persistent weakness is D8-2 (numeric sourcing): roughly 2/3 seeds fail because goal numbers (60%, 55%, 15%p, etc.) appear without stated assumptions. D3-4 (data requirements with source+freshness+quality_rule triad) also fails for 2/3 seeds — the 문제정의 stage defines the problem and personas well but does not yet drive complete data field specifications. All structural items (D1-x problem framing, D2-x scope, D3-1/2/3/5 screens/policies/events, D4-x metrics, D5-x guardrails, D6-x coherence, D7-x decisions/handoff) already pass consistently at stages_1, meaning the baseline output_layer is already effective at generating a structurally complete PRD from problem context alone.",
+      "marginal_analysis": [
+        {
+          "transition": "stages_1 → stages_2 (adding 서비스설계)",
+          "what_was_added": "서비스설계 contributed concrete operational service design content: (1) D3-4 improved from partial to pass across all 3 seeds — the 서비스설계 stage drove complete data field specifications with source, purpose, freshness, and quality_rule for every field (the field list expanded from ~13 to over a dozen fully attributed fields including 매니저 연락 가능 슬롯, 권장 연락 멘트 라이브러리, 큐 상태와 데이터 누락 상태 as explicit data requirements). (2) The B.md word count jumped from ~5,700 to ~6,900 words, with the addition of a '보류와 재점검 워크벤치' screen, a '위험 주문 큐' screen, and a full '잔존율과 첫 콜 완료 시간 리포트' screen — none present in stages_1. These added screens each carry complete primary_user, entry_point, empty_states, and error_states. (3) P3 penalty count for doc1 dropped from 3 to 1, indicating fewer unsourced precise numbers (e.g., the 서비스설계 stage introduced 'baseline from recent 4-week cohort' framing rather than bare percentage targets). (4) D8-2 seed1 improved to pass from fail — the stage introduced explicit 'baseline: 사용자 제보 반영, 파일럿 전 최근 4주 코호트로 실제 기준선을 확정' language that satisfied sourcing attribution.",
+          "what_was_lost_or_degraded": "D4-3 (KPI owner assignment) degraded slightly — seed1 moved from pass to partial because the expanded KPI list in stages_2 added a '부담 없는 멘트 안전 지표' metric without an owner field. This is a gap introduced by adding new metrics during 서비스설계 without fully populating all owner fields. P1 repetition penalty held steady (2 occurrences), meaning the no-auto-send constraint was still restated redundantly.",
+          "checklist_items_improved": [
+            "D3-4"
+          ],
+          "checklist_items_degraded": [
+            "D4-3"
+          ],
+          "net_judgment": "improvement"
+        },
+        {
+          "transition": "stages_2 → stages_3 (adding 타당성검증)",
+          "what_was_added": "타당성검증 contributed a contact gate mechanism and feasibility-driven guardrail tightening: (1) B.md word count jumped from ~6,900 to ~8,850 words — the largest single-stage content expansion. The 타당성검증 stage introduced an explicit multi-condition 'contact_gate_status' enum (allowed / reduced / deferred_data / suppressed_consent / suppressed_frequency / blocked_privacy / capacity_deferred) that appears nowhere in stages_1 or stages_2. This is a concrete feasibility check structure that validates whether a planned contact can actually proceed. (2) D8-2 (numeric sourcing) partially improved — seed1 moved from pass to partial rather than fail, as the validation stage added more explicit baseline measurement plans ('MVP 첫 2주 계측값을 기준선으로 고정'). (3) The P2 citation penalty dropped from 1 to 0 — the 타당성검증 stage removed hollow reference lists, replacing them with a focused reference set. (4) Feasibility failure conditions were added that were not in stages_2: 'if core events cannot be received or manager capacity not assigned, defer MVP'.",
+          "what_was_lost_or_degraded": "D6-2 (internal consistency) degraded — seeds 1 and 3 received partial grades because the contact_gate_status naming appeared in both Korean prose and English enums with mismatches (e.g. '연락 가능' vs 'allowed', '연락 억제' vs 'suppressed_consent'), and seed3's B.md retained '[프로세스]' placeholder text in the developer handoff section. This is a direct side-effect of the 타당성검증 stage adding complex enum vocabulary that the output_layer could not reconcile perfectly across languages. D3-4 regressed slightly (seed1 from pass back to partial) for the same reason — the expanded contact gate data model introduced more fields but one seed's output missed source or freshness for a subset. P1 repetition penalty increased slightly from 2 to 3 as the auto-send prohibition was restated once more in the new validation-driven policy section.",
+          "checklist_items_improved": [
+            "D8-2"
+          ],
+          "checklist_items_degraded": [
+            "D6-2",
+            "D3-4"
+          ],
+          "net_judgment": "mixed"
+        },
+        {
+          "transition": "stages_3 → stages_4 (adding 최종화)",
+          "what_was_added": "최종화 contributed final consolidation and developer-readiness content: (1) B.md word count slightly decreased from ~8,850 to ~8,150 words — the 최종화 stage pruned rather than added, which explains its primary value as editorial consolidation. (2) D6-2 (internal consistency) recovered fully — all 3 seeds passed, indicating that the 최종화 stage resolved the contact_gate naming inconsistencies and removed the '[프로세스]' placeholder that had caused partial grades in stages_3. (3) The stages_4 B.md gained explicit 'required_tech_blocks', 'implementation_order', and 'verification_plan' sections (already present in stages_1/2/3 but more precisely scoped here), and the developer_handoff content became more specific about event field timezone requirements. (4) P2 stayed at 0 and P1 held at 2 (one fewer than stages_3), confirming net penalty reduction.",
+          "what_was_lost_or_degraded": "D8-2 (numeric sourcing) regressed sharply — the aggregate score dropped from 0.50 (stages_3) to 0.17 (stages_4), with 2/3 seeds failing. The 최종화 stage appears to have introduced additional precise operational thresholds (35% reactivation target, 3% over-contact rate ceiling, 4-hour SLA, 30-minute data delay trigger, 2-hour event outage trigger) without sourcing justification. These numbers are new in the final stage and are artifacts of polish-seeking rather than validated constraints. D4-3 (KPI owner) remained at partial (0.83) as one seed's 'consent compliance rate' KPI still lacked an owner — a structural gap not fixed by 최종화.",
+          "checklist_items_improved": [
+            "D6-2"
+          ],
+          "checklist_items_degraded": [
+            "D8-2"
+          ],
+          "net_judgment": "mixed"
+        }
+      ],
+      "key_insight": "The pipeline's marginal value is front-loaded and inverted at the final stage. stages_2 (서비스설계) delivered the clearest structural gain by completing data field specifications (D3-4) and reducing unsourced number penalties (P3: 3→1). stages_3 (타당성검증) added the most content volume and introduced genuine feasibility machinery (contact gate enum, MVP blocking conditions) but also introduced new consistency problems (D6-2 naming drift, placeholder text) that stages_4 then had to fix. stages_4 (최종화) successfully resolved the terminology inconsistencies from stages_3 and pruned redundant content, but at the cost of injecting new precise operational thresholds without sourcing — causing D8-2 to regress from 0.50 to 0.17. The net pattern is: each stage after stages_1 produces a tradeoff rather than a clean improvement, and D8-2 (numeric sourcing discipline) is the one item that no stage consistently fixes, suggesting the pipeline lacks a dedicated validation pass for numeric claim provenance."
+    },
+    {
+      "scenario": "return_pickup_flow",
+      "baseline_weakness": "stages_1 (문제정의 only + output_layer) already produces a high-quality PRD that passes 31.2/32 checklist items on average. The one persistent weakness across all conditions is D8-2 (unsourced numerical claims): the output_layer consistently introduces specific latency/threshold numbers (e.g., \"30-second courier log\", \"60-second timeline refresh\", \"15% buffer\") with no stated source, assumption, or measurement plan, triggering a fail on this item.",
+      "marginal_analysis": [
+        {
+          "transition": "stages_1 → stages_2 (adding 서비스설계)",
+          "what_was_added": "서비스설계 stage contributed concrete service-architecture decisions that sharpened the PRD in three ways. (1) Scope boundary: explicitly declared 'no new courier app' as a first-class policy backed by three named alternatives (partner API, CSV upload, operator manual input), turning a vague exclusion into a structured decision with trade-off options. (2) Screen rationalization: the screen count was cut from 6 candidate screens (stages_1 used 6 fully specified screens) to exactly 2 customer screens plus a lightweight risk-queue panel embedded in the existing ops console, with a named policy ('첫 버전 화면 범위 정책') and exception path. (3) KPI sharpening: stages_2 added 'self-reschedule rate without CS' (60% target), 'status-screen-based CS avoidance rate' (70% target), and '48h first-attempt rate' (80% target) — all operationally concrete metrics absent in stages_1. Event-log design became more domain-specific, using Korean-named events ('회수_슬롯_조회됨', '시도결과_수신됨') with explicit idempotency_key properties aligned to the no-courier-app constraint. Policy section gained 8 named policies each with trigger, rule, owner, and exception_handling, whereas stages_1 had 7 policies of similar structure.",
+          "what_was_lost_or_degraded": "The stages_2 PRD introduced a P1 penalty (redundant repetition): the '고객 화면 2개 제한' constraint was stated verbatim three or more times across sections. D4-3 (KPI owners) went from all-pass to a partial because one KPI ('시도 결과 15분 내 반영률') was missing an owner. The stages_2 document also dropped the 5-persona set (stages_1 had 5 personas including a '재고/재무 담당자' and a separate '고객센터 상담원') down to 4, losing the inventory/finance perspective.",
+          "checklist_items_improved": [
+            "D3-3 (policy trigger/rule/owner/exception 4-element coverage — more consistently pass across seeds)",
+            "D5-3 (operational safeguards — explicit '1회 무료 재예약 then operator review' policy added)"
+          ],
+          "checklist_items_degraded": [
+            "D4-3 (KPI owner completeness — one KPI lost its owner field)",
+            "D8-2 (unsourced numbers persists, similar to stages_1)"
+          ],
+          "net_judgment": "neutral"
+        },
+        {
+          "transition": "stages_2 → stages_3 (adding 타당성검증)",
+          "what_was_added": "타당성검증 stage added the most substantive technical depth of any single transition. (1) Capacity ledger formalization: stages_3 introduced 'pickup_capacity_bucket' as a named first-class entity with explicit fields (total_capacity, confirmed_count, hold_count, buffer_capacity, blocked_flag, cutoff_at), a capacity_version for optimistic locking, and a formal separation of available_to_customer vs available_to_commit. This is absent in stages_1 and stages_2 which only mentioned slot capacity abstractly. (2) Two-phase reservation protocol: stages_3 introduced a 'reservation_hold' (짧은 만료 시간) distinct from a confirmed reservation, with hold_expires_at and auto-release — a concrete solution to the race condition risk that stages_2 identified but did not specify. (3) Privacy architecture: stages_3 added a dedicated '개인정보 열람·마스킹 관리' screen (5th screen), 'pickup_contact_token / masked_phone_alias' data fields, pii_access_log with 8 required fields (actor_id, actor_role, return_id, field_name, access_level, purpose_code, accessed_at, source_ip/device_id), and a pii_retention_status data model — none of which existed in stages_1 or stages_2. (4) Event-log expansion: 8 new events were defined specifically for privacy audit (pii_field_viewed, pickup_contact_relay_used, carrier_pii_shared, pii_retention_purged) and capacity ledger (capacity_ledger_checked, capacity_reservation_rejected, overbooking_incident_detected, pickup_capacity_updated). (5) KPI expansion: 5 new KPIs added — slot overbooking rate (0.1% target), capacity data freshness (99% within 60s), PII raw access rate (5% ceiling), PII deletion SLA (99% within 24h), operator manual correction rate (15% ceiling) — none existed in earlier stages. The privacy-related KPIs directly enabled D5-4 and related items to pass more consistently.",
+          "what_was_lost_or_degraded": "The D8-2 unsourced numbers problem worsened slightly: stages_3 introduced more precise operational thresholds (5-second timeline update, 1-minute capacity propagation, 100-concurrent-request test scenario) that the judge flagged as lacking source or assumption. One seed (seed2) also dropped D3-4 (data freshness requirements) to a partial because a new data field lacked a quality_rule. The document grew substantially longer, and the stages_3 output introduced a P3 penalty for the same type of specific operational numbers introduced without basis.",
+          "checklist_items_improved": [
+            "D3-4 (data source/freshness/quality fully specified for all capacity and PII fields)",
+            "D3-5 (event logs with trigger, properties, purpose — most complete event catalog)",
+            "D4-1 (baselines and measurement plans for all KPIs including PII-specific ones)",
+            "D4-2 (measurement formulas specified per KPI)",
+            "D4-3 (KPI owners fully specified in most seeds)",
+            "D5-4 (PII handling — dedicated screen, masked contact token, audit log)"
+          ],
+          "checklist_items_degraded": [
+            "D8-2 (more precise but still unsourced technical thresholds introduced)"
+          ],
+          "net_judgment": "improvement"
+        },
+        {
+          "transition": "stages_3 → stages_4 (adding 최종화)",
+          "what_was_added": "최종화 stage shifted the PRD's primary audience from product review to dev-team estimation. Concretely: (1) A '개발 산정 질문지' as a first-class in-scope item and a new metric ('개발 산정 질문 답변 완료율', target 90% before meeting) — turning the open_questions section into a tracked deliverable. (2) A new persona ('서비스 기획자') whose needs are explicitly around running the estimation meeting, and a new policy ('개발 산정 질문 게이트') with a dated trigger (2026-06-15~19 meeting). (3) The developer_handoff section gained a feature-flag rollback condition: 'if any of atomic slot deduction, freshness gate, PII audit log is not ready, close customer slot confirmation behind a feature flag and only open notification+ops-confirm flow.' This is the most operationally safe and concrete go/no-go criterion across all four conditions. (4) A '개발 산정 답변표' data model (owner, system name, reuse status, new dev scope, unconfirmed risk, next action fields). (5) evidence_links expanded to 6 cited sources including an arxiv paper on 'Service Time Window Design in Last-Mile Delivery' and a Korean PIPC regulation link, compared to 3 sources in stages_3 seed1.",
+          "what_was_lost_or_degraded": "The refocus on estimation readiness caused several regressions. (1) Mean score dropped from 31.33 to 29.33 — the largest drop across any transition. (2) D3-4 (data requirements with source/freshness/quality) fell to partial because reverse_status_timeline lost its 'source' field. (3) D4-3 (KPI owner completeness) consistently partial across all seeds: the new '최소 현장 이벤트 완전성' KPI in seeds 1 and 3 had no owner, and seed3 introduced a '개발 견적 확정률' KPI with no owner. (4) D6-1 (scope-KPI coherence) fell to partial in seed3 because '개발 견적 확정률' is an internal readiness metric disconnected from the operational problem KPIs. (5) D6-3 (internal consistency) failed in seed3 because the privacy policy mentioned location/photo evidence but the data requirements and screen sections did not cover that evidence storage consistently. (6) D8-2 continued to fail in 2/3 seeds. A P1 penalty (redundant repetition of 'no new courier app') was issued for stages_4 doc1. The estimation-readiness framing added noise to the problem statement (current_workaround added 'there is no organized question sheet for dev estimation' as a pain, which the judge accepted but which dilutes focus on operational pains).",
+          "checklist_items_improved": [
+            "D7-2 (open questions with owners and needed-by dates — most complete across all conditions)",
+            "D7-3 (developer handoff questions — 13 questions with system-level specificity)",
+            "D8-4 (pilot/validation framing — explicit feature-flag rollback and go/no-go criteria)"
+          ],
+          "checklist_items_degraded": [
+            "D3-4 (data source completeness — regression on reverse_status_timeline)",
+            "D4-3 (KPI owner — new KPIs introduced without owners)",
+            "D6-1 (scope-KPI coherence — estimation KPI added that is not aligned to operational problem)",
+            "D6-3 (internal consistency — regression in seed3 on evidence handling)",
+            "D8-2 (unsourced numbers persist, overall score drops 2 points)"
+          ],
+          "net_judgment": "regression"
+        }
+      ],
+      "key_insight": "The pipeline's biggest quality gain is stages_2→stages_3 (타당성검증), not any other transition. Stages_3 contributed capacity ledger formalization (pickup_capacity_bucket with available_to_customer vs available_to_commit separation), a two-phase hold/confirm reservation protocol, a dedicated privacy architecture (masked contact token, pii_access_log with 8 required fields, retention SLA KPI), and 8 new audit-specific events — none of which existed in stages_1 or stages_2. These additions enabled 5 checklist items (D3-4, D3-5, D4-1, D4-2, D5-4) to pass more consistently. In contrast, stages_4 (최종화) caused a regression: the stage refocused the PRD toward dev-team estimation readiness (new personas, policies, and KPIs oriented around the dev meeting) but introduced new KPIs without owners, broke reverse_status_timeline's data source field, and added internal-readiness metrics disconnected from the operational problem, dropping mean score from 31.33 to 29.33. The one persistent failure across all four conditions is D8-2: every stage's output_layer introduces specific technical thresholds (latency targets, buffer percentages, concurrency numbers) without attributing them to inputs, stated assumptions, or measurement plans. This is a systematic output_layer behavior, not a per-stage phenomenon."
+    },
+    {
+      "scenario": "checkout_fee_transparency",
+      "baseline_weakness": "stages_1 PRD (문제정의 only) already produced a structurally solid document: D1-1/D1-3/D2/D3/D5/D6/D7 mostly pass on the doc1 side across seeds. The two persistent weaknesses that carry through to later stages are: (1) D1-2 fails to quantify the business loss in units with a cited source — both doc1 and doc2 in stages_1 only describe loss direction, not magnitude; and (2) D4-3 systematically fails on the B-side (doc2) across stages_1 — KPI-level owner assignments are missing. Additionally stages_1 seed1 doc1 carries P3 penalty (ungrounded precise numbers: 0.50달러/2% allowance, confidence_score 0.90 threshold, 15분 expiry) and P1 penalty (repeated core claim about \"위험 주문\" targeting). The scope in stages_1 was narrowed to risk-order-only (위험 주문 only), with estimate_id/fee_rule_version approach, 5-min expiry, and reason_code approval system — a conservative but concrete footprint.",
+      "marginal_analysis": [
+        {
+          "transition": "stages_1 → stages_2 (adding 서비스설계)",
+          "what_was_added": "서비스설계 contributed three concrete improvements. First, an external evidence anchor: the Baymard Institute 2026 citation (70.22% cart abandonment; 39% due to extra costs; 14% can't see total upfront) replaced the direction-only loss description, fixing D1-2 from partial to pass on the B/doc2 side across all seeds. Second, the API data contract became fully explicit: quote_id, total_fee, line_items, fee_rule_version, cart_hash, address_hash, expires_at, confidence_level, demand_supply_signal (60s freshness), promotion_membership_discount, and money_normalization_config were all named as required contract fields. Third, a '배송비 문구 검증 목록' screen for legal/copy approval was added. The scope also broadened from risk-order-only (stages_1) to all orders with three display states (single/range/hold), grounding the design in demand-supply signals and marketing promise limitations (무료배송 restrictions). Metrics expanded to 9 named KPIs with legal_region_config.",
+          "what_was_lost_or_degraded": "The addition of more design specificity introduced two regressions not present in stages_1. D1-3 on the B-side (doc2) newly failed: stages_2's PRD dropped the explicit description of the current manual workaround (운영자 수동 확인, 비교 체계 없음) that stages_1 had, replacing it with vague present-state narrative. D4-3 also continued to fail on doc2 (no KPI owner assignments), a weakness that persisted from stages_1. Furthermore, D8-2 on doc2 now fails with new ungrounded precise numbers introduced by the service design layer: 15%, 10%, 99.5%, 0.5% appear as thresholds without cited sources or measurement assumptions.",
+          "checklist_items_improved": [
+            "D1-2 (doc2: partial → pass, Baymard citation)",
+            "D3-1 (doc2: partial → pass, user/entry/action all present)",
+            "D3-2 (doc2: pass maintained with stronger error states)",
+            "D3-3 (doc2: partial, policy trigger+rule improved)",
+            "D3-5 (doc2: pass, event log fields named)",
+            "D4-4 (doc2: pass, KPIs tied to problem)"
+          ],
+          "checklist_items_degraded": [
+            "D1-3 (doc2: partial in stages_1 → fail in stages_2; current workaround description dropped)",
+            "D8-2 (doc2: newly fails with ungrounded numbers 15%/10%/99.5%/0.5%)",
+            "D4-3 (doc2: remains fail; KPI owners still absent)"
+          ],
+          "net_judgment": "mixed"
+        },
+        {
+          "transition": "stages_2 → stages_3 (adding 타당성검증)",
+          "what_was_added": "타당성검증 contributed the most architecturally sophisticated additions of any stage. The core addition was a 3-state fee_exposure_mode gate (single_amount / amount_range / hold) with a formal confidence-scoring system: quote_confidence_score (historical prediction accuracy for quote-to-actual delta), distance_confidence_score (geocode reliability), predicted_delta_abs, predicted_delta_pct, and segment_delta_p95 (historical P95 delta for that address-time-store segment). The gate logic conditions — predicted_delta_abs ≤ 500원 AND predicted_delta_pct ≤ 5% AND both scores ≥ 0.90 for single_amount; hold when score < 0.75 or delta > 2000원/15% — were all made explicit. A threshold_version concept with multi-party approval (PM + Finance + Engineering) governed threshold changes. The data model expanded to ~25 named fields with full source/freshness/quality_rule annotations for most entries. A dedicated threshold review screen for operations was added. Rollout stop criteria (98%/99%/10%) and latency KPIs (p95 900ms, p99 1600ms) appeared. D1-3 on doc1 now consistently passes across stages with explicit mention of manual ops limitations and missing identifier linkage. D4-3 on doc1 improved to partial (most KPIs have owners, a few do not).",
+          "what_was_lost_or_degraded": "The gating architecture introduced a large number of precise numeric thresholds without cited sources or measurement rationale, causing D8-2 on doc1 to fail again: ungrounded values include 95% (coverage target), 10% (rollout increment), 98%/99% (stop criteria), 500원, 900ms, 1600ms. This is the same P3 penalty pattern seen in stages_1 but now applied to the more sophisticated confidence threshold system. D3-4 on doc1 stayed at partial because some data entries still lacked field_name or source despite the expanded model. D4-1 on doc1 also stayed at partial because one KPI (고객 불리 기준 이탈 결제율) had no target. D1-3 on doc2 (the B-side, i.e., the simpler comparison document) continued to fail across all three seeds.",
+          "checklist_items_improved": [
+            "D1-3 (doc1: now consistently pass; explicit manual-ops-limitation and missing identifier language)",
+            "D2-3 (doc1: pass; fee_exposure_mode server-side determination with human escalation boundary clear)",
+            "D3-3 (doc1: pass; 4-element policy format: trigger/rule/owner/exception_handling all present)",
+            "D4-3 (doc1: fail→partial; most KPIs now have named owners)",
+            "D5-2 (doc1: pass; hold condition explicitly tied to predicted_delta and confidence scores)",
+            "D5-3 (doc1: pass; single_amount condition is fully specified with quantified gates)",
+            "D7-1 (doc1: pass; decision topic with owner and 3 options for tolerance thresholds)"
+          ],
+          "checklist_items_degraded": [
+            "D8-2 (doc1: pass→fail; gating system introduced ≥3 ungrounded precise numbers: 500원/5%, 2000원/15%, 0.90, 0.75, 900ms)",
+            "D3-4 (doc1: remains partial; some data fields still missing source or field_name)",
+            "D4-1 (doc1: remains partial; one KPI target missing)"
+          ],
+          "net_judgment": "mixed"
+        },
+        {
+          "transition": "stages_3 → stages_4 (adding 최종화)",
+          "what_was_added": "최종화 made three distinct contributions. First, it introduced developer-handoff-grade operational artifacts as first-class PRD objects: quote_checkout_comparison_log (generated at checkout entry, containing quote_id/quoted_fee_total/checkout_fee_total/diff_amount/diff_reason_code/input_changed/auto_discount_applied=false) and order_fee_reconciliation_log (generated within 1 minute of payment completion, immutable audit record). The diff_reason_code field gave operations teams a typed vocabulary for classifying fee discrepancies. Second, the PRD narrowed MVP scope back from stages_3's complex gating architecture to a more conservative footprint: the detailed confidence-scoring gate (stages_3's fee_exposure_mode with predicted_delta and segment_delta_p95) was explicitly deferred until log quality is confirmed from production data, reducing the risk of P3 penalties from unverifiable threshold assumptions. Third, governance and compliance were grounded with a 0.3% cap on unfavorable price changes without customer input change (D5-3), per-KPI role assignments (D4-3: 제품기획 리드, 배송 플랫폼 엔지니어링 리드, 결제 엔지니어링 리드, 고객경험 리드 each named against specific KPIs), a 4-element policy format consistently applied across all 6 policies (trigger/rule/owner/exception_handling), and immutability requirements on snapshot artifacts. D1-3 was fixed on doc1 by explicitly stating 'no comparison log exists; agent must reconstruct retrospectively' as the current limitation. D3-4 on doc1 now fully passes with field_name/source/purpose/freshness/quality_rule for all 9 data requirements.",
+          "what_was_lost_or_degraded": "D8-2 continued to fail on doc1 despite the more conservative approach: the 0.3% unfavorable change cap, 99.5% calculation equivalence target, 800ms p95 latency, and 5-second comparison log SLA are all stated as precise requirements without cited sources or derivation assumptions. The P3 penalty persists. The structural simplification of deferring stages_3's confidence-scoring gate means some of the architectural sophistication (threshold_version governance, segment_delta_p95 historical validation) was traded away for a more operationally grounded MVP scope — representing a deliberate simplification rather than a loss of quality.",
+          "checklist_items_improved": [
+            "D1-3 (doc1: pass; explicit statement that no comparison log exists and agent cannot reconstruct retrospectively)",
+            "D1-4 (doc1: pass; success criteria now fully measurable: 99% log generation rate for quote_checkout_comparison_log, 99% rate for order_fee_reconciliation_log within 1 min, 0.3% unfavorable change cap)",
+            "D3-4 (doc1: partial→pass; all 9 data fields have field_name/source/purpose/freshness/quality_rule)",
+            "D3-3 (doc1: pass; 6 policies all in 4-element format with named owners)",
+            "D4-1 (doc1: partial→pass; all KPIs have baseline stated as 'currently 없음' plus measurement plan)",
+            "D4-2 (doc1: partial→pass; KPI-level numerator/denominator formulas stated per KPI)",
+            "D4-3 (doc1: partial→pass; 4 distinct role owners assigned across 6 KPIs)",
+            "D7-1 (doc1: pass; decision topics with owner and 3 options maintained)",
+            "D7-2 (doc1: pass; open questions with owner and needed_by deadline)",
+            "D7-3 (doc1: pass; ≥3 developer handoff questions with blocker status)"
+          ],
+          "checklist_items_degraded": [
+            "D8-2 (doc1: remains fail; 0.3%/99.5%/800ms/5초 are ungrounded precise numbers without source or derivation)",
+            "D2-3 (doc2/comparison doc: partial; human escalation boundary still unclear on the simpler comparison document)"
+          ],
+          "net_judgment": "improvement"
+        }
+      ],
+      "key_insight": "The pipeline reveals a consistent and structurally important pattern: each stage successfully addressed the weakest items from the prior stage but introduced a new failure on D8-2 (ungrounded precise numbers). stages_1 had confidence_score=0.90 and 0.50달러 thresholds without sources. stages_2 fixed D1-2 with Baymard citation but introduced 15%/10%/99.5% without sources. stages_3 built the most sophisticated architecture (3-state gate, threshold_version governance) but multiplied ungrounded numbers dramatically (500원/0.90/0.75/900ms/1600ms). stages_4 course-corrected by narrowing MVP scope and fixing D1-3/D3-4/D4-1/D4-2/D4-3 through developer-contract-grade specificity, but D8-2 still fails (0.3%/99.5%/800ms). The D8-2 failure is not random noise — it reflects a structural tension: the pipeline generates increasingly specific operational targets (which is valuable for D4/D5/D3 grading) but does not generate cited evidence or measurement rationale for those targets (which is what D8-2 requires). D4-3 (KPI owners) is a separate recurring failure on the doc2/simpler-side that the pipeline only fixes consistently at stages_4, suggesting that KPI ownership language is a late-stage editorial artifact rather than something that emerges from problem-definition or service-design reasoning. The stages_2→stages_3 transition was the highest-risk: it improved D5 (risk guards) substantially and D4-3 partially but degraded D8-2 significantly, making the net judgment mixed rather than improvement."
+    },
+    {
+      "scenario": "merchant_prep_visibility",
+      "marginal_analysis": [
+        {
+          "transition": "stages_1 → stages_2",
+          "what_was_added": "서비스설계(stage 2) adds concrete UI component hierarchies, explicit API field contracts, and complete 4-element policy structures. Doc1 gains: specific button set (10분/15분/20분/직접입력) with placement relative to existing 접수·출력·완료 actions; API field names (expected_ready_at, confidence, expires_at, source, apply_mode); policy entries with all four required elements (trigger/rule/owner/exception_handling) for the dispatch-authority boundary; data requirement entries with all four attributes (field_name/source/purpose/freshness/quality_rule); event log entries with trigger/properties/purpose triads. KPI section gains baseline measurement windows (e.g., 'MVP 시작 전 최근 4주 주문 이벤트로 기준값 산출'), concrete target numbers paired with baselines, measurement formulas tying events to KPI computation, and explicit owner assignments per KPI.",
+          "what_was_lost_or_degraded": "P1 penalty appears on doc1 seed2 (timeline information repeated across multiple sections). The core D8-2 failure (ungrounded threshold numbers) persists identically — the service design stage introduces more precise-looking numbers (confidence thresholds, time windows) without adding sources or assumption declarations, so the grounding problem is not reduced. Doc2 (A baseline) starts failing more items than in stages_1: D4-1 (no baseline structure), D4-2 (missing measurement formula), D4-3 (no KPI owner), D7-1 (no decision agenda with options+owner) — not degradation in doc1, but the divergence gap widens.",
+          "checklist_items_improved": [
+            "D3-3 (doc1: full 4-element policy structure vs. partial in stages_1)",
+            "D3-4 (doc1: full source/purpose/freshness/quality_rule vs. missing fields in stages_1)",
+            "D3-5 (doc1: event entries with trigger/properties/purpose vs. incomplete in stages_1)",
+            "D4-1 (doc1: baseline+target pair vs. target-only or direction-only in stages_1)",
+            "D4-2 (doc1: explicit measurement formula referencing named events)",
+            "D4-3 (doc1: per-KPI owner assignments present and consistent)"
+          ],
+          "checklist_items_degraded": [
+            "D8-2 (unchanged: both doc1 and doc2 fail across all seeds — service design introduces more precise threshold numbers without sourcing them)",
+            "D1-3 (doc2 seed1 drops to FAIL — A baseline omits current workaround description that stages_1 doc2 had)",
+            "P1 on doc1 (new in stages_2 seed2 — repeated timeline/dispatch-authority phrasing across sections)"
+          ],
+          "net_judgment": "improvement"
+        },
+        {
+          "transition": "stages_2 → stages_3",
+          "what_was_added": "타당성검증(stage 3) adds three concrete content classes that were absent or only directional in stages_2. First, explicit privacy and data-minimization principles: doc1 names what fields are stored, restricts individual rider identification, and states 'minimum fields necessary for dispatch and wait judgment' — enabling D5-4 to pass in all seeds. Second, concrete automatic-pause thresholds for the slow-signal suppression mechanism: 'false-signal rate exceeding 10% or 5 disputes per 100 risk signals' (stages_3 seed1) and 'unreliable-signal rate 3% or disputed-signal acknowledged rate 10%' (stages_3 seed3) — enabling D5-3 to pass with specific numeric circuit-breakers rather than directional statements. Third, richer empty-state and error-state coverage (D3-2 passes reliably): doc1 specifies both 'no active orders → hide prep panel, show existing empty state' and 'state refresh delayed 30+ seconds → show last-updated timestamp' as distinct handling paths.",
+          "what_was_lost_or_degraded": "P1 penalty on doc1 increases in frequency: stages_3 seed1 flags 비징벌(non-punitive) phrasing repeated across problem definition, policy, developer handoff, and decision agenda sections. More significantly, new internal consistency failures appear in doc2 (A baseline) for D6-2 and D6-3: the A baseline generates PRD text that simultaneously declares certain features out-of-scope while including them in screen components — e.g., stating no auto-dispatch authority but showing '기사 도착을 자동으로 조금 늦추는 중입니다' in the UI spec, or excluding ETA auto-changes from scope while including them in screen designs. These D6-2/D6-3 failures do not appear in doc1, suggesting that as PRD complexity grows the A baseline's internal coherence degrades.",
+          "checklist_items_improved": [
+            "D5-4 (doc1: explicit data minimization + rider PII handling principles vs. directional or partial in stages_2)",
+            "D5-3 (doc1: specific numeric auto-pause thresholds vs. threshold conditions without numbers in stages_2)",
+            "D3-2 (doc1: both empty_states and error_states present for multiple screens consistently across all seeds)"
+          ],
+          "checklist_items_degraded": [
+            "D6-2 (doc2 seeds 2-3: scope-screen contradiction — auto-dispatch authority excluded from scope but auto-dispatch action appears in screen copy)",
+            "D6-3 (doc2 seeds 2-3: policy-scope conflict — ETA auto-change or '느림' label excluded from scope but present in screen specs)",
+            "P1 on doc1 (increases: 비징벌 phrasing repeated in stages_3 seed1 across 4+ sections, continuing pattern from stages_2)"
+          ],
+          "net_judgment": "improvement"
+        },
+        {
+          "transition": "stages_3 → stages_4",
+          "what_was_added": "최종화(stage 4) produces marginally more polished framing but adds very little structurally new content relative to stages_3. Doc1 in stages_4 consistently passes D6-1 (full state-machine sequence named: 주문접수→준비시간입력→배차재계산요청→배차추천생성→운영자확정→기사상태갱신→준비완료→픽업완료), D7-2/D7-3/D7-4 (developer-facing open questions with owner+deadline, and one-page executive summary language). The decision-agenda items (D7-1) remain pass for doc1, with 3-option structures and named owners. These items were already passing in stages_3, so stages_4 does not introduce a new category of improvement — it mainly consolidates and re-expresses content already present.",
+          "what_was_lost_or_degraded": "P3 penalty substantially worsens on doc1 in stages_4: stages_4 seed3 doc1 receives 3 separate P3 penalty citations (vs. 1-2 in earlier stages), targeting thresholds like 'p95 300ms', '최근 14일 유효 주문 30건 이상', '신뢰 이슈율 3% 초과', all introduced without sources. The finalization stage appears to push the model toward specifying precise operational thresholds — a behavior that directly inflates P3. D3-4 remains only PARTIAL for doc1 in 2 of 3 seeds (some data entries still missing source field), indicating that the finalization stage does not systematically close the data-requirements completeness gap opened in stages_2. Doc2 D5-4 regresses in stages_4 seed3 to FAIL (privacy handling absent), which was passing in stages_3 seed3 — showing the A baseline's coverage of privacy principles is unstable and not systematically improved by the pipeline's final stage. D8-2 remains FAIL for both documents in all 3 seeds, identical to all prior conditions.",
+          "checklist_items_improved": [],
+          "checklist_items_degraded": [
+            "D8-2 (unchanged universal fail — not improved by finalization stage)",
+            "P3 on doc1 (worsens: finalization stage introduces more precise ungrounded threshold numbers, especially in stages_4 seed3)",
+            "D3-4 (doc1 remains partial in 2/3 seeds — finalization does not close data-requirements completeness gap)",
+            "D5-4 (doc2 seed3 regresses to FAIL — A baseline privacy handling is unstable and finalization does not anchor it)"
+          ],
+          "net_judgment": "neutral"
+        }
+      ],
+      "key_insight": "The pipeline's value concentrates in the stages_1→stages_2 and stages_2→stages_3 transitions, not in the final stage. Stage 2 (서비스설계) delivers the largest structural gains: it is the only transition where entire new checklist categories become reliably passable — D3-3, D3-4, D3-5, D4-1, D4-2, D4-3 all move from fail/partial to pass by introducing explicit API field names, 4-element policy structures, and per-KPI owner assignments with baseline+measurement pairs. Stage 3 (타당성검증) adds a second distinct content class — privacy/data-minimization principles (D5-4) and numeric auto-pause thresholds (D5-3) — that stage 2 left directional. Stage 4 (최종화) produces no checklist category that was not already passing in stages_3, and it worsens P3 by prompting the model to specify precise operational thresholds without sourcing them. The one cross-cutting failure — D8-2 (ungrounded numbers) — is not resolved by any stage and actually becomes more severe in stages_4, exposing that the pipeline does not currently have a citation or assumption-declaration mechanism at any stage.",
+      "baseline_weakness": "D8-2 (모든 수치에 출처·가정·측정계획 명시) fails for both doc1 (pipeline B) and doc2 (one-shot baseline A) across all 4 ablation conditions and all 3 seeds — 24 consecutive fails with no improvement trend. The specific missing behavior is attaching a source, stated assumption, or measurement plan to each numeric threshold in the PRD body (e.g., confidence cutoffs, time windows, sample-size floors, error-rate circuit breakers). Because each successive stage introduces more precise-sounding numbers rather than fewer, and because the pipeline has no stage dedicated to citation grounding or assumption declaration, this failure mode is systematically unaddressed. It is not a problem of document length or structure — both long (doc1) and short (doc2) documents fail identically — but of a missing content requirement that no pipeline stage currently produces."
+    },
+    {
+      "scenario": "cs_repeat_inquiry_triage",
+      "marginal_analysis": [
+        {
+          "transition": "stages_1 → stages_2 (adding 서비스설계)",
+          "what_was_added": "Adding 서비스설계 introduced two concrete design artifacts absent from stages_1: (1) a '분류 근거 번들' data concept — a structured field carrying intent label, confidence score, secondary candidates, evidence keywords, matched policy rule, and auto-response block reason — which gave the explainability story structural grounding; (2) a dedicated '자동응답·강제 이관 정책표' screen with versioning, simulation mode, and approval workflow, elevating policy governance from prose rules to an auditable table. The event log taxonomy expanded from roughly 8 events to 14, adding distinct events for 개인정보 마스킹 완료, 분류 근거 생성, 정책표 평가 완료, 정책표 버전 게시, and 개인정보 표시 차단. Four new KPIs appeared: 상담사 분류 근거 확인 가능률 (99% target), 강제 이관 정책 준수율 (99% target), 상담사 라벨 수정 회수율 (95% target), and 개인정보 표시 위반 건수 (0건). The current_workaround section became more specific, naming three actual screens that agents juggle (채팅 화면, 주문 관리 화면, 배송사 조회 화면) rather than describing the problem abstractly.",
+          "what_was_lost_or_degraded": "In stages_2 seed1, D3-4 dropped from pass to partial: the expanded data requirements section introduced a '상담사 수정 로그' data item that lacked a source field, violating the 4-element rule that stages_1 had satisfied uniformly. The P1 repetition penalty appeared in stages_2 (the '1% error rate' gate condition was restated across multiple sections), suggesting the added complexity of a policy table and expanded event taxonomy created redundant phrasing. The P3 penalty persisted: newly added precise numbers (45%, 1.5%, 5초) still lacked explicit sourcing.",
+          "checklist_items_improved": [
+            "D3-3",
+            "D3-5"
+          ],
+          "checklist_items_degraded": [
+            "D3-4"
+          ],
+          "net_judgment": "improvement"
+        },
+        {
+          "transition": "stages_2 → stages_3 (adding 타당성검증)",
+          "what_was_added": "Adding 타당성검증 produced three observable changes in the B document content. First, D3-4 became consistently pass across all three seeds: the previously missing source field on the 상담사 수정 로그 data item was supplied, and all data requirements now carried source/purpose/freshness/quality_rule in a uniform structure. Second, the D4-1 baseline framing became more rigorous in one seed — where stages_2 seeds showed 'KPI 목표값은 있으나 KPI별 baseline 또는 미측정 시 측정 계획이 구조적으로 제시되지 않았다', stages_3 seeds consistently showed explicit baseline statements like 'baseline: 현재 자동 응답이 없으므로 0%로 본다' and explicit pre-launch measurement plans ('출시 전 최근 1주 수동 큐 로그로 산정'). Third, the risk section (D5-1, D5-2) showed more precise stop conditions tied to specific metric thresholds ('오답률 2% 초과 또는 재문의율 기준선 대비 3%p 초과 시 의도별 중지'), suggesting feasibility validation added explicit operational guardrails. D4-2 measurement method now consistently referenced specific event names (e.g., 'auto_response_sent 이후 24시간 내 동일 주문 재문의... 비율') rather than conceptual descriptions.",
+          "what_was_lost_or_degraded": "D8-2 continued to fail in all three stages_3 seeds: numbers like '메시지 수신 후 5초 이내', '메시지 수신 후 2초 이내', '캐시는 최대 60초', 'confidence_band' thresholds still appeared without source annotation. Feasibility checking did not solve the sourcing problem for operational thresholds — it tightened the structure around KPIs and data but left performance-engineering constants unanchored. The P1 penalty persisted (same safety claims restated multiple times). One seed added a P2 penalty ('## 참고 자료' section had only generic 'source_type: news_report' entries with no scenario-specific content), suggesting that adding a validation stage introduced a citation section that was populated with boilerplate.",
+          "checklist_items_improved": [
+            "D3-4",
+            "D4-1",
+            "D4-2"
+          ],
+          "checklist_items_degraded": [
+            "D8-2"
+          ],
+          "net_judgment": "mixed"
+        },
+        {
+          "transition": "stages_3 → stages_4 (adding 최종화)",
+          "what_was_added": "Adding 최종화 produced the most consequential single-item change in the entire ablation: D8-2 flipped from FAIL to PASS across all three stages_4 seeds for the B document. The mechanism was explicit epistemic labeling: instead of asserting precise thresholds (e.g., '신뢰도 0.90'), the stages_4 B document added phrases such as 'baseline: 현재 미계측; 출시 전 최근 1주 수동 큐 로그로 산정', '기준값은 [프로세스] 보류 설계를 이어받은 운영 초안이며, 최근 4주 로그 드라이런으로 조정해야 한다', and 'baseline: 현재 0%이며 상담사가 수동으로 주문 조회 후 답변한다' with corresponding 'measurement:' fields tying each number to an event-log-based collection plan. The 최종화 stage also fixed D4-2 in seed3 from partial to pass by explicitly specifying the event join logic ('chat_message_received, routing_decision_evaluated, auto_reply_sent를 주문 ID 해시와 문의 유형 기준으로 매칭해 주간 산출'). The overall structure became slightly more executive-facing: stage_goal fields appeared with language like 'stage_goal: 경영진이 자동/상담사 경계와 기대 효과를 한 장으로 승인할 수 있게 만들고', and the developer_handoff section was tightened to remove ambiguous claims.",
+          "what_was_lost_or_degraded": "D4-3 regressed in stages_4 seed3: where stages_3 had all KPIs with owner fields, one KPI ('개인정보·기사 연락처 무단 노출 건수') was missing an owner in the finalized version, causing a partial grade. This suggests that the finalization rewrite occasionally dropped ownership annotations that had been present in the draft. The P1 penalty persisted: the 'approved templates only / no free generation' guardrail was still repeated verbatim in 3+ sections in all stages_4 seeds.",
+          "checklist_items_improved": [
+            "D8-2",
+            "D4-2"
+          ],
+          "checklist_items_degraded": [
+            "D4-3"
+          ],
+          "net_judgment": "improvement"
+        }
+      ],
+      "key_insight": "The ablation reveals a clear division of labor across stages: 서비스설계 (stage 2) adds domain artifacts (분류 근거 번들, 정책표 screen) and coverage (new KPIs, event types) but also introduces new structural gaps; 타당성검증 (stage 3) closes structural gaps in data and KPI definitions (D3-4, D4-1, D4-2) but cannot resolve the sourcing problem for operational thresholds; and 최종화 (stage 4) is the only stage that fixes D8-2 — the most systemic failure — by adding explicit epistemic labels ('미계측', '드라이런으로 조정', 'baseline: 현재 0%') that transform unsourced precision claims into acknowledged hypotheses. The P1 repetition penalty is never resolved at any stage, suggesting the output_layer synthesis does not deduplicate safety-guardrail language. Throughout all four conditions, the baseline (A) consistently fails D4-3 (no KPI owners), D7-1 (no decision options), and D7-2 (no question owners/deadlines), and persistently fails D8-2 — indicating these structural governance items are inaccessible to one-shot generation regardless of the scenario.",
+      "baseline_weakness": "The one-shot baseline (A) fails three structural governance items across all 12 seeds: D4-3 (KPI owner missing — judge evidence: 'KPI 표에 담당 주체 열이 없다'), D7-1 (decision agenda lacks options with owner — judge evidence: '선택지 2개 이상과 결정 주체를 갖춘 의사결정 항목이 없다'), and D7-2 (open questions lack owner/deadline — judge evidence: '질문은 많지만 답변 주체와 답변 기한이 붙어 있지 않다'). It also fails D8-2 consistently (unsourced precision numbers like '단순 배송성 문의의 30~50%', '상담사 평균 처리시간 15~25% 감소', '분류 신뢰도 0.90 이상') and frequently fails D3-5 (no structured event log design). These failures are structural: the one-shot model produces fluent PRD prose that covers problem, scope, and risk but does not spontaneously generate accountability infrastructure (KPI owners, decision option tables, question tracking) or sourcing scaffolding for numerical claims. In stages_4 seed3 the judge also detected an internal consistency failure in the baseline at D6-2/D6-3 — '배송완료 후 미수령' was simultaneously listed as auto-response eligible and as a mandatory human-handoff case — indicating that one-shot generation creates contradictions in edge-case policy definitions that multi-stage pipeline validation would catch."
+    }
+  ],
+  "a_wins": {
+    "cases": [
+      {
+        "case_id": "checkout_fee_transparency/seed1/stages_1-3",
+        "conditions_where_a_won": [
+          "stages_1",
+          "stages_2",
+          "stages_3"
+        ],
+        "why_a_won": "A produced a complete, stable, narrative-format PRD from the start. The judge consistently awarded A passes on D4-3 (KPI owner assignment), D7-1 (decision options with 2+ alternatives), and D7-2 (open questions with owner+deadline). B failed D4-3 (KPI owners absent across all three stages) and D7-1/D7-2 (result agenda listed without selectable options or owner assignments). A also outperformed B on D3-1 (screen entry-point definition), D3-3 (policy 4-element structure: trigger/rule/owner/exception), D3-4 (data field freshness and quality_rule per field), and D3-5 (event properties and purpose per event). Each successive B stage (1=risk-order-only scoping, 2=quote_id payment coherence architecture, 3=fee_exposure_mode tiered confidence gating) added a new conceptual layer that the judge penalized for structural incompleteness rather than rewarding for depth. B stage_3 accumulated the most penalties: P1 (key criterion repeated 3+ times) and multiple P3 (unsourced precise thresholds like predicted_delta_abs ≤500원 repeated without provenance), while A received only P1 and P3 but had more pass items overall. B stage_2 at the D8-2 judgment dimension actually scored pass (Baymard citation) against A's fail — the one item where B2 exceeded A — but that single gain was outweighed by B's systematic fails on D1-3, D4-3, and D7-1.",
+        "b_failure_mode": "Each pipeline stage introduced a new product concept (risk-order scoping → quote_id payment coherence → confidence-gated tier disclosure) without completing the structural checklist items judges require: KPI owners, policy 4-element format, event properties, and open-question deadlines. The pipeline optimizes for conceptual breadth at each stage but does not enforce structural completeness, leaving the same scaffolding gaps across all three stages.",
+        "items_where_a_led": [
+          "D1-3",
+          "D3-1",
+          "D3-3",
+          "D3-4",
+          "D3-5",
+          "D4-1",
+          "D4-2",
+          "D4-3",
+          "D7-1",
+          "D7-2"
+        ]
+      },
+      {
+        "case_id": "rider_onboarding_dropout/seed3/stages_1-2",
+        "conditions_where_a_won": [
+          "stages_1",
+          "stages_2"
+        ],
+        "why_a_won": "A (the pipeline B output itself — in this run A is the one-shot baseline) produced a focused MVP spec with all structural elements present. The judge gave A passes on D3-3 (policy 4-element), D3-4 (data field source/freshness/quality_rule), D3-5 (event trigger/properties/purpose), D4-3 (KPI owner per metric), D7-1 (decision options 2+), and D7-2 (open question with owner and needed_by). B stage_1 failed D1-3 (current workaround not described), D4-3 (KPI owners absent), D7-2 (no owner or deadline on questions). B stage_2 likewise failed D1-3, D4-3, D7-2, and additionally received a P2 penalty (placeholder reference list with no scenario-specific content). Both B stages applied P1 (key no-auto-send constraint repeated 3+ times). Notably, for D8-2 both A and B stage_2 failed (unsourced precise numbers), so this item did not differentiate. A also earned penalty P1 and P2, but had fewer fails overall and no D7-2 fail.",
+        "b_failure_mode": "B stages did not assign KPI owners, did not provide open questions with answer owners and deadlines, and did not describe the current manual workaround. These are recurring structural gaps that persist across both stages and are not corrected by the pipeline's additive stage model. The pipeline's stage 2 additionally added a broad reference section with no scenario-specific citations (P2 penalty), diluting document quality.",
+        "items_where_a_led": [
+          "D1-3",
+          "D3-3",
+          "D3-4",
+          "D3-5",
+          "D4-3",
+          "D7-1",
+          "D7-2"
+        ]
+      },
+      {
+        "case_id": "dispatch_recommendation/seed1/stage_3",
+        "conditions_where_a_won": [
+          "stages_3"
+        ],
+        "why_a_won": "By stage_3, A and B were largely tied (high confidence verdict still went to A). A passed every structured element: D3-3 (4-element policy including trust-gate with 30s/15s/30s freshness thresholds, owner, exception handling), D3-4 (data field with source/purpose/freshness/quality_rule per field), D3-5 (event with trigger/properties/purpose), D4-1 (baseline + target per KPI), D4-2 (measurement formula per KPI), D4-3 (KPI owner assigned), D7-1 (decision topic with 2+ options and owner), D7-2 (open question with owner and needed_by). B stage_3 failed D4-3 (no KPI owner), D7-1 (no decision options or owner), D7-2 (no owner or deadline on questions). A received P1 (automation boundary repeated 3+), P2 (generic reference list), and P3 (two unsourced numbers). B stage_3 received only P3 (three unsourced numbers), fewer penalties than A — but the structural fails on D4-3, D7-1, D7-2 outweighed the penalty advantage.",
+        "b_failure_mode": "After three pipeline stages, B still omitted KPI ownership assignments and open-question accountability structure (owner + deadline). The pipeline stages added trust-gate logic and supply/demand stress monitoring screens (new scope) but never fixed the structural scaffolding gaps that the judge checklist targets. B's lower penalty count was not enough to compensate for three hard-fail items.",
+        "items_where_a_led": [
+          "D4-3",
+          "D7-1",
+          "D7-2"
+        ]
+      },
+      {
+        "case_id": "return_pickup_flow/seed3/stage_4",
+        "conditions_where_a_won": [
+          "stages_4"
+        ],
+        "why_a_won": "A remained a product-spec PRD across all four stages. B stage_4 reframed the document type entirely: stage_goal explicitly described the goal as 'organizing as a dev estimation meeting deliverable,' and implementation slices began with slice_0 = dev estimation workshop prep. The judge scored B at partial or fail on D3-1 (screen primary_user and entry_point not explicitly defined), D3-2 (empty state handling absent), D3-3 (policy 4-element incomplete), D3-4 (data field quality conditions absent), D3-5 (event properties not defined per event), D4-3 (KPI owners absent), D7-1 (decision options not offered per topic), D7-2 (question owner and deadline absent). A passed all of those. On D6-2 B scored pass vs A partial because A had a [프로세스] placeholder in a key time constraint. A received P1 (scope repeated) and P3 (override rate 5% unsourced). B received P3 (35-50 person-weeks estimate unsourced). Structurally, A failed D6-3 (policy-design conflict: stated minimal personal data but also required location/photo evidence without defining the collection point), while B passed D6-3.",
+        "b_failure_mode": "Stage_4 pivoted the document purpose away from a product PRD toward a dev-estimation deliverable. This fundamentally misaligned the output with PRD evaluation criteria: the judge checklist assesses screens-for-users, event logging, policy 4-element, KPI owner, and open-question accountability — all of which require a product intent frame, not an engineering estimation frame. The format change in stage_4 caused B to lose the same structural items it had already been losing in earlier stages, but now as an architectural regression rather than an omission.",
+        "items_where_a_led": [
+          "D3-1",
+          "D3-2",
+          "D3-3",
+          "D3-4",
+          "D3-5",
+          "D4-3",
+          "D7-1",
+          "D7-2"
+        ]
+      }
+    ],
+    "common_pattern": "Across all four cases and seven judged conditions, A won because it consistently passed four structural checklist clusters that B failed in every case: (1) D4-3 — KPI owner assignment per metric; (2) D7-1 — decision agenda with 2+ options per topic and a named owner; (3) D7-2 — open questions with named answer owner and needed_by deadline; and (4) D3-3/D3-4/D3-5 — policy 4-element completeness (trigger/rule/owner/exception), data field source/freshness/quality_rule, and event trigger/properties/purpose. A produced these elements in its initial single-pass output. B's pipeline stages produced progressively more sophisticated product concepts (risk-order scoping, confidence gating, trust gates, dev estimation framing) but never completed or corrected these structural slots across any stage. The judge checklist effectively penalizes structural incompleteness more heavily than it rewards conceptual sophistication — a complete simpler document beats an elaborate but structurally gapped one.",
+    "pipeline_blind_spot": "The pipeline has no structural-completeness enforcement step. Each stage is designed to add a new conceptual or architectural layer (output layer, trust gate, estimation readiness) on top of the previous stage's output, but no stage audits whether the existing structural scaffolding items — KPI owners, decision option sets, question accountability fields, policy 4-element format, event schema completeness — are present and filled. Because the judge checklist awards hard fails (not partial credit) for absent owners and missing options, these gaps are not offset by the more elaborate product concepts that later stages introduce. The pipeline needs a convergence or completeness-audit stage that reviews the accumulated document against the checklist before generating new conceptual additions, and specifically enforces: every KPI has an owner field, every decision topic has 2+ named options, every open question has an owner and deadline, every policy entry has all four structural fields, and every event schema has all three fields."
+  }
+}
