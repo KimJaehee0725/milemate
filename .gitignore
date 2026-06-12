@@ -3,3 +3,10 @@ __pycache__/
 .pytest_cache/
 .ruff_cache/
 .venv/
+
+# Eval raw data — generated docs, judgments, logs (large, reproducible)
+eval/results/gpt55_*/
+eval/results/ablation_item_scores.json
+eval/results/run_ablation_stages_progress.json
+eval/results/run_ablation_stages.log
+eval/results/run_all_efforts*.log
