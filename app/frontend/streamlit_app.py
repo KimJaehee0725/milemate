@@ -38,6 +38,13 @@ API_BASE_URL = os.getenv("MILEMATE_API_BASE", "http://127.0.0.1:8000").rstrip("/
 API_MODE = os.getenv("MILEMATE_API_MODE", "http")
 API_TIMEOUT_SECONDS = float(os.getenv("MILEMATE_API_TIMEOUT_SECONDS", "620"))
 STATUS_TIMEOUT_SECONDS = float(os.getenv("MILEMATE_STATUS_TIMEOUT_SECONDS", "1.5"))
+# Scenarios offered in the demo UI. Comma-separated env override; defaults to the
+# single application example that has a captured (pre-generated) result.
+DEMO_SCENARIOS = [
+    s.strip()
+    for s in os.getenv("MILEMATE_DEMO_SCENARIOS", "dispatch_recommendation").split(",")
+    if s.strip()
+]
 LOADING_CAT_SPRITE_PATH = Path(__file__).resolve().parent / "assets" / "loading-cat-yarn-sprite.png"
 STAGE_IDS = ("stage_1", "stage_2", "stage_3", "stage_4")
 DECISION_STATUS_LABELS = {
@@ -441,21 +448,62 @@ def display_value(value: Any) -> str:
     return str(value)
 
 
+def inline_value(value: Any) -> str:
+    """Readable one-line rendering for table cells / inline display."""
+    if isinstance(value, bool):
+        return "예" if value else "아니오"
+    if isinstance(value, list):
+        return " / ".join(inline_value(item) for item in value if inline_value(item))
+    if isinstance(value, dict):
+        return " · ".join(
+            f"{format_label(str(key))}: {inline_value(item)}"
+            for key, item in value.items()
+        )
+    if value is None or value == "":
+        return "—"
+    return str(value)
+
+
+def clean_rows(rows: Iterable[Any]) -> list[Dict[str, str]]:
+    """Tabular rows with Korean column labels and flattened cell values."""
+    cleaned: list[Dict[str, str]] = []
+    for row in rows:
+        if isinstance(row, dict):
+            cleaned.append(
+                {format_label(str(key)): inline_value(item) for key, item in row.items()}
+            )
+        else:
+            cleaned.append({"항목": inline_value(row)})
+    return cleaned
+
+
 def render_value(value: Any) -> None:
     if isinstance(value, dict):
-        rows = [
-            {"구분": format_label(str(key)), "내용": display_value(item)}
-            for key, item in value.items()
-        ]
-        st.dataframe(rows, width="stretch", hide_index=True)
+        for key, item in value.items():
+            label = format_label(str(key))
+            if isinstance(item, list) and item and all(isinstance(x, dict) for x in item):
+                st.markdown(f"**{label}**")
+                st.dataframe(clean_rows(item), width="stretch", hide_index=True)
+            elif isinstance(item, list) and item:
+                st.markdown(f"**{label}**")
+                for entry in item:
+                    st.markdown(f"- {inline_value(entry)}")
+            elif isinstance(item, dict) and item:
+                st.markdown(f"**{label}**")
+                for sub_key, sub_item in item.items():
+                    st.markdown(f"- **{format_label(str(sub_key))}** — {inline_value(sub_item)}")
+            else:
+                st.markdown(f"**{label}** — {inline_value(item)}")
     elif isinstance(value, list):
-        if value and all(isinstance(item, dict) for item in value):
-            st.dataframe(value, width="stretch", hide_index=True)
+        if not value:
+            st.caption("표시할 항목이 없습니다.")
+        elif all(isinstance(item, dict) for item in value):
+            st.dataframe(clean_rows(value), width="stretch", hide_index=True)
         else:
-            rows = [{"항목": display_value(item)} for item in value]
-            st.dataframe(rows, width="stretch", hide_index=True)
+            for item in value:
+                st.markdown(f"- {inline_value(item)}")
     else:
-        st.write(value)
+        st.markdown(inline_value(value))
 
 
 def render_key_values(data: Dict[str, Any]) -> None:
@@ -668,7 +716,10 @@ def stage_nav_label(session: Dict[str, Any], stage_id: str) -> str:
 def ensure_selected_stage(session: Dict[str, Any]) -> str:
     selected = st.session_state.get("selected_stage_id")
     if selected not in STAGE_IDS:
-        selected = session["current_stage"]
+        current = session["current_stage"]
+        # current may be a terminal/synthesis stage (e.g. output_layer) that is
+        # not user-navigable — fall back to the last real stage in that case.
+        selected = current if current in STAGE_IDS else STAGE_IDS[-1]
     st.session_state["selected_stage_id"] = selected
     return selected
 
@@ -901,15 +952,48 @@ def render_prd_packet(packet: Dict[str, Any], quality: Dict[str, Any] | None = N
         return
 
     render_prd_quality(quality or {})
-    st.markdown(f"**한 장 요약**\n\n{packet.get('one_page_summary', '')}")
-    render_key_values(
-        {
-            "stage_goal": packet.get("stage_goal", ""),
-            "problem": packet.get("problem", {}),
-            "personas": packet.get("personas", []),
-            "scope": packet.get("scope", {}),
-        }
-    )
+    summary = str(packet.get("one_page_summary", "")).strip()
+    if summary:
+        st.markdown("#### 한 장 요약")
+        with st.container(border=True):
+            st.markdown(summary)
+    goal = str(packet.get("stage_goal", "")).strip()
+    if goal:
+        st.markdown("#### 이번 단계 목표")
+        st.info(goal)
+    problem = packet.get("problem", {})
+    if isinstance(problem, dict) and any(problem.values()):
+        st.markdown("#### 문제 정의")
+        with st.container(border=True):
+            render_value(problem)
+    personas = packet.get("personas", [])
+    if personas:
+        st.markdown("#### 대상 사용자")
+        cols = st.columns(min(3, len(personas)) or 1)
+        for idx, persona in enumerate(personas):
+            with cols[idx % len(cols)]:
+                with st.container(border=True):
+                    if isinstance(persona, dict):
+                        st.markdown(f"**{persona.get('name', '사용자')}**")
+                        role = persona.get("role")
+                        if role:
+                            st.caption(str(role))
+                        for need in persona.get("needs", []) or []:
+                            st.markdown(f"- {inline_value(need)}")
+                    else:
+                        st.markdown(f"- {inline_value(persona)}")
+    scope = packet.get("scope", {})
+    if isinstance(scope, dict) and (scope.get("in_scope") or scope.get("out_of_scope")):
+        st.markdown("#### 범위")
+        in_col, out_col = st.columns(2)
+        with in_col:
+            st.markdown("**포함 (in scope)**")
+            for item in scope.get("in_scope", []) or []:
+                st.markdown(f"- {inline_value(item)}")
+        with out_col:
+            st.markdown("**제외 (out of scope)**")
+            for item in scope.get("out_of_scope", []) or []:
+                st.markdown(f"- {inline_value(item)}")
 
 
 def render_prd_execution(packet: Dict[str, Any]) -> None:
@@ -1899,7 +1983,7 @@ def stage_chat_messages(session_id: str, stage_id: str) -> list[Dict[str, str]]:
 
 def demo_stage_request(scenario_id: str, stage_id: str) -> str:
     scenario_requests = DEMO_STAGE_REQUESTS.get(scenario_id, {})
-    return scenario_requests.get(stage_id, DEFAULT_DEMO_STAGE_REQUESTS[stage_id])
+    return scenario_requests.get(stage_id) or DEFAULT_DEMO_STAGE_REQUESTS.get(stage_id, "")
 
 
 def stage_chat_draft_key(session_id: str, scenario_id: str, stage_id: str) -> str:
@@ -1914,6 +1998,11 @@ def render_stage_chat(
 ) -> None:
     session_id = session["session_id"]
     stage_id = session["current_stage"]
+    if stage_id not in STAGE_IDS:
+        # terminal / synthesis stage (e.g. output_layer): all stages done —
+        # the final report below is the focus, so skip the draft chat.
+        st.success("4단계가 모두 완료되었습니다. 아래에서 최종 보고서를 확인하세요.")
+        return
     draft_key = stage_chat_draft_key(session_id, scenario_id, stage_id)
     if st.session_state.pop("clear_stage_chat_draft", None) == draft_key:
         st.session_state[draft_key] = ""
@@ -2075,7 +2164,10 @@ def run_pending_stage_generation() -> None:
                 {
                     "session_id": pending["session_id"],
                     "user_input": pending["user_input"],
-                    "context": pending["context"],
+                    "context": {
+                        **(pending["context"] or {}),
+                        "gen_mode": st.session_state.get("gen_mode", "replay"),
+                    },
                 },
             )
             st.session_state["stage_response"] = response
@@ -2391,9 +2483,10 @@ if "selected_stage_id" not in st.session_state:
     st.session_state["selected_stage_id"] = "stage_1"
 
 with st.sidebar:
+    scenario_options = [s for s in DEMO_SCENARIOS if s in scenarios] or list(scenarios)
     scenario_id = st.selectbox(
         "적용 예시",
-        options=list(scenarios),
+        options=scenario_options,
         format_func=lambda key: (
             scenario_display_title(demo_inputs, key)
             if key in demo_inputs
@@ -2401,6 +2494,15 @@ with st.sidebar:
         ),
         key="scenario_id",
         on_change=sync_input_to_scenario,
+    )
+    st.radio(
+        "생성 방식",
+        options=["replay", "live"],
+        format_func=lambda m: (
+            "사전 생성문 사용 (즉시)" if m == "replay" else "실제 생성 (codex 호출 · 단계당 수 분)"
+        ),
+        key="gen_mode",
+        help="발표에서는 ‘사전 생성문 사용’을 권장합니다. ‘실제 생성’은 codex를 실제로 호출해 단계마다 수 분이 걸립니다.",
     )
     user_input = st.text_area(
         "기획자의 아이디어 메모",

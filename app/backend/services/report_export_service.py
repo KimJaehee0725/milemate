@@ -599,36 +599,87 @@ class ReportExportService:
         )
         return table
 
+    @staticmethod
+    def _truncate(value: Any, limit: int) -> str:
+        text = str(value)
+        return text if len(text) <= limit else text[: limit - 1].rstrip() + "…"
+
     def _pdf_rows_table(
         self,
         rows: list[dict[str, str]],
         styles: dict[str, ParagraphStyle],
     ) -> Table:
         headers = list(dict.fromkeys(key for row in rows for key in row.keys()))
-        data = [[Paragraph(f"<b>{escape(header)}</b>", styles["body"]) for header in headers]]
-        for row in rows[:12]:
-            data.append(
-                [
-                    Paragraph(escape(str(row.get(header, ""))), styles["body"])
-                    for header in headers
-                ]
-            )
         width = 174 * mm
-        col_width = width / max(len(headers), 1)
-        table = Table(data, colWidths=[col_width] * len(headers), repeatRows=1)
-        table.setStyle(
-            TableStyle(
-                [
-                    ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#f2f4f7")),
-                    ("GRID", (0, 0), (-1, -1), 0.4, colors.HexColor("#d0d7de")),
-                    ("VALIGN", (0, 0), (-1, -1), "TOP"),
-                    ("LEFTPADDING", (0, 0), (-1, -1), 5),
-                    ("RIGHTPADDING", (0, 0), (-1, -1), 5),
-                    ("TOPPADDING", (0, 0), (-1, -1), 5),
-                    ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
-                ]
-            )
+        longest = max(
+            (len(str(row.get(header, ""))) for row in rows for header in headers),
+            default=0,
         )
+        # Wide column counts or long free-text cells overflow a portrait page when
+        # laid out horizontally — render those as a stacked field/value record list
+        # instead (values wrap in a wide column, and the table can split by row).
+        if len(headers) <= 6 and longest <= 80:
+            data = [
+                [Paragraph(f"<b>{escape(header)}</b>", styles["body"]) for header in headers]
+            ]
+            for row in rows[:12]:
+                data.append(
+                    [
+                        Paragraph(escape(self._truncate(row.get(header, ""), 120)), styles["body"])
+                        for header in headers
+                    ]
+                )
+            col_width = width / max(len(headers), 1)
+            table = Table(data, colWidths=[col_width] * len(headers), repeatRows=1)
+            table.setStyle(
+                TableStyle(
+                    [
+                        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#f2f4f7")),
+                        ("GRID", (0, 0), (-1, -1), 0.4, colors.HexColor("#d0d7de")),
+                        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                        ("LEFTPADDING", (0, 0), (-1, -1), 5),
+                        ("RIGHTPADDING", (0, 0), (-1, -1), 5),
+                        ("TOPPADDING", (0, 0), (-1, -1), 5),
+                        ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+                    ]
+                )
+            )
+            return table
+
+        # record layout: 2 columns (field label / value), one block per item
+        label_w = 44 * mm
+        data = []
+        sep_rows: list[int] = []
+        for idx, row in enumerate(rows[:12], start=1):
+            sep_rows.append(len(data))
+            data.append(
+                [Paragraph(f"<b>항목 {idx}</b>", styles["body"]), Paragraph("", styles["body"])]
+            )
+            for header in headers:
+                value = row.get(header, "")
+                if not str(value).strip():
+                    continue
+                data.append(
+                    [
+                        Paragraph(f"<b>{escape(header)}</b>", styles["body"]),
+                        Paragraph(escape(self._truncate(value, 600)), styles["body"]),
+                    ]
+                )
+        if not data:
+            data = [[Paragraph("내용이 없습니다.", styles["body"]), Paragraph("", styles["body"])]]
+        table = Table(data, colWidths=[label_w, width - label_w], repeatRows=0, splitByRow=1)
+        style_cmds = [
+            ("GRID", (0, 0), (-1, -1), 0.4, colors.HexColor("#d0d7de")),
+            ("VALIGN", (0, 0), (-1, -1), "TOP"),
+            ("LEFTPADDING", (0, 0), (-1, -1), 5),
+            ("RIGHTPADDING", (0, 0), (-1, -1), 5),
+            ("TOPPADDING", (0, 0), (-1, -1), 4),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+        ]
+        for r in sep_rows:
+            style_cmds.append(("SPAN", (0, r), (1, r)))
+            style_cmds.append(("BACKGROUND", (0, r), (1, r), colors.HexColor("#f2f4f7")))
+        table.setStyle(TableStyle(style_cmds))
         return table
 
     def to_pptx(self, document_model: ReportDocumentModel) -> bytes:
