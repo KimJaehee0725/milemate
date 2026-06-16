@@ -1,0 +1,4197 @@
+{
+  "slide-0": {
+    "shape-0": {
+      "left": 0.54,
+      "top": 2.61,
+      "width": 5.94,
+      "height": 1.63,
+      "paragraphs": [
+        {
+          "text": "Milemate",
+          "font_name": "NanumSquareOTF_ac ExtraBold",
+          "font_size": 44.0,
+          "bold": true,
+          "line_spacing": 66.0
+        },
+        {
+          "text": "기획자를 위한 기술 기반 기획서 작성 보조 에이전트 시스템",
+          "font_name": "NanumSquareOTF_ac Bold",
+          "bold": true,
+          "color": "163866",
+          "line_spacing": 18.0
+        }
+      ]
+    },
+    "shape-1": {
+      "left": 0.54,
+      "top": 6.31,
+      "width": 3.2,
+      "height": 0.64,
+      "paragraphs": [
+        {
+          "text": "김재희   고재용   김선민   박하연",
+          "font_name": "NanumSquare Light",
+          "font_size": 16.0
+        }
+      ]
+    }
+  },
+  "slide-1": {
+    "shape-0": {
+      "left": 0.27,
+      "top": 0.2,
+      "width": 7.51,
+      "height": 0.33,
+      "paragraphs": [
+        {
+          "text": "INDEX",
+          "font_name": "NanumSquare ExtraBold",
+          "font_size": 14.0,
+          "bold": true,
+          "color": "163866"
+        }
+      ]
+    },
+    "shape-1": {
+      "left": 0.84,
+      "top": 1.19,
+      "width": 11.19,
+      "height": 5.09,
+      "paragraphs": [
+        {
+          "text": "PART 1.",
+          "space_after": 4.0,
+          "font_name": "NanumSquare ExtraBold",
+          "font_size": 20.0,
+          "bold": true,
+          "color": "163866",
+          "line_spacing": 30.0
+        },
+        {
+          "text": "문제 정의와 해결 방안",
+          "space_after": 4.0,
+          "font_name": "나눔스퀘어",
+          "font_size": 16.0,
+          "color": "808080",
+          "line_spacing": 24.0
+        },
+        {
+          "text": "Motivation",
+          "bullet": true,
+          "level": 1,
+          "space_after": 2.0,
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 15.0,
+          "line_spacing": 22.5
+        },
+        {
+          "text": "제안 방법론",
+          "bullet": true,
+          "level": 1,
+          "space_after": 2.0,
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 15.0,
+          "line_spacing": 22.5
+        },
+        {
+          "text": "에이전트 파이프라인",
+          "bullet": true,
+          "level": 1,
+          "space_after": 2.0,
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 15.0,
+          "line_spacing": 22.5
+        },
+        {
+          "text": "PART 2.",
+          "space_before": 6.0,
+          "space_after": 4.0,
+          "font_name": "NanumSquare ExtraBold",
+          "font_size": 20.0,
+          "bold": true,
+          "color": "163866",
+          "line_spacing": 30.0
+        },
+        {
+          "text": "실제 활용 예시 — 클린고(CleanGo)",
+          "space_before": 6.0,
+          "space_after": 4.0,
+          "font_name": "나눔스퀘어",
+          "font_size": 16.0,
+          "color": "808080",
+          "line_spacing": 24.0
+        },
+        {
+          "text": "CleanGo 시나리오 소개: 라스트 마일 배송 시스템",
+          "bullet": true,
+          "level": 1,
+          "space_after": 2.0,
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 15.0,
+          "line_spacing": 22.5
+        },
+        {
+          "text": "에이전트 단계별 실행 흐름",
+          "bullet": true,
+          "level": 1,
+          "space_after": 2.0,
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 15.0,
+          "line_spacing": 22.5
+        },
+        {
+          "text": "마무리",
+          "bullet": true,
+          "level": 1,
+          "space_after": 2.0,
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 15.0,
+          "line_spacing": 22.5
+        }
+      ]
+    }
+  },
+  "slide-2": {
+    "shape-0": {
+      "left": 0.25,
+      "top": 0.16,
+      "width": 12.06,
+      "height": 0.3,
+      "placeholder_type": "TITLE",
+      "default_font_size": 14.0,
+      "paragraphs": [
+        {
+          "text": "Milemate",
+          "font_name": "NanumSquare ExtraBold",
+          "font_size": 14.0,
+          "bold": true,
+          "color": "B8C5D6"
+        }
+      ]
+    },
+    "shape-1": {
+      "left": 1.39,
+      "top": 2.57,
+      "width": 9.72,
+      "height": 0.24,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.06
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "PART 1",
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 14.0,
+          "bold": true,
+          "color": "8FA38A"
+        }
+      ]
+    },
+    "shape-2": {
+      "left": 1.39,
+      "top": 3.12,
+      "width": 11.11,
+      "height": 0.81,
+      "paragraphs": [
+        {
+          "text": "문제정의와 해결방안",
+          "font_name": "NanumSquare ExtraBold",
+          "font_size": 44.0,
+          "bold": true,
+          "color": "FFFFFF",
+          "line_spacing": 50.6
+        }
+      ]
+    },
+    "shape-3": {
+      "left": 1.39,
+      "top": 4.38,
+      "width": 11.11,
+      "height": 0.34,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.07
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "기획자를 위한 기술 기반 기획서 작성 보조 에이전트 시스템 - Multi-agent들의 협업, Human-in-the-loop",
+          "font_name": "나눔스퀘어",
+          "font_size": 16.0,
+          "color": "B8C5D6",
+          "line_spacing": 22.4
+        }
+      ]
+    }
+  },
+  "slide-3": {
+    "shape-0": {
+      "left": 0.25,
+      "top": 0.16,
+      "width": 12.06,
+      "height": 0.3,
+      "placeholder_type": "TITLE",
+      "default_font_size": 14.0,
+      "paragraphs": [
+        {
+          "text": "Milemate",
+          "font_name": "NanumSquare ExtraBold",
+          "font_size": 14.0,
+          "bold": true,
+          "color": "163866"
+        }
+      ]
+    },
+    "shape-1": {
+      "left": 0.25,
+      "top": 0.48,
+      "width": 12.06,
+      "height": 0.3,
+      "placeholder_type": "OBJECT",
+      "default_font_size": 14.0,
+      "paragraphs": [
+        {
+          "text": "01. 문제 인식",
+          "font_name": "NanumSquare ExtraBold",
+          "font_size": 14.0,
+          "bold": true,
+          "color": "2D3338"
+        }
+      ]
+    },
+    "shape-2": {
+      "left": 0.25,
+      "top": 1.08,
+      "width": 12.83,
+      "height": 0.59,
+      "placeholder_type": "BODY",
+      "default_font_size": 28.0,
+      "paragraphs": [
+        {
+          "text": "Motivation",
+          "color": "163866"
+        }
+      ]
+    },
+    "shape-3": {
+      "left": 0.56,
+      "top": 1.78,
+      "width": 12.22,
+      "height": 0.81,
+      "paragraphs": [
+        {
+          "text": "기획자의 \"무엇을 만들자\"와 개발자의 \"어떻게 만들까\" 간 간극 존재",
+          "font_name": "나눔스퀘어",
+          "color": "2D3338",
+          "line_spacing": 16.8
+        },
+        {
+          "text": " 아이디어를 구현 가능한 기술기획서로 번역하는 과정은 대부분의 조직에서 막대한 자원 소모",
+          "font_name": "나눔스퀘어",
+          "color": "2D3338",
+          "line_spacing": 16.8
+        }
+      ]
+    },
+    "shape-4": {
+      "left": 0.83,
+      "top": 3.25,
+      "width": 5.28,
+      "height": 2.02,
+      "paragraphs": [
+        {
+          "text": "🧑🏻‍💻 기획자 쪽 현실",
+          "space_after": 4.0,
+          "font_name": "NanumSquare ExtraBold",
+          "bold": true,
+          "color": "163866"
+        },
+        {
+          "text": "PLANNER'S REALITY",
+          "space_after": 9.0,
+          "font_name": "나눔스퀘어",
+          "font_size": 10.0,
+          "color": "8B5A3C"
+        },
+        {
+          "text": "아이디어는 있지만 기술 제약 지식 붖ㄱ",
+          "bullet": true,
+          "level": 0,
+          "space_after": 4.0,
+          "font_name": "나눔스퀘어",
+          "font_size": 13.0,
+          "color": "2D3338",
+          "line_spacing": 18.2
+        },
+        {
+          "text": "데이터 규제 관련 판단 어려움",
+          "bullet": true,
+          "level": 0,
+          "space_after": 4.0,
+          "font_name": "나눔스퀘어",
+          "font_size": 13.0,
+          "color": "2D3338",
+          "line_spacing": 18.2
+        },
+        {
+          "text": "기획 의도 설명 시 개발 고려 어려움",
+          "bullet": true,
+          "level": 0,
+          "space_after": 4.0,
+          "font_name": "나눔스퀘어",
+          "font_size": 13.0,
+          "color": "2D3338",
+          "line_spacing": 18.2
+        },
+        {
+          "text": "\"일단 MVP로 해보자\"식 기획이 반복됨",
+          "bullet": true,
+          "level": 0,
+          "font_name": "나눔스퀘어",
+          "font_size": 13.0,
+          "color": "2D3338",
+          "line_spacing": 18.2
+        }
+      ]
+    },
+    "shape-5": {
+      "left": 7.22,
+      "top": 3.25,
+      "width": 5.28,
+      "height": 2.02,
+      "paragraphs": [
+        {
+          "text": "🧑‍💻 개발자 쪽 현실",
+          "space_after": 4.0,
+          "font_name": "NanumSquare ExtraBold",
+          "bold": true,
+          "color": "163866"
+        },
+        {
+          "text": "DEVELOPER'S REALITY",
+          "space_after": 9.0,
+          "font_name": "나눔스퀘어",
+          "font_size": 10.0,
+          "color": "8B5A3C"
+        },
+        {
+          "text": "실현가능성이 검토되지 않은 요구사항을 받음",
+          "bullet": true,
+          "level": 0,
+          "space_after": 4.0,
+          "font_name": "나눔스퀘어",
+          "font_size": 13.0,
+          "color": "2D3338",
+          "line_spacing": 18.2
+        },
+        {
+          "text": "KPI 없이 기능부터 만들기 시작",
+          "bullet": true,
+          "level": 0,
+          "space_after": 4.0,
+          "font_name": "나눔스퀘어",
+          "font_size": 13.0,
+          "color": "2D3338",
+          "line_spacing": 18.2
+        },
+        {
+          "text": "개발 난항으로 인한 요구 사항 변경 및 작업 폐기 발생",
+          "bullet": true,
+          "level": 0,
+          "space_after": 4.0,
+          "font_name": "나눔스퀘어",
+          "font_size": 13.0,
+          "color": "2D3338",
+          "line_spacing": 18.2
+        },
+        {
+          "text": "\"왜 필요한지\" 맥락이 사라진 스펙을 받음",
+          "bullet": true,
+          "level": 0,
+          "font_name": "나눔스퀘어",
+          "font_size": 13.0,
+          "color": "2D3338",
+          "line_spacing": 18.2
+        }
+      ]
+    },
+    "shape-6": {
+      "left": 0.56,
+      "top": 6.06,
+      "width": 12.22,
+      "height": 0.34,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.07
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "아이디어를 기술 언어로 구체화하는 과정이 체계 없이 개인 경험에만 의존하는 것이 병목지점",
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 16.0,
+          "bold": true,
+          "color": "2D3338",
+          "line_spacing": 22.4
+        }
+      ]
+    }
+  },
+  "slide-4": {
+    "shape-0": {
+      "left": 0.25,
+      "top": 0.16,
+      "width": 12.06,
+      "height": 0.3,
+      "placeholder_type": "TITLE",
+      "default_font_size": 14.0,
+      "paragraphs": [
+        {
+          "text": "Milemate",
+          "font_name": "NanumSquare ExtraBold",
+          "font_size": 14.0,
+          "bold": true,
+          "color": "163866"
+        }
+      ]
+    },
+    "shape-1": {
+      "left": 0.25,
+      "top": 0.48,
+      "width": 12.06,
+      "height": 0.3,
+      "placeholder_type": "OBJECT",
+      "default_font_size": 14.0,
+      "paragraphs": [
+        {
+          "text": "02. Milemate가 하는 일",
+          "font_name": "NanumSquare ExtraBold",
+          "font_size": 14.0,
+          "bold": true,
+          "color": "2D3338"
+        }
+      ]
+    },
+    "shape-2": {
+      "left": 0.25,
+      "top": 1.08,
+      "width": 12.83,
+      "height": 0.59,
+      "placeholder_type": "BODY",
+      "default_font_size": 28.0,
+      "paragraphs": [
+        {
+          "text": "제안 방법론",
+          "color": "163866"
+        }
+      ]
+    },
+    "shape-3": {
+      "left": 0.56,
+      "top": 1.78,
+      "width": 12.22,
+      "height": 0.3,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.07
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "Milemate: 기획자의 자연어 아이디어를, 개발자가 바로 착수할 수 있는 기술기획서로 번역하는 기술기획 보조 에이전트 시스템",
+          "font_name": "나눔스퀘어",
+          "font_size": 14.0,
+          "color": "2D3338",
+          "line_spacing": 19.6
+        }
+      ]
+    },
+    "shape-4": {
+      "left": 0.83,
+      "top": 2.78,
+      "width": 3.33,
+      "height": 1.44,
+      "paragraphs": [
+        {
+          "text": "01",
+          "space_after": 3.0,
+          "font_name": "NanumSquare ExtraBold",
+          "font_size": 24.0,
+          "bold": true,
+          "color": "8B5A3C"
+        },
+        {
+          "text": "구조화",
+          "space_after": 7.0,
+          "font_name": "NanumSquare ExtraBold",
+          "font_size": 17.0,
+          "bold": true,
+          "color": "163866"
+        },
+        {
+          "text": "아이디어에 필요한",
+          "font_name": "나눔스퀘어",
+          "font_size": 13.0,
+          "color": "2D3338",
+          "line_spacing": 18.85
+        },
+        {
+          "text": "기술 의존성 정리 및 구현 가능 단위 분리",
+          "font_name": "나눔스퀘어",
+          "font_size": 13.0,
+          "color": "2D3338",
+          "line_spacing": 18.85
+        }
+      ]
+    },
+    "shape-5": {
+      "left": 5.0,
+      "top": 2.78,
+      "width": 3.33,
+      "height": 1.75,
+      "paragraphs": [
+        {
+          "text": "02",
+          "space_after": 3.0,
+          "font_name": "NanumSquare ExtraBold",
+          "font_size": 24.0,
+          "bold": true,
+          "color": "8B5A3C"
+        },
+        {
+          "text": "범위 확정",
+          "space_after": 7.0,
+          "font_name": "NanumSquare ExtraBold",
+          "font_size": 17.0,
+          "bold": true,
+          "color": "163866"
+        },
+        {
+          "text": "조직의 자원/데이터/규제 기반",
+          "font_name": "나눔스퀘어",
+          "font_size": 13.0,
+          "color": "2D3338",
+          "line_spacing": 18.85
+        },
+        {
+          "text": "MVP 범위 제안",
+          "font_name": "나눔스퀘어",
+          "font_size": 13.0,
+          "color": "2D3338",
+          "line_spacing": 18.85
+        },
+        {
+          "text": "내부 구현 여부 의사결정 가능",
+          "font_name": "나눔스퀘어",
+          "font_size": 13.0,
+          "color": "2D3338",
+          "line_spacing": 18.85
+        }
+      ]
+    },
+    "shape-6": {
+      "left": 9.17,
+      "top": 2.78,
+      "width": 3.33,
+      "height": 1.44,
+      "paragraphs": [
+        {
+          "text": "03",
+          "space_after": 3.0,
+          "font_name": "NanumSquare ExtraBold",
+          "font_size": 24.0,
+          "bold": true,
+          "color": "8B5A3C"
+        },
+        {
+          "text": "검증과 기록",
+          "space_after": 7.0,
+          "font_name": "NanumSquare ExtraBold",
+          "font_size": 17.0,
+          "bold": true,
+          "color": "163866"
+        },
+        {
+          "text": "Stage 기반 human-in-the-loop 워크플로우로 모든 의사결정 기록 및 검증",
+          "font_name": "나눔스퀘어",
+          "font_size": 13.0,
+          "color": "2D3338",
+          "line_spacing": 18.85
+        }
+      ]
+    },
+    "shape-7": {
+      "left": 0.56,
+      "top": 6.52,
+      "width": 12.22,
+      "height": 0.27,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.06
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "특정 도메인의 기획자가 사용할 수 있는 서비스-범용적인 방법론을 제안",
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 16.0,
+          "bold": true
+        }
+      ]
+    }
+  },
+  "slide-5": {
+    "shape-0": {
+      "left": 0.25,
+      "top": 0.16,
+      "width": 12.06,
+      "height": 0.3,
+      "placeholder_type": "TITLE",
+      "default_font_size": 14.0,
+      "paragraphs": [
+        {
+          "text": "Milemate",
+          "font_name": "NanumSquare ExtraBold",
+          "font_size": 14.0,
+          "bold": true,
+          "color": "163866"
+        }
+      ]
+    },
+    "shape-1": {
+      "left": 0.25,
+      "top": 0.48,
+      "width": 12.06,
+      "height": 0.3,
+      "placeholder_type": "OBJECT",
+      "default_font_size": 14.0,
+      "paragraphs": [
+        {
+          "text": "03. 시스템 아키텍처 개요",
+          "font_name": "NanumSquare ExtraBold",
+          "font_size": 14.0,
+          "bold": true,
+          "color": "2D3338"
+        }
+      ]
+    },
+    "shape-2": {
+      "left": 0.25,
+      "top": 1.08,
+      "width": 12.83,
+      "height": 0.59,
+      "placeholder_type": "BODY",
+      "default_font_size": 28.0,
+      "paragraphs": [
+        {
+          "text": "에이전트 파이프라인",
+          "font_name": "NanumSquare ExtraBold",
+          "font_size": 28.0,
+          "bold": true,
+          "color": "163866"
+        }
+      ]
+    },
+    "shape-3": {
+      "left": 0.56,
+      "top": 1.78,
+      "width": 12.22,
+      "height": 0.3,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.07
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "기술 스택: Microsoft Agent Framework / FastAPI / vLLM / Memorization",
+          "font_name": "나눔스퀘어",
+          "font_size": 14.0,
+          "color": "2D3338",
+          "line_spacing": 19.6
+        }
+      ]
+    },
+    "shape-4": {
+      "left": 1.99,
+      "top": 2.47,
+      "width": 4.83,
+      "height": 0.42,
+      "paragraphs": [
+        {
+          "text": "사용자 입력",
+          "alignment": "CENTER",
+          "space_after": 1.0,
+          "font_name": "NanumSquare ExtraBold",
+          "font_size": 14.0,
+          "bold": true,
+          "color": "163866"
+        },
+        {
+          "text": "기획자의 자연어 아이디어",
+          "alignment": "CENTER",
+          "font_name": "나눔스퀘어",
+          "font_size": 10.0,
+          "color": "6B7280"
+        }
+      ]
+    },
+    "shape-5": {
+      "left": 8.72,
+      "top": 2.43,
+      "width": 4.03,
+      "height": 0.27,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.17
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "에이전트 협업 레이어",
+          "alignment": "CENTER",
+          "space_after": 8.0,
+          "font_name": "NanumSquare ExtraBold",
+          "font_size": 16.0,
+          "bold": true
+        }
+      ]
+    },
+    "shape-6": {
+      "left": 9.44,
+      "top": 2.77,
+      "width": 4.77,
+      "height": 0.37,
+      "overflow": {
+        "slide": {
+          "overflow_right": 0.87
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "각 stage는 사용자 승인 후 진행되며,",
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 11.0,
+          "bold": true,
+          "italic": true,
+          "theme_color": "BACKGROUND_1"
+        },
+        {
+          "text": "문제 발견 시 이전 stage로 rollback",
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 11.0,
+          "bold": true,
+          "italic": true,
+          "theme_color": "BACKGROUND_1"
+        }
+      ]
+    },
+    "shape-7": {
+      "left": 1.98,
+      "top": 3.51,
+      "width": 4.83,
+      "height": 0.42,
+      "paragraphs": [
+        {
+          "text": "문제 정의, KPI 정렬",
+          "alignment": "CENTER",
+          "space_after": 1.0,
+          "font_name": "NanumSquare ExtraBold",
+          "font_size": 14.0,
+          "bold": true,
+          "color": "163866"
+        },
+        {
+          "text": "구체화된 목표 · KPI 후보 및 우선순위 생성",
+          "alignment": "CENTER",
+          "space_after": 1.0,
+          "font_name": "나눔스퀘어",
+          "font_size": 10.0,
+          "color": "6B7280"
+        }
+      ]
+    },
+    "shape-8": {
+      "left": 7.26,
+      "top": 3.45,
+      "width": 4.15,
+      "height": 0.6,
+      "paragraphs": [
+        {
+          "text": "🧑‍🤝‍🧑  Orchestrator Agent",
+          "alignment": "CENTER",
+          "space_after": 2.0,
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 14.0,
+          "bold": true,
+          "color": "8B5A3C"
+        },
+        {
+          "text": "👩‍💼 Goal Aligner Agent",
+          "alignment": "CENTER",
+          "space_after": 2.0,
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 14.0,
+          "bold": true,
+          "color": "8B5A3C"
+        }
+      ]
+    },
+    "shape-9": {
+      "left": 1.98,
+      "top": 4.4,
+      "width": 4.83,
+      "height": 0.42,
+      "paragraphs": [
+        {
+          "text": "서비스 구조 및 MVP 범위 설정",
+          "alignment": "CENTER",
+          "space_after": 1.0,
+          "font_name": "NanumSquare ExtraBold",
+          "font_size": 14.0,
+          "bold": true,
+          "color": "163866"
+        },
+        {
+          "text": "MVP의 시스템 기능 구조도 · 기술 스택 제안서",
+          "alignment": "CENTER",
+          "space_after": 1.0,
+          "font_name": "나눔스퀘어",
+          "font_size": 10.0,
+          "color": "6B7280"
+        }
+      ]
+    },
+    "shape-10": {
+      "left": 8.06,
+      "top": 4.4,
+      "width": 3.02,
+      "height": 0.42,
+      "paragraphs": [
+        {
+          "text": "👨🏻‍💼 Solution Architect Agent",
+          "space_after": 2.0,
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 14.0,
+          "bold": true,
+          "color": "8B5A3C",
+          "line_spacing": 21.0
+        }
+      ]
+    },
+    "shape-11": {
+      "left": 1.98,
+      "top": 5.41,
+      "width": 4.83,
+      "height": 0.42,
+      "paragraphs": [
+        {
+          "text": "기술/운영/규제 검증",
+          "alignment": "CENTER",
+          "space_after": 1.0,
+          "font_name": "NanumSquare ExtraBold",
+          "font_size": 14.0,
+          "bold": true,
+          "color": "163866"
+        },
+        {
+          "text": "3 agent 병렬 검증",
+          "alignment": "CENTER",
+          "space_after": 1.0,
+          "font_name": "나눔스퀘어",
+          "font_size": 10.0,
+          "color": "6B7280"
+        }
+      ]
+    },
+    "shape-12": {
+      "left": 6.94,
+      "top": 5.21,
+      "width": 4.74,
+      "height": 0.86,
+      "paragraphs": [
+        {
+          "text": "💻 Tech Verifier Agent",
+          "alignment": "CENTER",
+          "space_after": 2.0,
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 14.0,
+          "bold": true,
+          "color": "8B5A3C"
+        },
+        {
+          "text": "💾 Data Analyst Agent",
+          "alignment": "CENTER",
+          "space_after": 2.0,
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 14.0,
+          "bold": true,
+          "color": "8B5A3C"
+        },
+        {
+          "text": "🚨 Regulatory Auditor Agent",
+          "alignment": "CENTER",
+          "space_after": 2.0,
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 14.0,
+          "bold": true,
+          "color": "8B5A3C"
+        }
+      ]
+    },
+    "shape-13": {
+      "left": 1.99,
+      "top": 6.54,
+      "width": 4.83,
+      "height": 0.51,
+      "paragraphs": [
+        {
+          "text": "FINAL OUTPUT",
+          "alignment": "CENTER",
+          "space_after": 4.0,
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 12.0,
+          "bold": true,
+          "color": "F5F0E8"
+        },
+        {
+          "text": "Planner Report · Engineer Report · Decision Log",
+          "alignment": "CENTER",
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 15.0,
+          "bold": true,
+          "color": "FFFFFF"
+        }
+      ]
+    },
+    "shape-14": {
+      "left": 7.32,
+      "top": 6.5,
+      "width": 4.15,
+      "height": 0.6,
+      "paragraphs": [
+        {
+          "text": "✏️ Spec Writer",
+          "alignment": "CENTER",
+          "space_after": 2.0,
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 14.0,
+          "bold": true,
+          "color": "8B5A3C"
+        },
+        {
+          "text": "🗓️ Decision Logger",
+          "alignment": "CENTER",
+          "space_after": 2.0,
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 14.0,
+          "bold": true,
+          "color": "8B5A3C"
+        }
+      ]
+    }
+  },
+  "slide-6": {
+    "shape-0": {
+      "left": 0.25,
+      "top": 0.16,
+      "width": 12.06,
+      "height": 0.3,
+      "placeholder_type": "TITLE",
+      "default_font_size": 14.0,
+      "paragraphs": [
+        {
+          "text": "Milemate",
+          "font_name": "NanumSquare ExtraBold",
+          "font_size": 14.0,
+          "bold": true,
+          "color": "163866"
+        }
+      ]
+    },
+    "shape-1": {
+      "left": 0.25,
+      "top": 0.48,
+      "width": 12.06,
+      "height": 0.3,
+      "placeholder_type": "OBJECT",
+      "default_font_size": 14.0,
+      "paragraphs": [
+        {
+          "text": "04. 사용자별 효용",
+          "font_name": "NanumSquare ExtraBold",
+          "font_size": 14.0,
+          "bold": true,
+          "color": "2D3338"
+        }
+      ]
+    },
+    "shape-2": {
+      "left": 0.25,
+      "top": 1.08,
+      "width": 12.83,
+      "height": 0.59,
+      "placeholder_type": "BODY",
+      "default_font_size": 28.0,
+      "paragraphs": [
+        {
+          "text": "프레임워크 기대효과",
+          "color": "163866"
+        }
+      ]
+    },
+    "shape-3": {
+      "left": 0.56,
+      "top": 1.78,
+      "width": 12.22,
+      "height": 0.3,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.07
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "동일한 기획을 바탕으로 세 사용자가 필요성에 따라 업무에 필요한 내용을 중심으로 전달받음",
+          "font_name": "나눔스퀘어",
+          "font_size": 14.0,
+          "color": "2D3338",
+          "line_spacing": 19.6
+        }
+      ]
+    },
+    "shape-4": {
+      "left": 0.83,
+      "top": 3.32,
+      "width": 3.33,
+      "height": 2.15,
+      "paragraphs": [
+        {
+          "text": "🧑🏻‍💻 기획자",
+          "space_after": 1.0,
+          "font_name": "NanumSquare ExtraBold",
+          "font_size": 16.0,
+          "bold": true,
+          "color": "163866"
+        },
+        {
+          "text": "PLANNER",
+          "space_after": 5.0,
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 10.0,
+          "bold": true,
+          "color": "163866"
+        },
+        {
+          "text": "기획서 초안 시간 단축",
+          "space_after": 0.5,
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 12.0,
+          "bold": true,
+          "color": "2D3338",
+          "line_spacing": 15.6
+        },
+        {
+          "text": "자연어 아이디어 → 구조화된 문서",
+          "space_after": 3.5,
+          "font_name": "나눔스퀘어",
+          "font_size": 10.5,
+          "color": "6B7280",
+          "line_spacing": 13.65
+        },
+        {
+          "text": "기술적 결정 근거 확보",
+          "space_after": 0.5,
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 12.0,
+          "bold": true,
+          "color": "2D3338",
+          "line_spacing": 15.6
+        },
+        {
+          "text": "막연한 제안이 아닌 검증된 기술기획서",
+          "space_after": 3.5,
+          "font_name": "나눔스퀘어",
+          "font_size": 10.5,
+          "color": "6B7280",
+          "line_spacing": 13.65
+        },
+        {
+          "text": "엔지니어와 공용 언어 확보",
+          "space_after": 0.5,
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 12.0,
+          "bold": true,
+          "color": "2D3338",
+          "line_spacing": 15.6
+        },
+        {
+          "text": "같은 문서 위에서 논의 가능",
+          "space_after": 3.5,
+          "font_name": "나눔스퀘어",
+          "font_size": 10.5,
+          "color": "6B7280",
+          "line_spacing": 13.65
+        }
+      ]
+    },
+    "shape-5": {
+      "left": 5.0,
+      "top": 3.32,
+      "width": 3.33,
+      "height": 2.15,
+      "paragraphs": [
+        {
+          "text": "🧑‍💻 엔지니어",
+          "space_after": 1.0,
+          "font_name": "NanumSquare ExtraBold",
+          "font_size": 16.0,
+          "bold": true,
+          "color": "163866"
+        },
+        {
+          "text": "ENGINEER",
+          "space_after": 5.0,
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 10.0,
+          "bold": true,
+          "color": "8B5A3C"
+        },
+        {
+          "text": "즉시 착수 가능한 문서",
+          "space_after": 0.5,
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 12.0,
+          "bold": true,
+          "color": "2D3338",
+          "line_spacing": 15.6
+        },
+        {
+          "text": "아키텍처·의존성·API가 명시된 상태로 전달",
+          "space_after": 3.5,
+          "font_name": "나눔스퀘어",
+          "font_size": 10.5,
+          "color": "6B7280",
+          "line_spacing": 13.65
+        },
+        {
+          "text": "구조화된 요구사항",
+          "space_after": 0.5,
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 12.0,
+          "bold": true,
+          "color": "2D3338",
+          "line_spacing": 15.6
+        },
+        {
+          "text": "모호한 기획이 아닌 범위·제약·대안이 정의됨",
+          "space_after": 3.5,
+          "font_name": "나눔스퀘어",
+          "font_size": 10.5,
+          "color": "6B7280",
+          "line_spacing": 13.65
+        },
+        {
+          "text": "기획 의도 직접 확인",
+          "space_after": 0.5,
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 12.0,
+          "bold": true,
+          "color": "2D3338",
+          "line_spacing": 15.6
+        },
+        {
+          "text": "Decision Log로 왜 이 선택인지 추적 가능",
+          "space_after": 3.5,
+          "font_name": "나눔스퀘어",
+          "font_size": 10.5,
+          "color": "6B7280",
+          "line_spacing": 13.65
+        }
+      ]
+    },
+    "shape-6": {
+      "left": 9.17,
+      "top": 3.32,
+      "width": 3.33,
+      "height": 2.15,
+      "paragraphs": [
+        {
+          "text": "🏢 조직",
+          "space_after": 1.0,
+          "font_name": "NanumSquare ExtraBold",
+          "font_size": 17.0,
+          "bold": true,
+          "color": "163866"
+        },
+        {
+          "text": "ORGANIZATION",
+          "space_after": 5.0,
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 10.0,
+          "bold": true,
+          "color": "8FA38A"
+        },
+        {
+          "text": "아이디어 검토 병목 해소",
+          "space_after": 0.5,
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 12.0,
+          "bold": true,
+          "color": "2D3338",
+          "line_spacing": 15.6
+        },
+        {
+          "text": "대량 제안을 빠르게 스크리닝",
+          "space_after": 3.5,
+          "font_name": "나눔스퀘어",
+          "font_size": 10.5,
+          "color": "6B7280",
+          "line_spacing": 13.65
+        },
+        {
+          "text": "의사결정 기록 축적",
+          "space_after": 0.5,
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 12.0,
+          "bold": true,
+          "color": "2D3338",
+          "line_spacing": 15.6
+        },
+        {
+          "text": "모든 판단이 로그로 남아 재사용 가능",
+          "space_after": 3.5,
+          "font_name": "나눔스퀘어",
+          "font_size": 10.5,
+          "color": "6B7280",
+          "line_spacing": 13.65
+        },
+        {
+          "text": "기획·개발 협업 비용 감소",
+          "space_after": 0.5,
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 12.0,
+          "bold": true,
+          "color": "2D3338",
+          "line_spacing": 15.6
+        },
+        {
+          "text": "문서화된 공용 컨텍스트 확보",
+          "space_after": 3.5,
+          "font_name": "나눔스퀘어",
+          "font_size": 10.5,
+          "color": "6B7280",
+          "line_spacing": 13.65
+        }
+      ]
+    }
+  },
+  "slide-7": {
+    "shape-0": {
+      "left": 0.25,
+      "top": 0.16,
+      "width": 12.06,
+      "height": 0.3,
+      "placeholder_type": "TITLE",
+      "default_font_size": 14.0,
+      "paragraphs": [
+        {
+          "text": "Milemate",
+          "font_name": "NanumSquare ExtraBold",
+          "font_size": 14.0,
+          "bold": true,
+          "color": "163866"
+        }
+      ]
+    },
+    "shape-1": {
+      "left": 0.25,
+      "top": 0.48,
+      "width": 12.06,
+      "height": 0.3,
+      "placeholder_type": "OBJECT",
+      "default_font_size": 14.0,
+      "paragraphs": [
+        {
+          "text": "05. 두 가지 작동 모드",
+          "font_name": "NanumSquare ExtraBold",
+          "font_size": 14.0,
+          "bold": true,
+          "color": "2D3338"
+        }
+      ]
+    },
+    "shape-2": {
+      "left": 0.25,
+      "top": 1.08,
+      "width": 12.83,
+      "height": 0.59,
+      "placeholder_type": "BODY",
+      "default_font_size": 28.0,
+      "paragraphs": [
+        {
+          "text": "실제 활용 예시",
+          "font_name": "NanumSquare ExtraBold",
+          "font_size": 28.0,
+          "bold": true,
+          "color": "163866"
+        }
+      ]
+    },
+    "shape-3": {
+      "left": 0.56,
+      "top": 1.78,
+      "width": 12.22,
+      "height": 0.3,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.07
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "같은 워크플로우를, 목적에 따라 두 가지 방식으로 쓸 수 있음",
+          "font_name": "나눔스퀘어",
+          "font_size": 14.0,
+          "color": "2D3338",
+          "line_spacing": 19.6
+        }
+      ]
+    },
+    "shape-4": {
+      "left": 2.11,
+      "top": 2.87,
+      "width": 1.53,
+      "height": 0.17,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.08
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "STAGE MODE",
+          "alignment": "CENTER",
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 10.0,
+          "bold": true,
+          "color": "FFFFFF"
+        }
+      ]
+    },
+    "shape-5": {
+      "left": 2.11,
+      "top": 3.33,
+      "width": 4.25,
+      "height": 1.64,
+      "paragraphs": [
+        {
+          "text": "단계별 대화",
+          "space_after": 5.0,
+          "font_name": "NanumSquare ExtraBold",
+          "font_size": 18.0,
+          "bold": true,
+          "color": "163866"
+        },
+        {
+          "text": "각 stage를 사용자가 보며 승인·수정·rollback",
+          "space_after": 5.0,
+          "font_name": "나눔스퀘어",
+          "font_size": 13.0,
+          "color": "2D3338",
+          "line_spacing": 18.85
+        },
+        {
+          "text": "중간 산출물을 보고 방향 조정",
+          "bullet": true,
+          "level": 0,
+          "space_after": 2.0,
+          "font_name": "나눔스퀘어",
+          "font_size": 12.0,
+          "color": "2D3338",
+          "line_spacing": 16.8
+        },
+        {
+          "text": "이전 stage로 되돌릴 수 있음",
+          "bullet": true,
+          "level": 0,
+          "space_after": 2.0,
+          "font_name": "나눔스퀘어",
+          "font_size": 12.0,
+          "color": "2D3338",
+          "line_spacing": 16.8
+        },
+        {
+          "text": "적합 상황: 실제 기획서를 만들 때",
+          "bullet": true,
+          "level": 0,
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 12.0,
+          "bold": true,
+          "color": "2D3338",
+          "line_spacing": 16.8
+        }
+      ]
+    },
+    "shape-6": {
+      "left": 7.33,
+      "top": 2.87,
+      "width": 1.53,
+      "height": 0.17,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.08
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "AUTO MODE",
+          "alignment": "CENTER",
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 10.0,
+          "bold": true,
+          "color": "FFFFFF"
+        }
+      ]
+    },
+    "shape-7": {
+      "left": 7.33,
+      "top": 3.33,
+      "width": 4.01,
+      "height": 1.64,
+      "paragraphs": [
+        {
+          "text": "자동 파이프라인",
+          "space_after": 5.0,
+          "font_name": "NanumSquare ExtraBold",
+          "font_size": 18.0,
+          "bold": true,
+          "color": "163866"
+        },
+        {
+          "text": "4개 stage를 사용자 개입 없이 한 번에 실행",
+          "space_after": 5.0,
+          "font_name": "나눔스퀘어",
+          "font_size": 13.0,
+          "color": "2D3338",
+          "line_spacing": 18.85
+        },
+        {
+          "text": "처음부터 끝까지 자동 실행",
+          "bullet": true,
+          "level": 0,
+          "space_after": 2.0,
+          "font_name": "나눔스퀘어",
+          "font_size": 12.0,
+          "color": "2D3338",
+          "line_spacing": 16.8
+        },
+        {
+          "text": "대량 아이디어 스크리닝에 유리",
+          "bullet": true,
+          "level": 0,
+          "space_after": 2.0,
+          "font_name": "나눔스퀘어",
+          "font_size": 12.0,
+          "color": "2D3338",
+          "line_spacing": 16.8
+        },
+        {
+          "text": "적합 상황: 데모·초안 검증",
+          "bullet": true,
+          "level": 0,
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 12.0,
+          "bold": true,
+          "color": "2D3338",
+          "line_spacing": 16.8
+        }
+      ]
+    },
+    "shape-8": {
+      "left": 0.56,
+      "top": 5.84,
+      "width": 12.22,
+      "height": 0.27,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.06
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "현재 제안은 STAGE MODE에 초점을 맞추어 개발 진행",
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 16.0,
+          "bold": true
+        }
+      ]
+    }
+  },
+  "slide-8": {
+    "shape-0": {
+      "left": 0.25,
+      "top": 0.16,
+      "width": 12.06,
+      "height": 0.3,
+      "placeholder_type": "TITLE",
+      "default_font_size": 14.0,
+      "paragraphs": [
+        {
+          "text": "Milemate",
+          "font_name": "NanumSquare ExtraBold",
+          "font_size": 14.0,
+          "bold": true,
+          "color": "B8C5D6"
+        }
+      ]
+    },
+    "shape-1": {
+      "left": 1.39,
+      "top": 2.57,
+      "width": 9.72,
+      "height": 0.24,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.06
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "PART 2",
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 14.0,
+          "bold": true,
+          "color": "8FA38A"
+        }
+      ]
+    },
+    "shape-2": {
+      "left": 1.39,
+      "top": 3.12,
+      "width": 11.11,
+      "height": 0.81,
+      "paragraphs": [
+        {
+          "text": "CleanGo: 라스트 마일 배송 시스템 신규 도입",
+          "font_name": "NanumSquare ExtraBold",
+          "font_size": 44.0,
+          "bold": true,
+          "color": "FFFFFF",
+          "line_spacing": 50.6
+        }
+      ]
+    },
+    "shape-3": {
+      "left": 1.39,
+      "top": 4.38,
+      "width": 11.11,
+      "height": 0.34,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.07
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "기획자를 위한 기술 기반 기획서 작성 보조 에이전트 시스템 – 적용 시나리오",
+          "font_name": "나눔스퀘어",
+          "font_size": 16.0,
+          "color": "B8C5D6",
+          "line_spacing": 22.4
+        }
+      ]
+    }
+  },
+  "slide-9": {
+    "shape-0": {
+      "left": 0.25,
+      "top": 0.16,
+      "width": 12.06,
+      "height": 0.3,
+      "placeholder_type": "TITLE",
+      "default_font_size": 14.0,
+      "paragraphs": [
+        {
+          "text": "Milemate",
+          "font_name": "NanumSquare ExtraBold",
+          "font_size": 14.0,
+          "bold": true,
+          "color": "163866"
+        }
+      ]
+    },
+    "shape-1": {
+      "left": 0.25,
+      "top": 0.48,
+      "width": 12.06,
+      "height": 0.3,
+      "placeholder_type": "OBJECT",
+      "default_font_size": 14.0,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.19
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "클린고(CleanGo) 예시 시나리오",
+          "font_name": "NanumSquare ExtraBold",
+          "color": "2D3338"
+        }
+      ]
+    },
+    "shape-2": {
+      "left": 0.25,
+      "top": 1.08,
+      "width": 12.83,
+      "height": 0.59,
+      "placeholder_type": "BODY",
+      "default_font_size": 28.0,
+      "paragraphs": [
+        {
+          "text": "클린고(CleanGo)",
+          "font_name": "NanumSquare ExtraBold",
+          "font_size": 28.0,
+          "bold": true,
+          "color": "163866"
+        }
+      ]
+    },
+    "shape-3": {
+      "left": 0.41,
+      "top": 1.66,
+      "width": 9.54,
+      "height": 0.45,
+      "paragraphs": [
+        {
+          "text": "클린고는 세탁물 수거 → 세탁 → 배송의 양방향 라스트마일 서비스를 준비 중인 스타트업",
+          "font_name": "나눔스퀘어",
+          "font_size": 16.0,
+          "color": "2D3338",
+          "line_spacing": 22.4
+        }
+      ]
+    },
+    "shape-4": {
+      "left": 0.75,
+      "top": 2.68,
+      "width": 5.21,
+      "height": 1.01,
+      "paragraphs": [
+        {
+          "text": "Scenario 1. 라스트 마일 배송 시스템 신규 도입",
+          "font_name": "NanumSquare Bold",
+          "font_size": 16.0,
+          "bold": true,
+          "color": "163866",
+          "line_spacing": 22.4
+        },
+        {
+          "text": "아직 배송 시스템이 없으며, 현재는 운영자가 카카오톡과 전화로 기사에게 수동 배차를 지시 중",
+          "bullet": true,
+          "level": 1,
+          "font_name": "나눔스퀘어",
+          "font_size": 14.0,
+          "color": "2D3338",
+          "line_spacing": 19.6
+        }
+      ]
+    },
+    "shape-5": {
+      "left": 7.19,
+      "top": 2.69,
+      "width": 5.22,
+      "height": 1.01,
+      "paragraphs": [
+        {
+          "text": "Scenario 2. 사업 전국 확장",
+          "font_name": "NanumSquare Bold",
+          "font_size": 16.0,
+          "bold": true,
+          "color": "163866",
+          "line_spacing": 22.4
+        },
+        {
+          "text": "경영진은 전국 주요 도시(부산, 대구, 인천 등)으로의 사업 확장을 결정",
+          "bullet": true,
+          "level": 1,
+          "font_name": "나눔스퀘어",
+          "font_size": 14.0,
+          "color": "2D3338",
+          "line_spacing": 19.6
+        }
+      ]
+    }
+  },
+  "slide-10": {
+    "shape-0": {
+      "left": 0.25,
+      "top": 0.16,
+      "width": 12.06,
+      "height": 0.3,
+      "placeholder_type": "TITLE",
+      "default_font_size": 14.0,
+      "paragraphs": [
+        {
+          "text": "Milemate",
+          "font_name": "NanumSquare ExtraBold",
+          "font_size": 14.0,
+          "bold": true,
+          "color": "163866"
+        }
+      ]
+    },
+    "shape-1": {
+      "left": 0.25,
+      "top": 0.48,
+      "width": 12.06,
+      "height": 0.3,
+      "placeholder_type": "OBJECT",
+      "default_font_size": 14.0,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.19
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "클린고(CleanGo) 예시 시나리오",
+          "font_name": "NanumSquare ExtraBold",
+          "color": "2D3338"
+        }
+      ]
+    },
+    "shape-2": {
+      "left": 0.25,
+      "top": 1.08,
+      "width": 12.83,
+      "height": 0.59,
+      "placeholder_type": "BODY",
+      "default_font_size": 28.0,
+      "paragraphs": [
+        {
+          "text": "Stage1: 문제 정의, KPI 정렬",
+          "font_name": "NanumSquare ExtraBold",
+          "font_size": 28.0,
+          "bold": true,
+          "color": "163866"
+        }
+      ]
+    },
+    "shape-3": {
+      "left": 0.56,
+      "top": 1.78,
+      "width": 12.22,
+      "height": 1.29,
+      "paragraphs": [
+        {
+          "text": "Input: 비즈니스 문제상황",
+          "font_name": "NanumSquare Bold",
+          "font_size": 14.0,
+          "bold": true,
+          "color": "2D3338",
+          "line_spacing": 19.6
+        },
+        {
+          "text": "기획자가 해결하고 싶은 비즈니스 문제를 자연어 형태로 시스템에 입력",
+          "bullet": true,
+          "level": 1,
+          "font_name": "나눔스퀘어",
+          "font_size": 14.0,
+          "color": "2D3338",
+          "line_spacing": 19.6
+        },
+        {
+          "text": "Output: 구체화된 목표 + KPI",
+          "font_name": "NanumSquare Bold",
+          "font_size": 14.0,
+          "bold": true,
+          "color": "2D3338",
+          "line_spacing": 19.6
+        },
+        {
+          "text": "Stage 1에서는 외부 DB 의존 없이 LLM 내재 지식과 기획자의 직접 입력에만 의존",
+          "bullet": true,
+          "level": 1,
+          "font_name": "나눔스퀘어",
+          "font_size": 14.0,
+          "color": "2D3338",
+          "line_spacing": 19.6
+        }
+      ]
+    },
+    "shape-4": {
+      "left": 1.11,
+      "top": 3.26,
+      "width": 3.61,
+      "height": 0.17,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.08
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "milemate.com",
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 10.0,
+          "bold": true,
+          "color": "FFFFFF"
+        }
+      ]
+    },
+    "shape-5": {
+      "left": 7.22,
+      "top": 3.15,
+      "width": 4.11,
+      "height": 1.06,
+      "paragraphs": [
+        {
+          "text": "🧑‍🤝‍🧑  Orchestrator Agent",
+          "alignment": "CENTER",
+          "space_after": 2.0,
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 14.0,
+          "bold": true,
+          "color": "8B5A3C"
+        },
+        {
+          "text": "전체 흐름 제어",
+          "bullet": true,
+          "level": 0,
+          "space_after": 2.0,
+          "font_name": "나눔스퀘어",
+          "font_size": 12.0,
+          "color": "2D3338"
+        },
+        {
+          "text": "아이디어를 토대로 문제 유형을 분류 및 전체 제어",
+          "space_after": 2.0,
+          "font_name": "나눔스퀘어",
+          "font_size": 12.0,
+          "color": "2D3338"
+        },
+        {
+          "text": "Short-term Memory: 대화 세션 내 대화 내력 보존",
+          "space_after": 2.0,
+          "font_name": "나눔스퀘어",
+          "font_size": 12.0,
+          "color": "FF0000"
+        }
+      ]
+    },
+    "shape-6": {
+      "left": 1.25,
+      "top": 3.78,
+      "width": 5.28,
+      "height": 0.4,
+      "paragraphs": [
+        {
+          "text": "MileMate",
+          "alignment": "CENTER",
+          "font_name": "NanumSquare ExtraBold",
+          "font_size": 24.0,
+          "bold": true,
+          "color": "163866"
+        }
+      ]
+    },
+    "shape-7": {
+      "left": 11.69,
+      "top": 3.98,
+      "width": 1.24,
+      "height": 0.64,
+      "paragraphs": [
+        {
+          "text": "Human Feedback",
+          "font_name": "NanumSquare ExtraBold",
+          "font_size": 16.0,
+          "bold": true,
+          "color": "163866"
+        }
+      ]
+    },
+    "shape-8": {
+      "left": 1.42,
+      "top": 4.69,
+      "width": 5.0,
+      "height": 0.19,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.07
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "어떤 아이디어를 기술기획서로 번역할까요?",
+          "font_name": "나눔스퀘어",
+          "font_size": 11.0,
+          "color": "9CA3AF"
+        }
+      ]
+    },
+    "shape-9": {
+      "left": 7.22,
+      "top": 4.46,
+      "width": 4.11,
+      "height": 1.23,
+      "paragraphs": [
+        {
+          "text": "👩‍💼 Goal Aligner Agent",
+          "alignment": "CENTER",
+          "space_after": 2.0,
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 14.0,
+          "bold": true,
+          "color": "8B5A3C"
+        },
+        {
+          "text": "목표 구체화 및 KPI 생성",
+          "bullet": true,
+          "level": 0,
+          "space_after": 2.0,
+          "font_name": "나눔스퀘어",
+          "font_size": 12.0,
+          "color": "2D3338"
+        },
+        {
+          "text": "기획자 피드백 기반 비즈니스 목표 구체화, KPI 후보 및 범위 초안 생성",
+          "space_after": 2.0,
+          "font_name": "나눔스퀘어",
+          "font_size": 12.0,
+          "color": "2D3338"
+        },
+        {
+          "text": "Structured Output: 결과를 정형화된 포맷으로 출력",
+          "space_after": 2.0,
+          "font_name": "나눔스퀘어",
+          "font_size": 12.0,
+          "color": "FF0000"
+        }
+      ]
+    },
+    "shape-10": {
+      "left": 1.25,
+      "top": 5.48,
+      "width": 1.94,
+      "height": 0.19,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.07
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "시작하기",
+          "alignment": "CENTER",
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 11.0,
+          "bold": true,
+          "color": "FFFFFF"
+        }
+      ]
+    },
+    "shape-11": {
+      "left": 7.3,
+      "top": 5.97,
+      "width": 4.31,
+      "height": 1.28,
+      "paragraphs": [
+        {
+          "text": "Stage 1. 문제 정의",
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 12.0,
+          "bold": true,
+          "color": "F5F0E8",
+          "line_spacing": 18.0
+        },
+        {
+          "text": "배차 프로세스 디지털화 + 의사결정 보조 시스템 신규 구축",
+          "font_name": "NanumSquare Bold",
+          "font_size": 12.0,
+          "bold": true,
+          "theme_color": "BACKGROUND_1",
+          "line_spacing": 18.0
+        },
+        {
+          "text": "KPI 1: 시간 슬롯 내 배송 완료율",
+          "bullet": true,
+          "level": 0,
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 12.0,
+          "bold": true,
+          "color": "F5F0E8",
+          "line_spacing": 18.0
+        },
+        {
+          "text": "KPI 2 : 기사 간 업무 편중도",
+          "bullet": true,
+          "level": 0,
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 12.0,
+          "bold": true,
+          "color": "F5F0E8",
+          "line_spacing": 18.0
+        }
+      ]
+    },
+    "shape-12": {
+      "left": 1.25,
+      "top": 6.07,
+      "width": 5.28,
+      "height": 0.47,
+      "paragraphs": [
+        {
+          "text": "홈 · 아이디어 꺼내기",
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 11.0,
+          "bold": true,
+          "color": "163866",
+          "line_spacing": 15.4
+        },
+        {
+          "text": "입력창 · 이전 세션 · 예시 프리셋",
+          "font_name": "나눔스퀘어",
+          "font_size": 10.0,
+          "color": "6B7280",
+          "line_spacing": 14.0
+        }
+      ]
+    },
+    "shape-13": {
+      "left": 7.08,
+      "top": 8.12,
+      "width": 3.61,
+      "height": 0.17,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.08
+        },
+        "slide": {
+          "overflow_bottom": 0.79
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "cleango.stage / problem-definition",
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 10.0,
+          "bold": true,
+          "color": "FFFFFF"
+        }
+      ]
+    },
+    "shape-14": {
+      "left": 11.53,
+      "top": 8.13,
+      "width": 1.11,
+      "height": 0.15,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.08
+        },
+        "slide": {
+          "overflow_bottom": 0.78
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "SCREEN 02",
+          "alignment": "RIGHT",
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 9.0,
+          "bold": true,
+          "color": "E8EDE5"
+        }
+      ]
+    },
+    "shape-15": {
+      "left": 7.19,
+      "top": 8.77,
+      "width": 0.31,
+      "height": 0.15,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.08
+        },
+        "slide": {
+          "overflow_bottom": 1.42
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "1",
+          "alignment": "CENTER",
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 9.0,
+          "bold": true,
+          "color": "6B7280"
+        }
+      ]
+    },
+    "shape-16": {
+      "left": 11.18,
+      "top": 8.81,
+      "width": 1.22,
+      "height": 0.17,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.08
+        },
+        "slide": {
+          "overflow_bottom": 1.48
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "승인",
+          "alignment": "CENTER",
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 10.0,
+          "bold": true,
+          "color": "FFFFFF"
+        }
+      ]
+    },
+    "shape-17": {
+      "left": 7.19,
+      "top": 9.3,
+      "width": 0.31,
+      "height": 0.15,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.08
+        },
+        "slide": {
+          "overflow_bottom": 1.95
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "2",
+          "alignment": "CENTER",
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 9.0,
+          "bold": true,
+          "color": "FFFFFF"
+        }
+      ]
+    },
+    "shape-18": {
+      "left": 11.18,
+      "top": 9.34,
+      "width": 1.22,
+      "height": 0.17,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.08
+        },
+        "slide": {
+          "overflow_bottom": 2.01
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "수정",
+          "alignment": "CENTER",
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 10.0,
+          "bold": true,
+          "color": "FFFFFF"
+        }
+      ]
+    },
+    "shape-19": {
+      "left": 7.19,
+      "top": 9.82,
+      "width": 0.31,
+      "height": 0.15,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.08
+        },
+        "slide": {
+          "overflow_bottom": 2.47
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "3",
+          "alignment": "CENTER",
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 9.0,
+          "bold": true,
+          "color": "6B7280"
+        }
+      ]
+    },
+    "shape-20": {
+      "left": 11.18,
+      "top": 9.88,
+      "width": 1.22,
+      "height": 0.15,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.08
+        },
+        "slide": {
+          "overflow_bottom": 2.53
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "Rollback",
+          "alignment": "CENTER",
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 9.0,
+          "bold": true,
+          "color": "FFFFFF"
+        }
+      ]
+    },
+    "shape-21": {
+      "left": 7.19,
+      "top": 10.35,
+      "width": 0.31,
+      "height": 0.15,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.08
+        },
+        "slide": {
+          "overflow_bottom": 3.0
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "4",
+          "alignment": "CENTER",
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 9.0,
+          "bold": true,
+          "color": "6B7280"
+        }
+      ]
+    },
+    "shape-22": {
+      "left": 7.78,
+      "top": 10.93,
+      "width": 4.72,
+      "height": 0.47,
+      "overflow": {
+        "slide": {
+          "overflow_bottom": 3.9
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "Stage · 함께 채우기",
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 11.0,
+          "bold": true,
+          "color": "163866",
+          "line_spacing": 15.4
+        },
+        {
+          "text": "진행 바 · 에이전트 결과 · 승인/수정/rollback",
+          "font_name": "나눔스퀘어",
+          "font_size": 10.0,
+          "color": "6B7280",
+          "line_spacing": 14.0
+        }
+      ]
+    }
+  },
+  "slide-11": {
+    "shape-0": {
+      "left": 0.25,
+      "top": 0.16,
+      "width": 12.06,
+      "height": 0.3,
+      "placeholder_type": "TITLE",
+      "default_font_size": 14.0,
+      "paragraphs": [
+        {
+          "text": "Milemate",
+          "font_name": "NanumSquare ExtraBold",
+          "font_size": 14.0,
+          "bold": true,
+          "color": "163866"
+        }
+      ]
+    },
+    "shape-1": {
+      "left": 0.25,
+      "top": 0.48,
+      "width": 12.06,
+      "height": 0.3,
+      "placeholder_type": "OBJECT",
+      "default_font_size": 14.0,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.19
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "클린고(CleanGo) 예시 시나리오",
+          "font_name": "NanumSquare ExtraBold",
+          "color": "2D3338"
+        }
+      ]
+    },
+    "shape-2": {
+      "left": 0.25,
+      "top": 1.08,
+      "width": 12.83,
+      "height": 0.59,
+      "placeholder_type": "BODY",
+      "default_font_size": 28.0,
+      "paragraphs": [
+        {
+          "text": "Stage2: 서비스 구조 및 MVP 범위 설정",
+          "font_name": "NanumSquare ExtraBold",
+          "font_size": 28.0,
+          "bold": true,
+          "color": "163866"
+        }
+      ]
+    },
+    "shape-3": {
+      "left": 0.56,
+      "top": 1.78,
+      "width": 12.22,
+      "height": 2.28,
+      "overlap": {
+        "overlapping_shapes": {
+          "shape-4": 1.16,
+          "shape-5": 1.45
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "Input: Stage 1에서 구체화한 목표 + KPI",
+          "font_name": "NanumSquare Bold",
+          "font_size": 14.0,
+          "color": "2D3338",
+          "line_spacing": 19.6
+        },
+        {
+          "text": "Context passing: 이전 stage의 산출물이 다음 stage의 입력으로 전달됨",
+          "font_name": "NanumSquare Bold",
+          "font_size": 14.0,
+          "color": "2D3338",
+          "line_spacing": 19.6
+        },
+        {
+          "text": "Output",
+          "font_name": "NanumSquare Bold",
+          "font_size": 14.0,
+          "color": "2D3338",
+          "line_spacing": 19.6
+        },
+        {
+          "text": "MVP의 시스템 기능 구조도 (아키텍처 다이어그램 + 데이터 흐름도)",
+          "bullet": true,
+          "level": 1,
+          "font_name": "NanumSquare Bold",
+          "font_size": 14.0,
+          "color": "2D3338",
+          "line_spacing": 19.6
+        },
+        {
+          "text": "Solution architect가 작성한 기능 중 Resource scoper 가 MVP에 포함하려고 하는 기능",
+          "bullet": true,
+          "level": 2,
+          "font_name": "나눔스퀘어",
+          "font_size": 14.0,
+          "color": "2D3338",
+          "line_spacing": 19.6
+        },
+        {
+          "text": "기술 스택 제안서 (Build vs Buy 결정 포함)",
+          "bullet": true,
+          "level": 1,
+          "font_name": "NanumSquare Bold",
+          "font_size": 14.0,
+          "color": "2D3338",
+          "line_spacing": 19.6
+        }
+      ]
+    },
+    "shape-4": {
+      "left": 1.18,
+      "top": 3.79,
+      "width": 4.31,
+      "height": 1.28,
+      "overlap": {
+        "overlapping_shapes": {
+          "shape-3": 1.16
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "Stage 1. 문제 정의",
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 12.0,
+          "bold": true,
+          "color": "F5F0E8",
+          "line_spacing": 18.0
+        },
+        {
+          "text": "배차 프로세스 디지털화 + 의사결정 보조 시스템 신규 구축",
+          "font_name": "NanumSquare Bold",
+          "font_size": 12.0,
+          "bold": true,
+          "theme_color": "BACKGROUND_1",
+          "line_spacing": 18.0
+        },
+        {
+          "text": "KPI 1: 시간 슬롯 내 배송 완료율",
+          "bullet": true,
+          "level": 0,
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 12.0,
+          "bold": true,
+          "color": "F5F0E8",
+          "line_spacing": 18.0
+        },
+        {
+          "text": "KPI 2 : 기사 간 업무 편중도",
+          "bullet": true,
+          "level": 0,
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 12.0,
+          "bold": true,
+          "color": "F5F0E8",
+          "line_spacing": 18.0
+        }
+      ]
+    },
+    "shape-5": {
+      "left": 5.95,
+      "top": 3.8,
+      "width": 5.57,
+      "height": 1.82,
+      "overlap": {
+        "overlapping_shapes": {
+          "shape-3": 1.45
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "👨🏻‍💼 Solution Architect Agent",
+          "alignment": "CENTER",
+          "space_after": 2.0,
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 14.0,
+          "bold": true,
+          "color": "8B5A3C"
+        },
+        {
+          "text": "시스템 아키텍처 설계",
+          "bullet": true,
+          "level": 0,
+          "space_after": 2.0,
+          "font_name": "나눔스퀘어",
+          "font_size": 14.0,
+          "color": "2D3338"
+        },
+        {
+          "text": "RAG/Retrieval: 유사 배차 시스템 사례 검색",
+          "space_after": 2.0,
+          "font_name": "나눔스퀘어",
+          "font_size": 12.0,
+          "color": "FF0000"
+        },
+        {
+          "text": "기술 스택 선정",
+          "bullet": true,
+          "level": 0,
+          "space_after": 2.0,
+          "font_name": "나눔스퀘어",
+          "font_size": 14.0,
+          "color": "2D3338"
+        },
+        {
+          "text": "RAG/Retrieval: 기술 스택 성능 레퍼런스 검색",
+          "space_after": 2.0,
+          "font_name": "나눔스퀘어",
+          "font_size": 12.0,
+          "color": "FF0000"
+        },
+        {
+          "text": "Build vs Buy 검토",
+          "bullet": true,
+          "level": 0,
+          "space_after": 2.0,
+          "font_name": "나눔스퀘어",
+          "font_size": 14.0,
+          "color": "2D3338"
+        },
+        {
+          "text": "Tool Use: 외부 API 가격·스펙 실시간 조회",
+          "space_after": 2.0,
+          "font_name": "나눔스퀘어",
+          "font_size": 12.0,
+          "color": "FF0000"
+        }
+      ]
+    },
+    "shape-6": {
+      "left": 11.53,
+      "top": 4.38,
+      "width": 1.85,
+      "height": 0.64,
+      "overflow": {
+        "slide": {
+          "overflow_right": 0.05
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "Human Feedback",
+          "font_name": "NanumSquare ExtraBold",
+          "font_size": 16.0,
+          "bold": true,
+          "color": "163866"
+        }
+      ]
+    },
+    "shape-7": {
+      "left": 5.74,
+      "top": 6.14,
+      "width": 5.44,
+      "height": 0.98,
+      "overlap": {
+        "overlapping_shapes": {
+          "shape-8": 0.3
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "Stage 2. 산출물",
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 12.0,
+          "bold": true,
+          "color": "F5F0E8",
+          "line_spacing": 18.0
+        },
+        {
+          "text": "시스템 기능 구조도: 지연 예측 모델 → 추천 UI → 운영자 화면 → 기사 앱",
+          "bullet": true,
+          "level": 0,
+          "font_name": "NanumSquare Bold",
+          "font_size": 12.0,
+          "bold": true,
+          "theme_color": "BACKGROUND_1",
+          "line_spacing": 18.0
+        },
+        {
+          "text": "기술 스택 제안서: Python·LightGBM(예측 모델), 카카오맵 API(Buy) •",
+          "bullet": true,
+          "level": 0,
+          "font_name": "NanumSquare Bold",
+          "font_size": 12.0,
+          "bold": true,
+          "theme_color": "BACKGROUND_1",
+          "line_spacing": 18.0
+        }
+      ]
+    },
+    "shape-8": {
+      "left": 9.42,
+      "top": 6.95,
+      "width": 3.0,
+      "height": 0.4,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.1
+        }
+      },
+      "overlap": {
+        "overlapping_shapes": {
+          "shape-7": 0.3
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "12"
+        }
+      ]
+    },
+    "shape-9": {
+      "left": 7.08,
+      "top": 8.12,
+      "width": 3.61,
+      "height": 0.17,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.08
+        },
+        "slide": {
+          "overflow_bottom": 0.79
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "cleango.stage / problem-definition",
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 10.0,
+          "bold": true,
+          "color": "FFFFFF"
+        }
+      ]
+    },
+    "shape-10": {
+      "left": 11.53,
+      "top": 8.13,
+      "width": 1.11,
+      "height": 0.15,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.08
+        },
+        "slide": {
+          "overflow_bottom": 0.78
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "SCREEN 02",
+          "alignment": "RIGHT",
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 9.0,
+          "bold": true,
+          "color": "E8EDE5"
+        }
+      ]
+    },
+    "shape-11": {
+      "left": 7.19,
+      "top": 8.77,
+      "width": 0.31,
+      "height": 0.15,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.08
+        },
+        "slide": {
+          "overflow_bottom": 1.42
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "1",
+          "alignment": "CENTER",
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 9.0,
+          "bold": true,
+          "color": "6B7280"
+        }
+      ]
+    },
+    "shape-12": {
+      "left": 11.18,
+      "top": 8.81,
+      "width": 1.22,
+      "height": 0.17,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.08
+        },
+        "slide": {
+          "overflow_bottom": 1.48
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "승인",
+          "alignment": "CENTER",
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 10.0,
+          "bold": true,
+          "color": "FFFFFF"
+        }
+      ]
+    },
+    "shape-13": {
+      "left": 7.19,
+      "top": 9.3,
+      "width": 0.31,
+      "height": 0.15,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.08
+        },
+        "slide": {
+          "overflow_bottom": 1.95
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "2",
+          "alignment": "CENTER",
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 9.0,
+          "bold": true,
+          "color": "FFFFFF"
+        }
+      ]
+    },
+    "shape-14": {
+      "left": 11.18,
+      "top": 9.34,
+      "width": 1.22,
+      "height": 0.17,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.08
+        },
+        "slide": {
+          "overflow_bottom": 2.01
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "수정",
+          "alignment": "CENTER",
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 10.0,
+          "bold": true,
+          "color": "FFFFFF"
+        }
+      ]
+    },
+    "shape-15": {
+      "left": 7.19,
+      "top": 9.82,
+      "width": 0.31,
+      "height": 0.15,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.08
+        },
+        "slide": {
+          "overflow_bottom": 2.47
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "3",
+          "alignment": "CENTER",
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 9.0,
+          "bold": true,
+          "color": "6B7280"
+        }
+      ]
+    },
+    "shape-16": {
+      "left": 11.18,
+      "top": 9.88,
+      "width": 1.22,
+      "height": 0.15,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.08
+        },
+        "slide": {
+          "overflow_bottom": 2.53
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "Rollback",
+          "alignment": "CENTER",
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 9.0,
+          "bold": true,
+          "color": "FFFFFF"
+        }
+      ]
+    },
+    "shape-17": {
+      "left": 7.19,
+      "top": 10.35,
+      "width": 0.31,
+      "height": 0.15,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.08
+        },
+        "slide": {
+          "overflow_bottom": 3.0
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "4",
+          "alignment": "CENTER",
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 9.0,
+          "bold": true,
+          "color": "6B7280"
+        }
+      ]
+    },
+    "shape-18": {
+      "left": 7.78,
+      "top": 10.93,
+      "width": 4.72,
+      "height": 0.47,
+      "overflow": {
+        "slide": {
+          "overflow_bottom": 3.9
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "Stage · 함께 채우기",
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 11.0,
+          "bold": true,
+          "color": "163866",
+          "line_spacing": 15.4
+        },
+        {
+          "text": "진행 바 · 에이전트 결과 · 승인/수정/rollback",
+          "font_name": "나눔스퀘어",
+          "font_size": 10.0,
+          "color": "6B7280",
+          "line_spacing": 14.0
+        }
+      ]
+    }
+  },
+  "slide-12": {
+    "shape-0": {
+      "left": 0.25,
+      "top": 0.16,
+      "width": 12.06,
+      "height": 0.3,
+      "placeholder_type": "TITLE",
+      "default_font_size": 14.0,
+      "paragraphs": [
+        {
+          "text": "Milemate",
+          "font_name": "NanumSquare ExtraBold",
+          "font_size": 14.0,
+          "bold": true,
+          "color": "163866"
+        }
+      ]
+    },
+    "shape-1": {
+      "left": 0.25,
+      "top": 0.48,
+      "width": 12.06,
+      "height": 0.3,
+      "placeholder_type": "OBJECT",
+      "default_font_size": 14.0,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.19
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "클린고(CleanGo) 예시 시나리오",
+          "font_name": "NanumSquare ExtraBold",
+          "color": "2D3338"
+        }
+      ]
+    },
+    "shape-2": {
+      "left": 0.25,
+      "top": 1.08,
+      "width": 12.83,
+      "height": 0.59,
+      "placeholder_type": "BODY",
+      "default_font_size": 28.0,
+      "paragraphs": [
+        {
+          "text": "Stage3: 기술/운영/규제 검증",
+          "font_name": "NanumSquare ExtraBold",
+          "font_size": 28.0,
+          "bold": true,
+          "color": "163866"
+        }
+      ]
+    },
+    "shape-3": {
+      "left": 0.56,
+      "top": 1.78,
+      "width": 12.22,
+      "height": 0.96,
+      "overlap": {
+        "overlapping_shapes": {
+          "shape-4": 0.6
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "Input: Stage 2에서 확정된 시스템 기능 구조도 + 기술 스택 제안서",
+          "font_name": "NanumSquare Bold",
+          "font_size": 14.0,
+          "bold": true,
+          "color": "2D3338",
+          "line_spacing": 19.6
+        },
+        {
+          "text": "Output: 기술/데이터/규제 측면 검토 내역",
+          "font_name": "NanumSquare Bold",
+          "font_size": 14.0,
+          "bold": true,
+          "color": "2D3338",
+          "line_spacing": 19.6
+        }
+      ]
+    },
+    "shape-4": {
+      "left": 3.83,
+      "top": 2.63,
+      "width": 5.44,
+      "height": 0.98,
+      "overlap": {
+        "overlapping_shapes": {
+          "shape-3": 0.6
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "Stage 2. 산출물",
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 12.0,
+          "bold": true,
+          "color": "F5F0E8",
+          "line_spacing": 18.0
+        },
+        {
+          "text": "시스템 기능 구조도: 지연 예측 모델 → 추천 UI → 운영자 화면 → 기사 앱",
+          "bullet": true,
+          "level": 0,
+          "font_name": "NanumSquare Bold",
+          "font_size": 12.0,
+          "bold": true,
+          "theme_color": "BACKGROUND_1",
+          "line_spacing": 18.0
+        },
+        {
+          "text": "기술 스택 제안서: Python·LightGBM(예측 모델), 카카오맵 API(Buy) •",
+          "bullet": true,
+          "level": 0,
+          "font_name": "NanumSquare Bold",
+          "font_size": 12.0,
+          "bold": true,
+          "theme_color": "BACKGROUND_1",
+          "line_spacing": 18.0
+        }
+      ]
+    },
+    "shape-5": {
+      "left": 10.83,
+      "top": 2.75,
+      "width": 2.89,
+      "height": 0.4,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.1
+        },
+        "slide": {
+          "overflow_right": 0.39
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "Human Feedback",
+          "font_name": "NanumSquare ExtraBold",
+          "bold": true,
+          "color": "163866"
+        }
+      ]
+    },
+    "shape-6": {
+      "left": 0.64,
+      "top": 4.14,
+      "width": 3.61,
+      "height": 1.44,
+      "paragraphs": [
+        {
+          "text": "💻 Tech Verifier Agent",
+          "alignment": "CENTER",
+          "space_after": 2.0,
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 14.0,
+          "bold": true,
+          "color": "8B5A3C",
+          "line_spacing": 16.8
+        },
+        {
+          "text": "기술 스택 검증",
+          "bullet": true,
+          "level": 0,
+          "space_after": 2.0,
+          "font_name": "나눔스퀘어",
+          "font_size": 12.0,
+          "color": "2D3338",
+          "line_spacing": 14.4
+        },
+        {
+          "text": "제안된 기술 스택이 요구사항(처리량, 응답시간 등)을 실제로 충족할 수 있는지 검증\u000bTool Use: 처리량·응답시간 벤치마크 DB 조회",
+          "space_after": 2.0,
+          "font_name": "나눔스퀘어",
+          "font_size": 12.0,
+          "color": "2D3338",
+          "line_spacing": 14.4
+        }
+      ]
+    },
+    "shape-7": {
+      "left": 4.59,
+      "top": 4.14,
+      "width": 3.64,
+      "height": 1.49,
+      "paragraphs": [
+        {
+          "text": "💾 Data Analyst Agent",
+          "alignment": "CENTER",
+          "space_after": 2.0,
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 14.0,
+          "bold": true,
+          "color": "8B5A3C",
+          "line_spacing": 16.8
+        },
+        {
+          "text": "데이터 유무와 품질 검증",
+          "bullet": true,
+          "level": 0,
+          "space_after": 2.0,
+          "font_name": "나눔스퀘어",
+          "font_size": 12.0,
+          "color": "2D3338",
+          "line_spacing": 14.4
+        },
+        {
+          "text": "데이터 현황 체크리스트를 발행하고 확인을 요청\u000b(ex. Q. 시스템 구현 데이터가 실제로 존재하는가?)",
+          "space_after": 2.0,
+          "font_name": "나눔스퀘어",
+          "font_size": 12.0,
+          "color": "2D3338",
+          "line_spacing": 14.4
+        },
+        {
+          "text": "Tool Use: 내부 데이터 현황 체크리스트 API 호출",
+          "space_after": 2.0,
+          "font_name": "나눔스퀘어",
+          "font_size": 11.0,
+          "color": "FF0000",
+          "line_spacing": 13.2
+        }
+      ]
+    },
+    "shape-8": {
+      "left": 8.65,
+      "top": 4.14,
+      "width": 4.0,
+      "height": 1.49,
+      "paragraphs": [
+        {
+          "text": "🚨 Regulatory Auditor Agent",
+          "alignment": "CENTER",
+          "space_after": 2.0,
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 14.0,
+          "bold": true,
+          "color": "8B5A3C",
+          "line_spacing": 16.8
+        },
+        {
+          "text": "관련 법령 준수 여부 확인",
+          "bullet": true,
+          "level": 0,
+          "space_after": 2.0,
+          "font_name": "나눔스퀘어",
+          "font_size": 12.0,
+          "color": "2D3338",
+          "line_spacing": 14.4
+        },
+        {
+          "text": "국가법령정보센터 API 등 공개 법령 DB를 실시간으로 검색하여 검토",
+          "space_after": 2.0,
+          "font_name": "나눔스퀘어",
+          "font_size": 12.0,
+          "color": "2D3338",
+          "line_spacing": 14.4
+        },
+        {
+          "text": "Retrieval: 관련 법령 조항 검색",
+          "space_after": 2.0,
+          "font_name": "나눔스퀘어",
+          "font_size": 11.0,
+          "color": "FF0000",
+          "line_spacing": 13.2
+        }
+      ]
+    },
+    "shape-9": {
+      "left": 0.66,
+      "top": 6.25,
+      "width": 3.59,
+      "height": 1.28,
+      "overflow": {
+        "slide": {
+          "overflow_bottom": 0.03
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "일 1,200건 기준 추천 응답 시간 목표 500ms: 경량 ML 모델로 달성 가능. 동시 요청 50건 이상 시 Redis 캐싱 레이어 추가 필요",
+          "bullet": true,
+          "level": 0,
+          "font_name": "NanumSquare Bold",
+          "font_size": 12.0,
+          "bold": true,
+          "theme_color": "BACKGROUND_1",
+          "line_spacing": 18.0
+        }
+      ]
+    },
+    "shape-10": {
+      "left": 4.6,
+      "top": 6.16,
+      "width": 3.65,
+      "height": 0.98,
+      "paragraphs": [
+        {
+          "text": "모델 학습을 위한 과거 배송 이력 데이터 필요.",
+          "bullet": true,
+          "level": 0,
+          "font_name": "NanumSquare Bold",
+          "font_size": 12.0,
+          "bold": true,
+          "theme_color": "BACKGROUND_1",
+          "line_spacing": 18.0
+        },
+        {
+          "text": "GPS 로그 부재 시 지연 예측 정확도 약 30% 하락 예상",
+          "bullet": true,
+          "level": 0,
+          "font_name": "NanumSquare Bold",
+          "font_size": 12.0,
+          "bold": true,
+          "theme_color": "BACKGROUND_1",
+          "line_spacing": 18.0
+        }
+      ]
+    },
+    "shape-11": {
+      "left": 8.52,
+      "top": 6.16,
+      "width": 4.31,
+      "height": 0.98,
+      "overlap": {
+        "overlapping_shapes": {
+          "shape-12": 0.54
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "기사위치 데이터 수집 시 개인정보보호법 제15조 적용",
+          "bullet": true,
+          "level": 0,
+          "font_name": "NanumSquare Bold",
+          "font_size": 12.0,
+          "bold": true,
+          "theme_color": "BACKGROUND_1",
+          "line_spacing": 18.0
+        },
+        {
+          "text": "긱워커 배차 알고리즘은 플랫폼종사자보호법 고지 의무 대상 해당 여부 확인 필요",
+          "bullet": true,
+          "level": 0,
+          "font_name": "NanumSquare Bold",
+          "font_size": 12.0,
+          "bold": true,
+          "theme_color": "BACKGROUND_1",
+          "line_spacing": 18.0
+        }
+      ]
+    },
+    "shape-12": {
+      "left": 9.42,
+      "top": 6.96,
+      "width": 3.0,
+      "height": 0.4,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.1
+        }
+      },
+      "overlap": {
+        "overlapping_shapes": {
+          "shape-11": 0.54
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "13"
+        }
+      ]
+    },
+    "shape-13": {
+      "left": 7.08,
+      "top": 8.12,
+      "width": 3.61,
+      "height": 0.17,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.08
+        },
+        "slide": {
+          "overflow_bottom": 0.79
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "cleango.stage / problem-definition",
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 10.0,
+          "bold": true,
+          "color": "FFFFFF"
+        }
+      ]
+    },
+    "shape-14": {
+      "left": 11.53,
+      "top": 8.13,
+      "width": 1.11,
+      "height": 0.15,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.08
+        },
+        "slide": {
+          "overflow_bottom": 0.78
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "SCREEN 02",
+          "alignment": "RIGHT",
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 9.0,
+          "bold": true,
+          "color": "E8EDE5"
+        }
+      ]
+    },
+    "shape-15": {
+      "left": 7.19,
+      "top": 8.77,
+      "width": 0.31,
+      "height": 0.15,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.08
+        },
+        "slide": {
+          "overflow_bottom": 1.42
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "1",
+          "alignment": "CENTER",
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 9.0,
+          "bold": true,
+          "color": "6B7280"
+        }
+      ]
+    },
+    "shape-16": {
+      "left": 11.18,
+      "top": 8.81,
+      "width": 1.22,
+      "height": 0.17,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.08
+        },
+        "slide": {
+          "overflow_bottom": 1.48
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "승인",
+          "alignment": "CENTER",
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 10.0,
+          "bold": true,
+          "color": "FFFFFF"
+        }
+      ]
+    },
+    "shape-17": {
+      "left": 7.19,
+      "top": 9.3,
+      "width": 0.31,
+      "height": 0.15,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.08
+        },
+        "slide": {
+          "overflow_bottom": 1.95
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "2",
+          "alignment": "CENTER",
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 9.0,
+          "bold": true,
+          "color": "FFFFFF"
+        }
+      ]
+    },
+    "shape-18": {
+      "left": 11.18,
+      "top": 9.34,
+      "width": 1.22,
+      "height": 0.17,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.08
+        },
+        "slide": {
+          "overflow_bottom": 2.01
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "수정",
+          "alignment": "CENTER",
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 10.0,
+          "bold": true,
+          "color": "FFFFFF"
+        }
+      ]
+    },
+    "shape-19": {
+      "left": 7.19,
+      "top": 9.82,
+      "width": 0.31,
+      "height": 0.15,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.08
+        },
+        "slide": {
+          "overflow_bottom": 2.47
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "3",
+          "alignment": "CENTER",
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 9.0,
+          "bold": true,
+          "color": "6B7280"
+        }
+      ]
+    },
+    "shape-20": {
+      "left": 11.18,
+      "top": 9.88,
+      "width": 1.22,
+      "height": 0.15,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.08
+        },
+        "slide": {
+          "overflow_bottom": 2.53
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "Rollback",
+          "alignment": "CENTER",
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 9.0,
+          "bold": true,
+          "color": "FFFFFF"
+        }
+      ]
+    },
+    "shape-21": {
+      "left": 7.19,
+      "top": 10.35,
+      "width": 0.31,
+      "height": 0.15,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.08
+        },
+        "slide": {
+          "overflow_bottom": 3.0
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "4",
+          "alignment": "CENTER",
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 9.0,
+          "bold": true,
+          "color": "6B7280"
+        }
+      ]
+    },
+    "shape-22": {
+      "left": 7.78,
+      "top": 10.93,
+      "width": 4.72,
+      "height": 0.47,
+      "overflow": {
+        "slide": {
+          "overflow_bottom": 3.9
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "Stage · 함께 채우기",
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 11.0,
+          "bold": true,
+          "color": "163866",
+          "line_spacing": 15.4
+        },
+        {
+          "text": "진행 바 · 에이전트 결과 · 승인/수정/rollback",
+          "font_name": "나눔스퀘어",
+          "font_size": 10.0,
+          "color": "6B7280",
+          "line_spacing": 14.0
+        }
+      ]
+    }
+  },
+  "slide-13": {
+    "shape-0": {
+      "left": 0.25,
+      "top": 0.16,
+      "width": 12.06,
+      "height": 0.3,
+      "placeholder_type": "TITLE",
+      "default_font_size": 14.0,
+      "paragraphs": [
+        {
+          "text": "Milemate",
+          "font_name": "NanumSquare ExtraBold",
+          "font_size": 14.0,
+          "bold": true,
+          "color": "163866"
+        }
+      ]
+    },
+    "shape-1": {
+      "left": 0.25,
+      "top": 0.48,
+      "width": 12.06,
+      "height": 0.3,
+      "placeholder_type": "OBJECT",
+      "default_font_size": 14.0,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.19
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "클린고(CleanGo) 예시 시나리오",
+          "font_name": "NanumSquare ExtraBold",
+          "color": "2D3338"
+        }
+      ]
+    },
+    "shape-2": {
+      "left": 0.25,
+      "top": 1.08,
+      "width": 12.83,
+      "height": 0.59,
+      "placeholder_type": "BODY",
+      "default_font_size": 28.0,
+      "paragraphs": [
+        {
+          "text": "Stage4: 최종 리포트 생성",
+          "font_name": "NanumSquare ExtraBold",
+          "font_size": 28.0,
+          "bold": true,
+          "color": "163866"
+        }
+      ]
+    },
+    "shape-3": {
+      "left": 0.56,
+      "top": 1.78,
+      "width": 12.22,
+      "height": 2.28,
+      "overlap": {
+        "overlapping_shapes": {
+          "shape-4": 0.34,
+          "shape-5": 1.08
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "Input: Stage 1~3의 모든 산출물 및 Human Feedback 이력",
+          "font_name": "NanumSquare Bold",
+          "font_size": 14.0,
+          "color": "2D3338",
+          "line_spacing": 19.6
+        },
+        {
+          "text": "Long-term Memory: 전 스테이지의 산출물 통합 저장소에서 로드",
+          "font_name": "NanumSquare Bold",
+          "font_size": 14.0,
+          "color": "2D3338",
+          "line_spacing": 19.6
+        },
+        {
+          "text": "Output",
+          "font_name": "NanumSquare Bold",
+          "font_size": 14.0,
+          "color": "2D3338",
+          "line_spacing": 19.6
+        },
+        {
+          "text": "Planner Report: 사업 확장 단계별 기능 로드맵, 지역별 KPI 측정 기준, 파트너 물류사 온보딩 체크리스트",
+          "bullet": true,
+          "level": 1,
+          "font_name": "NanumSquare Bold",
+          "font_size": 14.0,
+          "color": "2D3338",
+          "line_spacing": 19.6
+        },
+        {
+          "text": "Engineer Report: Multi-zone 아키텍처 설계 요건, 파트너 API 어댑터 인터페이스 명세, Cold Start 대응 fallback 로직 요구사항",
+          "bullet": true,
+          "level": 1,
+          "font_name": "NanumSquare Bold",
+          "font_size": 14.0,
+          "color": "2D3338",
+          "line_spacing": 19.6
+        },
+        {
+          "text": "Decision Log 업데이트: 기존 MVP의 전제 조건 변경 이력, Phase별 전환 근거 기록",
+          "bullet": true,
+          "level": 1,
+          "font_name": "NanumSquare Bold",
+          "font_size": 14.0,
+          "color": "2D3338",
+          "line_spacing": 19.6
+        }
+      ]
+    },
+    "shape-4": {
+      "left": 3.59,
+      "top": 3.96,
+      "width": 3.44,
+      "height": 1.09,
+      "overlap": {
+        "overlapping_shapes": {
+          "shape-3": 0.34
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "✏️ Spec Writer",
+          "alignment": "CENTER",
+          "space_after": 2.0,
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 14.0,
+          "bold": true,
+          "color": "8B5A3C"
+        },
+        {
+          "text": "기획자용 최종 명세서 작성",
+          "bullet": true,
+          "level": 0,
+          "space_after": 2.0,
+          "font_name": "나눔스퀘어",
+          "font_size": 12.0,
+          "color": "2D3338"
+        },
+        {
+          "text": "개발자용 최종 명세서 작성",
+          "bullet": true,
+          "level": 0,
+          "space_after": 2.0,
+          "font_name": "나눔스퀘어",
+          "font_size": 12.0,
+          "color": "2D3338"
+        },
+        {
+          "text": "Retreival: 기획 및 기술 관련 항목 검색",
+          "space_after": 2.0,
+          "font_name": "나눔스퀘어",
+          "font_size": 12.0,
+          "color": "FF0000"
+        }
+      ]
+    },
+    "shape-5": {
+      "left": 7.84,
+      "top": 3.81,
+      "width": 4.31,
+      "height": 0.68,
+      "overlap": {
+        "overlapping_shapes": {
+          "shape-3": 1.08
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "Planner Report: 비즈니스 목표, KPI 측정 방법, MVP 기능 범위, 일정 로드맵",
+          "bullet": true,
+          "level": 0,
+          "font_name": "NanumSquare Bold",
+          "font_size": 12.0,
+          "bold": true,
+          "theme_color": "BACKGROUND_1",
+          "line_spacing": 18.0
+        }
+      ]
+    },
+    "shape-6": {
+      "left": 0.66,
+      "top": 4.82,
+      "width": 2.23,
+      "height": 0.98,
+      "paragraphs": [
+        {
+          "text": "Stage 1~3 산출물 전체",
+          "bullet": true,
+          "level": 0,
+          "font_name": "NanumSquare Bold",
+          "font_size": 12.0,
+          "bold": true,
+          "theme_color": "BACKGROUND_1",
+          "line_spacing": 18.0
+        },
+        {
+          "text": "대화 이력",
+          "bullet": true,
+          "level": 0,
+          "font_name": "NanumSquare Bold",
+          "font_size": 12.0,
+          "bold": true,
+          "theme_color": "BACKGROUND_1",
+          "line_spacing": 18.0
+        },
+        {
+          "text": "Human Feedback log",
+          "bullet": true,
+          "level": 0,
+          "font_name": "NanumSquare Bold",
+          "font_size": 12.0,
+          "bold": true,
+          "theme_color": "BACKGROUND_1",
+          "line_spacing": 18.0
+        }
+      ]
+    },
+    "shape-7": {
+      "left": 7.84,
+      "top": 4.78,
+      "width": 4.31,
+      "height": 0.68,
+      "paragraphs": [
+        {
+          "text": "Engineer Report: API 인터페이스 명세, 데이터 스키마, 모델 입출력 정의, 인프라 요구사항",
+          "bullet": true,
+          "level": 0,
+          "font_name": "NanumSquare Bold",
+          "font_size": 12.0,
+          "bold": true,
+          "theme_color": "BACKGROUND_1",
+          "line_spacing": 18.0
+        }
+      ]
+    },
+    "shape-8": {
+      "left": 3.59,
+      "top": 5.68,
+      "width": 3.44,
+      "height": 1.32,
+      "paragraphs": [
+        {
+          "text": "🗓️ Decision Logger",
+          "alignment": "CENTER",
+          "space_after": 2.0,
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 14.0,
+          "bold": true,
+          "color": "8B5A3C"
+        },
+        {
+          "text": "구조화된 log",
+          "bullet": true,
+          "level": 0,
+          "space_after": 2.0,
+          "font_name": "나눔스퀘어",
+          "font_size": 12.0,
+          "color": "2D3338"
+        },
+        {
+          "text": "전 단계에 걸친 의사결정 이력, Rollback 사유, 기획자 피드백을 구조화하여 기록",
+          "space_after": 2.0,
+          "font_name": "나눔스퀘어",
+          "font_size": 12.0,
+          "color": "2D3338"
+        },
+        {
+          "text": "Long-term Memory: 이력 저장",
+          "space_after": 2.0,
+          "font_name": "나눔스퀘어",
+          "font_size": 12.0,
+          "color": "FF0000"
+        }
+      ]
+    },
+    "shape-9": {
+      "left": 7.84,
+      "top": 5.82,
+      "width": 4.47,
+      "height": 1.28,
+      "paragraphs": [
+        {
+          "text": "Decision Log",
+          "bullet": true,
+          "level": 0,
+          "font_name": "NanumSquare Bold",
+          "font_size": 12.0,
+          "bold": true,
+          "theme_color": "BACKGROUND_1",
+          "line_spacing": 18.0
+        },
+        {
+          "text": "Stage 1: 완전 자동화 → 추천 시스템으로 방향 전환 (사유: 현장 숙련도 한계)",
+          "bullet": true,
+          "level": 1,
+          "font_name": "NanumSquare Bold",
+          "font_size": 12.0,
+          "bold": true,
+          "theme_color": "BACKGROUND_1",
+          "line_spacing": 18.0
+        },
+        {
+          "text": "Stage 2: 다중 권역 기능 MVP 제외 …",
+          "bullet": true,
+          "level": 1,
+          "font_name": "NanumSquare Bold",
+          "font_size": 12.0,
+          "bold": true,
+          "theme_color": "BACKGROUND_1",
+          "line_spacing": 18.0
+        }
+      ]
+    },
+    "shape-10": {
+      "left": 9.42,
+      "top": 7.11,
+      "width": 3.0,
+      "height": 0.4,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.1
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "14"
+        }
+      ]
+    },
+    "shape-11": {
+      "left": 7.08,
+      "top": 8.12,
+      "width": 3.61,
+      "height": 0.17,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.08
+        },
+        "slide": {
+          "overflow_bottom": 0.79
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "cleango.stage / problem-definition",
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 10.0,
+          "bold": true,
+          "color": "FFFFFF"
+        }
+      ]
+    },
+    "shape-12": {
+      "left": 11.53,
+      "top": 8.13,
+      "width": 1.11,
+      "height": 0.15,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.08
+        },
+        "slide": {
+          "overflow_bottom": 0.78
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "SCREEN 02",
+          "alignment": "RIGHT",
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 9.0,
+          "bold": true,
+          "color": "E8EDE5"
+        }
+      ]
+    },
+    "shape-13": {
+      "left": 7.19,
+      "top": 8.9,
+      "width": 0.31,
+      "height": 0.15,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.08
+        },
+        "slide": {
+          "overflow_bottom": 1.55
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "1",
+          "alignment": "CENTER",
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 9.0,
+          "bold": true,
+          "color": "6B7280"
+        }
+      ]
+    },
+    "shape-14": {
+      "left": 7.19,
+      "top": 9.3,
+      "width": 0.31,
+      "height": 0.15,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.08
+        },
+        "slide": {
+          "overflow_bottom": 1.95
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "2",
+          "alignment": "CENTER",
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 9.0,
+          "bold": true,
+          "color": "FFFFFF"
+        }
+      ]
+    },
+    "shape-15": {
+      "left": 11.18,
+      "top": 8.95,
+      "width": 1.22,
+      "height": 0.17,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.08
+        },
+        "slide": {
+          "overflow_bottom": 1.61
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "승인",
+          "alignment": "CENTER",
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 10.0,
+          "bold": true,
+          "color": "FFFFFF"
+        }
+      ]
+    },
+    "shape-16": {
+      "left": 11.18,
+      "top": 9.34,
+      "width": 1.22,
+      "height": 0.17,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.08
+        },
+        "slide": {
+          "overflow_bottom": 2.01
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "수정",
+          "alignment": "CENTER",
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 10.0,
+          "bold": true,
+          "color": "FFFFFF"
+        }
+      ]
+    },
+    "shape-17": {
+      "left": 7.19,
+      "top": 9.82,
+      "width": 0.31,
+      "height": 0.15,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.08
+        },
+        "slide": {
+          "overflow_bottom": 2.47
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "3",
+          "alignment": "CENTER",
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 9.0,
+          "bold": true,
+          "color": "6B7280"
+        }
+      ]
+    },
+    "shape-18": {
+      "left": 11.18,
+      "top": 9.88,
+      "width": 1.22,
+      "height": 0.15,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.08
+        },
+        "slide": {
+          "overflow_bottom": 2.53
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "Rollback",
+          "alignment": "CENTER",
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 9.0,
+          "bold": true,
+          "color": "FFFFFF"
+        }
+      ]
+    },
+    "shape-19": {
+      "left": 7.19,
+      "top": 10.35,
+      "width": 0.31,
+      "height": 0.15,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.08
+        },
+        "slide": {
+          "overflow_bottom": 3.0
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "4",
+          "alignment": "CENTER",
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 9.0,
+          "bold": true,
+          "color": "6B7280"
+        }
+      ]
+    },
+    "shape-20": {
+      "left": 7.78,
+      "top": 10.93,
+      "width": 4.72,
+      "height": 0.47,
+      "overflow": {
+        "slide": {
+          "overflow_bottom": 3.9
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "Stage · 함께 채우기",
+          "font_name": "나눔스퀘어 Bold",
+          "font_size": 11.0,
+          "bold": true,
+          "color": "163866",
+          "line_spacing": 15.4
+        },
+        {
+          "text": "진행 바 · 에이전트 결과 · 승인/수정/rollback",
+          "font_name": "나눔스퀘어",
+          "font_size": 10.0,
+          "color": "6B7280",
+          "line_spacing": 14.0
+        }
+      ]
+    }
+  },
+  "slide-14": {
+    "shape-0": {
+      "left": 0.25,
+      "top": 0.16,
+      "width": 12.06,
+      "height": 0.3,
+      "placeholder_type": "TITLE",
+      "default_font_size": 14.0,
+      "paragraphs": [
+        {
+          "text": "Milemate",
+          "font_name": "NanumSquare ExtraBold",
+          "font_size": 14.0,
+          "bold": true,
+          "color": "163866"
+        }
+      ]
+    },
+    "shape-1": {
+      "left": 0.25,
+      "top": 0.48,
+      "width": 12.06,
+      "height": 0.3,
+      "placeholder_type": "OBJECT",
+      "default_font_size": 14.0,
+      "paragraphs": [
+        {
+          "text": "정리",
+          "font_name": "NanumSquare ExtraBold",
+          "font_size": 14.0,
+          "bold": true,
+          "color": "2D3338"
+        }
+      ]
+    },
+    "shape-2": {
+      "left": 0.25,
+      "top": 1.08,
+      "width": 12.83,
+      "height": 0.59,
+      "placeholder_type": "BODY",
+      "default_font_size": 28.0,
+      "paragraphs": [
+        {
+          "text": "Milemate 최종 정리",
+          "color": "163866"
+        }
+      ]
+    },
+    "shape-3": {
+      "left": 0.56,
+      "top": 1.78,
+      "width": 12.22,
+      "height": 3.08,
+      "paragraphs": [
+        {
+          "text": "milemate 프레임워크는 아이디어 → 기술기획서의 갭을 메우는 도구",
+          "font_name": "나눔스퀘어",
+          "font_size": 16.0,
+          "color": "2D3338",
+          "line_spacing": 22.4
+        },
+        {
+          "text": "(예시 시나리오) 클린고               가 동적 배차 기술을 도입하려 할 때, Milemate는 다음 네 가지를 구조화",
+          "font_name": "NanumSquare Bold",
+          "font_size": 14.0,
+          "bold": true,
+          "color": "2D3338",
+          "line_spacing": 19.6
+        },
+        {
+          "text": "[Stage 1] 아이디어를 구체적 문제 정의와 KPI로 변환",
+          "bullet": true,
+          "level": 1,
+          "font_name": "나눔스퀘어",
+          "font_size": 14.0,
+          "color": "2D3338",
+          "line_spacing": 21.0
+        },
+        {
+          "text": "[Stage 2] 기능 구조를 설계하고 현실적 MVP 범위를 결정 (Build vs Buy 포함)",
+          "bullet": true,
+          "level": 1,
+          "font_name": "나눔스퀘어",
+          "font_size": 14.0,
+          "color": "2D3338",
+          "line_spacing": 21.0
+        },
+        {
+          "text": "[Stage 3] 기술·데이터·규제 현실성을 검증",
+          "bullet": true,
+          "level": 1,
+          "font_name": "나눔스퀘어",
+          "font_size": 14.0,
+          "color": "2D3338",
+          "line_spacing": 21.0
+        },
+        {
+          "text": "[Stage 4] 기획자용/기술자용 분리 리포트와 의사결정 로그 생성",
+          "bullet": true,
+          "level": 1,
+          "font_name": "나눔스퀘어",
+          "font_size": 14.0,
+          "color": "2D3338",
+          "line_spacing": 21.0
+        }
+      ]
+    }
+  },
+  "slide-15": {
+    "shape-0": {
+      "left": 5.19,
+      "top": 3.36,
+      "width": 2.95,
+      "height": 0.77,
+      "paragraphs": [
+        {
+          "text": "감사합니다.",
+          "alignment": "CENTER",
+          "font_name": "NanumSquare ExtraBold",
+          "font_size": 40.0,
+          "bold": true
+        }
+      ]
+    }
+  }
+}
